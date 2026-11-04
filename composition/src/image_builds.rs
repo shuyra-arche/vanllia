@@ -63,6 +63,21 @@ const TERMINAL: ImageBuild = ImageBuild {
     default_features: true,
 };
 
+const LOGIN: ImageBuild = ImageBuild {
+    manifest: "components/session/units/login/server/Cargo.toml",
+    ..session_cluster::login::BUILD
+};
+
+const UART: ImageBuild = ImageBuild {
+    manifest: "components/driver/units/uart/server/Cargo.toml",
+    ..driver_cluster::uart::BUILD
+};
+
+const RTC: ImageBuild = ImageBuild {
+    manifest: "components/driver/units/rtc/server/Cargo.toml",
+    ..driver_cluster::rtc::BUILD
+};
+
 const DAEMON: ImageBuild = ImageBuild {
     manifest: "components/daemon/server/Cargo.toml",
     ..daemon_declaration::BUILD
@@ -128,9 +143,9 @@ pub const IMAGE_BUILDS: &[ImageBuild] = &[
     ACCOUNT,
     TERMINAL,
     SYSTEM,
-    legacy_image!("login"),
-    legacy_image!("uart"),
-    legacy_image!("rtc"),
+    LOGIN,
+    UART,
+    RTC,
     DAEMON,
     legacy_image!("shell"),
     legacy_image!("cat"),

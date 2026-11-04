@@ -71,7 +71,7 @@ name = "composition"
 version = "0.1.0"
 source = "git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107#94e114614bec53424ac55e640fc80cf19a3e7107"
 dependencies = [
- "driver-cluster",
+ "driver-cluster 0.1.0 (git+https://github.com/shuyra-arche/driver.git?rev=b82a20f36684c13808d89b0f1a5b4ce2796c2dbf)",
  "env",
  "fixturetarget-api",
  "hub-api",
@@ -80,7 +80,7 @@ dependencies = [
  "pipe-declaration",
  "router-api",
  "rtc-api 0.1.0 (git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107)",
- "session-cluster",
+ "session-cluster 0.1.0 (git+https://github.com/shuyra-arche/session.git?rev=f7c7542acf0bf010c1aac07d36d30a19e0591731)",
  "shell-declaration",
  "system-api",
  "unit",
@@ -153,6 +153,18 @@ source = "git+https://github.com/shuyra-arche/driver.git?rev=b82a20f36684c13808d
 dependencies = [
  "hub-declaration",
  "router-declaration",
+ "unit",
+]
+
+[[package]]
+name = "driver-cluster"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/driver.git?rev=bb3427e179e87b640e0d51115a44544fae231252#bb3427e179e87b640e0d51115a44544fae231252"
+dependencies = [
+ "hub-declaration",
+ "router-declaration",
+ "rtc-declaration",
+ "uart-declaration",
  "unit",
 ]
 
@@ -300,6 +312,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "login-declaration"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/session-login.git?rev=ce8e9007817d7494e05c057e23a7ba907a5d5ba8#ce8e9007817d7494e05c057e23a7ba907a5d5ba8"
+dependencies = [
+ "unit",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -426,7 +446,15 @@ dependencies = [
 [[package]]
 name = "rtc-api"
 version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/driver-rtc.git?rev=621be2b9946827be3de4245e29aa74ceb0f8cbd0#621be2b9946827be3de4245e29aa74ceb0f8cbd0"
+source = "git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107#94e114614bec53424ac55e640fc80cf19a3e7107"
+dependencies = [
+ "system-api",
+]
+
+[[package]]
+name = "rtc-api"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/driver-rtc.git?rev=f14cca51af02061350b2d1aa9f00f95c6dc06e15#f14cca51af02061350b2d1aa9f00f95c6dc06e15"
 dependencies = [
  "env",
  "mold",
@@ -435,11 +463,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "rtc-api"
+name = "rtc-declaration"
 version = "0.1.0"
-source = "git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107#94e114614bec53424ac55e640fc80cf19a3e7107"
+source = "git+https://github.com/shuyra-arche/driver-rtc.git?rev=f14cca51af02061350b2d1aa9f00f95c6dc06e15#f14cca51af02061350b2d1aa9f00f95c6dc06e15"
 dependencies = [
+ "env",
+ "router-api",
+ "rtc-api 0.1.0 (git+https://github.com/shuyra-arche/driver-rtc.git?rev=f14cca51af02061350b2d1aa9f00f95c6dc06e15)",
  "system-api",
+ "unit",
 ]
 
 [[package]]
@@ -499,10 +531,21 @@ dependencies = [
 [[package]]
 name = "session-cluster"
 version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/session.git?rev=87abc22d08ffe311b7e43d915240d318642d510c#87abc22d08ffe311b7e43d915240d318642d510c"
+dependencies = [
+ "account-declaration",
+ "login-declaration",
+ "terminal-declaration 0.1.0 (git+https://github.com/shuyra-arche/terminal.git?rev=d120e3ddf4b4a6c00685f32310897622d3440dd5)",
+ "unit",
+]
+
+[[package]]
+name = "session-cluster"
+version = "0.1.0"
 source = "git+https://github.com/shuyra-arche/session.git?rev=f7c7542acf0bf010c1aac07d36d30a19e0591731#f7c7542acf0bf010c1aac07d36d30a19e0591731"
 dependencies = [
  "account-declaration",
- "terminal-declaration",
+ "terminal-declaration 0.1.0 (git+https://github.com/shuyra-arche/terminal.git?rev=f07a0954f65472e9a16e878e52c5f1d34146bc64)",
  "unit",
 ]
 
@@ -639,6 +682,15 @@ dependencies = [
 [[package]]
 name = "terminal-declaration"
 version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/terminal.git?rev=d120e3ddf4b4a6c00685f32310897622d3440dd5#d120e3ddf4b4a6c00685f32310897622d3440dd5"
+dependencies = [
+ "system-api",
+ "unit",
+]
+
+[[package]]
+name = "terminal-declaration"
+version = "0.1.0"
 source = "git+https://github.com/shuyra-arche/terminal.git?rev=f07a0954f65472e9a16e878e52c5f1d34146bc64#f07a0954f65472e9a16e878e52c5f1d34146bc64"
 dependencies = [
  "system-api",
@@ -689,6 +741,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
+name = "uart-declaration"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/driver-uart.git?rev=298bc8809f297f46bc7592aebc96540b7b492efc#298bc8809f297f46bc7592aebc96540b7b492efc"
+dependencies = [
+ "system-api",
+ "unit",
+]
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -725,12 +786,11 @@ name = "vanllia-composition"
 version = "0.1.0"
 dependencies = [
  "daemon-declaration",
- "driver-cluster",
+ "driver-cluster 0.1.0 (git+https://github.com/shuyra-arche/driver.git?rev=bb3427e179e87b640e0d51115a44544fae231252)",
  "env",
  "pipe-declaration",
  "router-api",
- "rtc-api 0.1.0 (git+https://github.com/shuyra-arche/driver-rtc.git?rev=621be2b9946827be3de4245e29aa74ceb0f8cbd0)",
- "session-cluster",
+ "session-cluster 0.1.0 (git+https://github.com/shuyra-arche/session.git?rev=87abc22d08ffe311b7e43d915240d318642d510c)",
  "shell-command-images-declaration",
  "shell-declaration",
  "system-api",
