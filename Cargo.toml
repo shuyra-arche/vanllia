@@ -1,0 +1,24 @@
+[workspace]
+resolver = "3"
+members = [
+    "composition",
+    "bootstrap",
+    "tools/product",
+]
+exclude = [
+    "components/kernel",
+    "components/system",
+    "components/image-builder",
+    "components/driver",
+    "components/session",
+    "components/pipe",
+    "legacy/sqware",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[profile.dev]
+debug = true
+panic = "abort"

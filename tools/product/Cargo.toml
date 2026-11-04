@@ -1,0 +1,17 @@
+[package]
+name = "vanllia-image"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[[bin]]
+name = "vanllia-image"
+path = "src/main.rs"
+
+[dependencies]
+vanllia-composition = { path = "../../composition" }
+unit = { git = "https://github.com/shuyra-arche/unit.git", rev = "90396f0fda376e0693fb1b9553aa21864d241057" }
+vanllia-build = { git = "https://github.com/shuyra-arche/image-builder.git", rev = "17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f" }
+
+[dev-dependencies]
+legacy-composition = { package = "composition", git = "https://github.com/anreonyr/sqware.git", rev = "94e114614bec53424ac55e640fc80cf19a3e7107" }

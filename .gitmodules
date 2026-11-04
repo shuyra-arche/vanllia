@@ -1,0 +1,21 @@
+[submodule "components/kernel"]
+	path = components/kernel
+	url = https://github.com/shuyra-arche/kernel.git
+[submodule "components/system"]
+	path = components/system
+	url = https://github.com/shuyra-arche/system.git
+[submodule "components/image-builder"]
+	path = components/image-builder
+	url = https://github.com/shuyra-arche/image-builder.git
+[submodule "components/driver"]
+	path = components/driver
+	url = https://github.com/shuyra-arche/driver.git
+[submodule "components/session"]
+	path = components/session
+	url = https://github.com/shuyra-arche/session.git
+[submodule "components/pipe"]
+	path = components/pipe
+	url = https://github.com/shuyra-arche/pipe.git
+[submodule "legacy/sqware"]
+	path = legacy/sqware
+	url = https://github.com/anreonyr/sqware.git
