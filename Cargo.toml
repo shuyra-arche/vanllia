@@ -12,6 +12,7 @@ exclude = [
     "components/driver",
     "components/session",
     "components/pipe",
+    "components/daemon",
     "legacy/sqware",
 ]
 

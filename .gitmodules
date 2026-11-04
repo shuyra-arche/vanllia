@@ -19,3 +19,6 @@
 [submodule "legacy/sqware"]
 	path = legacy/sqware
 	url = https://github.com/anreonyr/sqware.git
+[submodule "components/daemon"]
+	path = components/daemon
+	url = https://github.com/shuyra-arche/daemon.git
