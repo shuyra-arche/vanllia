@@ -1,12 +1,12 @@
-//! Product UnitFiles: published declarations plus the five still-local ones.
+//! Product UnitFiles: published declarations plus the four still-local ones.
 
+pub use daemon_declaration as daemon;
 pub use driver_cluster::{hub, router};
 pub use pipe_declaration as pipe;
 pub use session_cluster::{account, terminal};
 pub use shell_declaration as shell;
 use unit::UnitFile;
 
-pub mod daemon;
 pub mod login;
 pub mod rtc;
 pub mod system;
@@ -16,7 +16,7 @@ pub mod uart;
 #[rustfmt::skip]
 pub const PROGRAMS: &[&UnitFile] = &[
     &hub::UNIT,
-    &daemon::PROGRAM,
+    &daemon::UNIT,
     &pipe::UNIT,
     &account::UNIT,
     &terminal::UNIT,

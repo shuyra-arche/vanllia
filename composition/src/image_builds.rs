@@ -60,6 +60,11 @@ const TERMINAL: ImageBuild = ImageBuild {
     default_features: true,
 };
 
+const DAEMON: ImageBuild = ImageBuild {
+    manifest: "components/daemon/server/Cargo.toml",
+    ..daemon_declaration::BUILD
+};
+
 const SYSTEM: ImageBuild = ImageBuild {
     image: "system",
     manifest: "bootstrap/Cargo.toml",
@@ -96,7 +101,7 @@ pub const IMAGE_BUILDS: &[ImageBuild] = &[
     legacy_image!("login"),
     legacy_image!("uart"),
     legacy_image!("rtc"),
-    legacy_image!("daemon"),
+    DAEMON,
     legacy_image!("shell"),
     legacy_image!("cat"),
     legacy_image!("emit"),

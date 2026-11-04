@@ -117,6 +117,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "daemon-declaration"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/daemon.git?rev=4e4ae06ee488e9f02e15d74405b989f20a5a286f#4e4ae06ee488e9f02e15d74405b989f20a5a286f"
+dependencies = [
+ "unit",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -708,6 +716,7 @@ dependencies = [
 name = "vanllia-composition"
 version = "0.1.0"
 dependencies = [
+ "daemon-declaration",
  "driver-cluster",
  "env",
  "pipe-declaration",

@@ -9,7 +9,7 @@ Candidate M1 only. It owns one product `Deployment`, the new `system` bootstrap 
 Clone the fixed provider tree and use the original toolchain:
 
 ```sh
-git clone --branch codex/product-entry --recurse-submodules https://github.com/shuyra-arche/vanllia.git
+git clone --branch codex/daemon-intake --recurse-submodules https://github.com/shuyra-arche/vanllia.git
 cd vanllia
 rustup component add llvm-tools-preview --toolchain nightly-2026-09-04
 export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$PATH"
@@ -41,8 +41,18 @@ The following images still come from the legacy sqware tree at full SHA
 `94e114614bec53424ac55e640fc80cf19a3e7107`, via its own
 `legacy/sqware/programs/Cargo.toml` and lock:
 
-- `login`, `uart`, `rtc`, `daemon`
+- `login`, `uart`, `rtc`
 - `shell`, `cat`, `emit`, `upper`, `fail`, `spin`, `workers`
+
+The Daemon declaration and image now come from the immutable provider
+`https://github.com/shuyra-arche/daemon.git` at full revision
+`4e4ae06ee488e9f02e15d74405b989f20a5a286f`; `daemon-declaration` owns `UNIT` and
+`BUILD`, and `daemon-server` builds bin `daemon` from `server/Cargo.toml` in the
+fixed `components/daemon` gitlink. The selected Daemon normal
+dependency graph is independent of `sqware`, `programs`, `composition` and
+`system-server`. Legacy programs' aggregate lib may still compile the old daemon
+code; that is not part of the selected Daemon closure. This slice adds no QEMU
+or runtime acceptance claim.
 
 The production `rtc-api` package is now pinned independently to
 `https://github.com/shuyra-arche/driver-rtc.git` at full revision
@@ -75,7 +85,7 @@ the disclosed legacy repository (`scripts/boot.nu`, `scripts/qemu-args.nu`,
 driver must select this repository's initrd and new bootstrap rather than
 rebuilding the legacy product image.
 
-M2 is not complete: the eleven production images above, `shell-declaration`, and
+M2 is not complete: the ten production images above, `shell-declaration`, and
 firmware/boot, scenarios and tests must leave sqware before independence can be
 claimed. TOML/UnitFile redesign is undecided. The old PR1 single SMP8 evidence is
 prior-tree only; this slice has no QEMU and claims no runtime acceptance.
