@@ -1,16 +1,17 @@
 # vanllia M1 product composition
 
-Candidate M1 only. It owns one product `Deployment`, the new `system` bootstrap and
+Local integration candidate for #6, #7 and #8; not published or runtime accepted.
+It owns one product `Deployment`, the new `system` bootstrap and
 17 explicit `ImageBuild` coordinates. Runtime and host both consume
 `vanllia-composition`, so they cannot select different product scenes.
 
 ## Commands
 
-Clone the fixed provider tree and use the original toolchain:
+From a checkout of the reviewed revision, initialize the fixed provider tree and
+use the original toolchain:
 
 ```sh
-git clone --branch codex/product-boot-entry --recurse-submodules https://github.com/shuyra-arche/vanllia.git
-cd vanllia
+git submodule update --init --recursive
 rustup component add llvm-tools-preview --toolchain nightly-2026-09-04
 export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$PATH"
 ```
@@ -80,19 +81,21 @@ Equivalence tests against the PR55 legacy composition:
 cargo test --locked -p vanllia-image --target x86_64-unknown-linux-gnu --test equivalence
 ```
 
-The same suite checks the five migrated command builds against the public
-descriptor, compares the selected Login/UART/RTC owner builds and observable
-`UnitFile` fields with the frozen legacy declarations, and verifies the frozen
-Shell catalogue ports and bindings.
+The same suite checks the seven Shell owner builds and the actual Shell `PROGRAM`
+against the frozen Source fields, verifies that zero selected images remain on the
+legacy manifest, retains the five command-port/binding checks, compares the
+selected Login/UART/RTC owner builds and observable `UnitFile` fields with the
+frozen legacy declarations, and verifies the frozen Shell catalogue ports and
+bindings.
 
-## M1 legacy edges (disclosed)
+## Provider and legacy boundaries (disclosed)
 
-The following images still come from the legacy sqware tree at full SHA
-`94e114614bec53424ac55e640fc80cf19a3e7107`, via its own
-`legacy/sqware/programs/Cargo.toml` and lock:
-
-- `shell`
-- `cat`
+All 17 selected images have explicit product coordinates. Zero selected images
+use `legacy/sqware/programs/Cargo.toml`, and the production normal dependency
+graph has zero sqware edges. The old sqware tree remains in the frozen dev-only
+`legacy-composition` host fixture, historical checkout and pending guest-scene
+fixtures. Cargo may still resolve those dev dependencies. They are not selected
+production image inputs; this is not whole-repository independence.
 
 The `login` image and `PROGRAM` now come from the immutable Session provider
 `https://github.com/shuyra-arche/session.git` at full revision
@@ -120,21 +123,22 @@ identity updated. Account, Hub and Router pins remain unchanged, and the frozen
 dev-only legacy composition retains the old Login/UART/RTC declarations as
 source fixtures.
 
-The five Shell command images `emit`, `upper`, `fail`, `spin` and `workers`
-now build from `components/shell/commands/Cargo.toml` in the public Shell
-gitlink at full revision `effeb09c170f0259c3d79687754b02aa41f615fe`. Their
-build coordinates come from the `shell-command-images-declaration` package in
-`components/shell/commands/declaration`; the composition only prefixes its
-provider-relative `commands/Cargo.toml` manifest with `components/shell/`.
-The Shell catalogue, resource names, ports and bindings remain owned by the
-unchanged sqware `shell-declaration`; these five images are resources, not new
-`UnitFile`s. The command runtime continues to pin the public Shell client at
-`https://github.com/shuyra-arche/shell.git` revision
-`b910582fc9dc0fd732f279d94f2cfca89f4c8c8f`; its nearby `client/` tree is not
-substituted. The legacy programs aggregate may still contain the old command
-code, but the five selected command images now build from the independent
-`components/shell/commands/Cargo.toml` closure. This slice does not intake the
-Shell server, Cat or Lisp.
+Shell now comes from `https://github.com/shuyra-arche/shell.git` at full revision
+`5d84650d37df7523d0ac59fc563e2fc7dc4025ba`. `shell-declaration` owns the
+`PROGRAM`, catalogue and `BUILD`, while `shell-images-declaration` owns the
+ordered `BUILDS` aggregate for exactly seven images: `shell`, `cat`, `emit`,
+`upper`, `fail`, `spin` and `workers`. The composition only prefixes each
+provider-relative manifest with `components/shell/`. The provider manifests are
+`server/entry/Cargo.toml`, `cat/command/Cargo.toml` and
+`commands/Cargo.toml`. `shell` builds package `shell-entry` bin `prog-shell`;
+`cat` builds package `cat` bin `prog-cat`; the five command images build package
+`shell-command-images` with bins matching their image names. All seven runtimes
+use in-provider SDK paths, so separate immutable Cargo workspaces may carry
+normal local Cargo IDs without creating mixed Git SDK identities. The old Shell
+client pin `b910582fc9dc0fd732f279d94f2cfca89f4c8c8f` is historical: the live
+Shell server, client, API, Lisp, commands and Cat use the pinned provider tree.
+The superseded sqware `shell-declaration` at `94e1146...` and the direct
+`shell-command-images-declaration` at `effeb09...` are not selected.
 
 The Daemon declaration and image now come from the immutable provider
 `https://github.com/shuyra-arche/daemon.git` at full revision
@@ -151,14 +155,13 @@ declaration at full revision `f14cca51af02061350b2d1aa9f00f95c6dc06e15`; the
 composition no longer carries a second direct `rtc-api` dependency at
 `621be2b9946827be3de4245e29aa74ceb0f8cbd0`. That crate owns pure protocol
 types/constants/failure codec only. The selected RTC server and image also
-build from the Driver provider, while `shell-declaration` still comes from
-legacy sqware. The dev-only `legacy-composition` used by the host equivalence
-test retains the old sqware `rtc-api`, `fixturetarget`, Driver/Session and
-Login/UART/RTC declarations. Published servers remain
+build from the Driver provider. The dev-only `legacy-composition` used by the
+host equivalence test retains the old sqware `rtc-api`, `fixturetarget`,
+Driver/Session and Login/UART/RTC declarations. Published servers remain
 `components/{driver,session}/units/...` and `components/pipe/server`. The new
 `system` image is `bootstrap/Cargo.toml`; it uses published `system-server` at
 `9001af65...` and `system-support` at `5a792ff2...`, and is never the legacy
-system binary. M1 is therefore not independent of sqware.
+system binary.
 
 ## Boundaries
 
@@ -182,13 +185,13 @@ new qtest entry builds this repository's product initrd and new bootstrap.
 Non-product scene deployments and their guest fixture programs still need
 provider migration before they can be enabled here.
 
-M2 is not complete: the two remaining legacy images `shell` and `cat`,
-`shell-declaration`, the legacy aggregate and root host fixtures, and the
-remaining scene image/guest-fixture dependencies must leave sqware before
-independence can be claimed. TOML/UnitFile redesign is undecided. The old PR1
+M2 is not complete. Zero selected legacy image builds does not remove the frozen
+dev fixtures, historical aggregate/checkout or pending guest-scene dependencies.
+Firmware provenance and new runtime evidence also remain open. TOML/UnitFile
+redesign is undecided. The old PR1
 single SMP8 evidence is prior-tree only; this slice has no QEMU and claims no
 runtime acceptance.
 
 See the [entry migration boundary](docs/boot-entry-migration.md) for exact source
-heads and the remaining archive gates. This candidate does not make the full
-product build independent of sqware.
+heads and the remaining archive gates. This candidate does not establish
+whole-repository independence or runtime acceptance.
