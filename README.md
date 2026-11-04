@@ -35,6 +35,16 @@ Equivalence tests against the PR55 legacy composition:
 cargo test --locked -p vanllia-image --target x86_64-unknown-linux-gnu --test equivalence
 ```
 
+Product declaration and plan contracts live with composition and use frozen
+literal expectations. Run them alongside the retained equivalence tests:
+
+```text
+cargo test --locked --offline -p vanllia-composition -p vanllia-image --tests --target x86_64-unknown-linux-gnu
+```
+
+See [the coverage and provenance record](docs/product-contract-tests.md). All five
+original equivalence tests remain unchanged; this slice removes no legacy edge.
+
 The same suite checks the five migrated command builds against the public
 descriptor, compares the selected Login/UART/RTC owner builds and observable
 `UnitFile` fields with the frozen legacy declarations, and verifies the frozen
