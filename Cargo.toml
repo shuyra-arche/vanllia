@@ -13,6 +13,7 @@ exclude = [
     "components/session",
     "components/pipe",
     "components/daemon",
+    "components/shell",
     "legacy/sqware",
 ]
 

@@ -2,6 +2,9 @@
 
 use unit::ImageBuild;
 
+// Host equivalence reads the provider's ordered BUILDS through composition.
+pub use shell_command_images_declaration;
+
 const TARGET: &str = "riscv64gc-unknown-none-elf";
 const PROFILE: &str = "release";
 
@@ -76,6 +79,33 @@ const SYSTEM: ImageBuild = ImageBuild {
     default_features: true,
 };
 
+const SHELL_COMMANDS_MANIFEST: &str = "components/shell/commands/Cargo.toml";
+
+const EMIT: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_command_images_declaration::EMIT
+};
+
+const UPPER: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_command_images_declaration::UPPER
+};
+
+const FAIL: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_command_images_declaration::FAIL
+};
+
+const SPIN: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_command_images_declaration::SPIN
+};
+
+const WORKERS: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_command_images_declaration::WORKERS
+};
+
 macro_rules! legacy_image {
     ($image:literal) => {
         ImageBuild {
@@ -104,9 +134,9 @@ pub const IMAGE_BUILDS: &[ImageBuild] = &[
     DAEMON,
     legacy_image!("shell"),
     legacy_image!("cat"),
-    legacy_image!("emit"),
-    legacy_image!("upper"),
-    legacy_image!("fail"),
-    legacy_image!("spin"),
-    legacy_image!("workers"),
+    EMIT,
+    UPPER,
+    FAIL,
+    SPIN,
+    WORKERS,
 ];

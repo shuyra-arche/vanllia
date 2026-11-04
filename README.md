@@ -9,7 +9,7 @@ Candidate M1 only. It owns one product `Deployment`, the new `system` bootstrap 
 Clone the fixed provider tree and use the original toolchain:
 
 ```sh
-git clone --branch codex/daemon-intake --recurse-submodules https://github.com/shuyra-arche/vanllia.git
+git clone --branch codex/shell-command-images --recurse-submodules https://github.com/shuyra-arche/vanllia.git
 cd vanllia
 rustup component add llvm-tools-preview --toolchain nightly-2026-09-04
 export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$PATH"
@@ -35,6 +35,9 @@ Equivalence tests against the PR55 legacy composition:
 cargo test --locked -p vanllia-image --target x86_64-unknown-linux-gnu --test equivalence
 ```
 
+The same suite checks the five migrated command builds against the public
+descriptor and verifies the frozen Shell catalogue ports and bindings.
+
 ## M1 legacy edges (disclosed)
 
 The following images still come from the legacy sqware tree at full SHA
@@ -42,7 +45,23 @@ The following images still come from the legacy sqware tree at full SHA
 `legacy/sqware/programs/Cargo.toml` and lock:
 
 - `login`, `uart`, `rtc`
-- `shell`, `cat`, `emit`, `upper`, `fail`, `spin`, `workers`
+- `shell`, `cat`
+
+The five Shell command images `emit`, `upper`, `fail`, `spin` and `workers`
+now build from `components/shell/commands/Cargo.toml` in the public Shell
+gitlink at full revision `effeb09c170f0259c3d79687754b02aa41f615fe`. Their
+build coordinates come from the `shell-command-images-declaration` package in
+`components/shell/commands/declaration`; the composition only prefixes its
+provider-relative `commands/Cargo.toml` manifest with `components/shell/`.
+The Shell catalogue, resource names, ports and bindings remain owned by the
+unchanged sqware `shell-declaration`; these five images are resources, not new
+`UnitFile`s. The command runtime continues to pin the public Shell client at
+`https://github.com/shuyra-arche/shell.git` revision
+`b910582fc9dc0fd732f279d94f2cfca89f4c8c8f`; its nearby `client/` tree is not
+substituted. The legacy programs aggregate may still contain the old command
+code, but the five selected command images now build from the independent
+`components/shell/commands/Cargo.toml` closure. This slice does not intake the
+Shell server, Cat or Lisp.
 
 The Daemon declaration and image now come from the immutable provider
 `https://github.com/shuyra-arche/daemon.git` at full revision
@@ -85,7 +104,8 @@ the disclosed legacy repository (`scripts/boot.nu`, `scripts/qemu-args.nu`,
 driver must select this repository's initrd and new bootstrap rather than
 rebuilding the legacy product image.
 
-M2 is not complete: the ten production images above, `shell-declaration`, and
-firmware/boot, scenarios and tests must leave sqware before independence can be
-claimed. TOML/UnitFile redesign is undecided. The old PR1 single SMP8 evidence is
+M2 is not complete: the five remaining legacy images `login`, `uart`, `rtc`,
+`shell` and `cat`, `shell-declaration`, the legacy aggregate and host fixtures,
+and the firmware/boot/scenarios/tests dependencies must leave sqware before
+independence can be claimed. TOML/UnitFile redesign is undecided. The old PR1 single SMP8 evidence is
 prior-tree only; this slice has no QEMU and claims no runtime acceptance.
