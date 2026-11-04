@@ -21,3 +21,6 @@ session-cluster = { git = "https://github.com/shuyra-arche/session.git", rev = "
 pipe-declaration = { git = "https://github.com/shuyra-arche/pipe.git", rev = "4fce76372beb6c5ab8567232516f156b3d1032eb" }
 shell-declaration = { git = "https://github.com/shuyra-arche/shell.git", rev = "5d84650d37df7523d0ac59fc563e2fc7dc4025ba" }
 shell-images-declaration = { git = "https://github.com/shuyra-arche/shell.git", rev = "5d84650d37df7523d0ac59fc563e2fc7dc4025ba" }
+
+[dev-dependencies]
+vanllia-build = { git = "https://github.com/shuyra-arche/image-builder.git", rev = "17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f" }

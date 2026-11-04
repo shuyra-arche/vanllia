@@ -86,7 +86,20 @@ against the frozen Source fields, verifies that zero selected images remain on t
 legacy manifest, retains the five command-port/binding checks, compares the
 selected Login/UART/RTC owner builds and observable `UnitFile` fields with the
 frozen legacy declarations, and verifies the frozen Shell catalogue ports and
-bindings.
+bindings. All six equivalence cases, including the Shell/Cat owner comparison,
+are retained.
+
+Product declaration and plan contracts live with composition and use frozen
+literal expectations. Run all five alongside the retained equivalence tests:
+
+```text
+cargo test --locked --offline -p vanllia-composition -p vanllia-image --tests --target x86_64-unknown-linux-gnu
+```
+
+See [the contract coverage and provenance record](docs/product-contract-tests.md)
+for the standalone #8 baseline. The integrated contract source is unchanged;
+its image-coordinate-order case checks image names/order, while the retained
+owner equivalence case checks actual Shell/Cat build descriptors.
 
 ## Provider and legacy boundaries (disclosed)
 
