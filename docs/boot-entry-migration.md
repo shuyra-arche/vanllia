@@ -1,5 +1,10 @@
 # Product build and boot entry migration
 
+The transport intake described here is the #6 baseline. Its initial copied test
+organization is superseded by [acceptance-ownership.md](acceptance-ownership.md):
+runtime, evidence verdicts, host fixtures and host cases now have separate
+owners, with ordinary package imports and one host discovery command.
+
 Base: Vanllia Draft #5, `2643ee792b9fc791e24bbfc3a8efedc1f83fd69a`.
 Legacy evidence source: `anreonyr/sqware`,
 `94e114614bec53424ac55e640fc80cf19a3e7107`.

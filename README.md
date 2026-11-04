@@ -174,7 +174,9 @@ cargo build --locked --manifest-path components/kernel/Cargo.toml --release --bi
 ```
 
 Boot transport and Python acceptance checkers now reside in this repository's
-`scripts/` and `acceptance/tests/`. They do not read the old checkout. Firmware
+`scripts/` and the `acceptance/` runtime package. Host tests live separately in
+`tests/` and run with `python3 -B -m unittest discover -s tests -t .`. They do not
+read the old checkout. See [test ownership](docs/acceptance-ownership.md). Firmware
 is an explicit external input; the unverified old `SBI.bin` is not copied. The
 new qtest entry builds this repository's product initrd and new bootstrap.
 Non-product scene deployments and their guest fixture programs still need

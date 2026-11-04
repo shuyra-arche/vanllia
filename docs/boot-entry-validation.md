@@ -1,5 +1,9 @@
 # Entry validation record
 
+Historical record for Draft #6. Its commands below describe that tree; the
+current ownership layout and single discovery command are recorded in
+[acceptance-ownership.md](acceptance-ownership.md).
+
 Candidate base: `2643ee792b9fc791e24bbfc3a8efedc1f83fd69a` (Vanllia Draft #5).
 The main branch observed at checkout was
 `9edc868ead5a765d23eb1ff645285fc476f92dbf`.
