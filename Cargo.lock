@@ -79,7 +79,7 @@ dependencies = [
  "pci-declaration",
  "pipe-declaration",
  "router-api",
- "rtc-api",
+ "rtc-api 0.1.0 (git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107)",
  "session-cluster",
  "shell-declaration",
  "system-api",
@@ -418,6 +418,17 @@ dependencies = [
 [[package]]
 name = "rtc-api"
 version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/driver-rtc.git?rev=621be2b9946827be3de4245e29aa74ceb0f8cbd0#621be2b9946827be3de4245e29aa74ceb0f8cbd0"
+dependencies = [
+ "env",
+ "mold",
+ "system-api",
+ "wire",
+]
+
+[[package]]
+name = "rtc-api"
+version = "0.1.0"
 source = "git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107#94e114614bec53424ac55e640fc80cf19a3e7107"
 dependencies = [
  "system-api",
@@ -701,7 +712,7 @@ dependencies = [
  "env",
  "pipe-declaration",
  "router-api",
- "rtc-api",
+ "rtc-api 0.1.0 (git+https://github.com/shuyra-arche/driver-rtc.git?rev=621be2b9946827be3de4245e29aa74ceb0f8cbd0)",
  "session-cluster",
  "shell-declaration",
  "system-api",

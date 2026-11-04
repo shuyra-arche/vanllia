@@ -44,8 +44,14 @@ The following images still come from the legacy sqware tree at full SHA
 - `login`, `uart`, `rtc`, `daemon`
 - `shell`, `cat`, `emit`, `upper`, `fail`, `spin`, `workers`
 
-`rtc-api` and `shell-declaration` are also Git packages from that sqware revision.
-Published servers remain `components/{driver,session}/units/...` and
+The production `rtc-api` package is now pinned independently to
+`https://github.com/shuyra-arche/driver-rtc.git` at full revision
+`621be2b9946827be3de4245e29aa74ceb0f8cbd0`; the package name remains `rtc-api`.
+That crate owns pure protocol types/constants/failure codec only. The RTC runtime
+program, client and server still come from legacy sqware, as does
+`shell-declaration`. The dev-only `legacy-composition` used by the host
+equivalence test retains the old sqware `rtc-api` and `fixturetarget`
+declarations. Published servers remain `components/{driver,session}/units/...` and
 `components/pipe/server`. The new `system` image is `bootstrap/Cargo.toml`; it uses
 published `system-server` at `9001af65...` and `system-support` at `5a792ff2...`,
 and is never the legacy system binary. M1 is therefore not independent of sqware.
@@ -69,7 +75,7 @@ the disclosed legacy repository (`scripts/boot.nu`, `scripts/qemu-args.nu`,
 driver must select this repository's initrd and new bootstrap rather than
 rebuilding the legacy product image.
 
-M2 is not complete: remaining legacy programs, scenarios and tests must leave
-sqware before independence can be claimed. TOML/UnitFile redesign is undecided.
-The authorized single SMP8 run is pending cross-task serial coordination;
-no QEMU run or runtime acceptance is claimed by this candidate.
+M2 is not complete: the eleven production images above, `shell-declaration`, and
+firmware/boot, scenarios and tests must leave sqware before independence can be
+claimed. TOML/UnitFile redesign is undecided. The old PR1 single SMP8 evidence is
+prior-tree only; this slice has no QEMU and claims no runtime acceptance.
