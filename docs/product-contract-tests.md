@@ -60,7 +60,7 @@ No old assertion is deleted, moved, relaxed or retired.
 | Ordered start, guarded, ordered resources, sources | The same test pins the complete start/resource sequences and exact empty guarded/source slices. |
 | Target count, ordered names and ordered members | `product_targets_and_bootstrap_are_frozen` pins both complete targets, including `scene` and `supervised`. |
 | Bootstrap sequence | The same test pins the two typed variants in order: `Operator`, `Identity`. |
-| Image-build count and complete coordinate order | `image_build_coordinate_order_is_frozen` pins all 17 image slots. |
+| Image-build count and ordered image names | `image_build_coordinate_order_is_frozen` pins all 17 image names and their order; it does not freeze every manifest/package/bin field. |
 | Derived inventory count, ordered names and kind at every position | `product_inventory_and_kinds_are_frozen` compares all 17 complete `(name, ProgramKind)` pairs. Extra/missing entries cannot hide behind `zip`. |
 | Derived startup order | `product_startup_order_is_frozen` pins the complete nine-name sequence independently of deployment start and inventory. |
 

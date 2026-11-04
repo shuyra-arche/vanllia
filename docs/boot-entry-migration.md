@@ -5,6 +5,13 @@ organization is superseded by [acceptance-ownership.md](acceptance-ownership.md)
 runtime, evidence verdicts, host fixtures and host cases now have separate
 owners, with ordinary package imports and one host discovery command.
 
+The local integration of #6, #7 and #8 also supersedes the product-provider
+boundary below: #7 selects all 17 images from the product/provider tree,
+including Shell and Cat. Frozen dev equivalence fixtures, the historical
+checkout and pending guest-scene dependencies remain. The original baseline
+findings are retained here; see the current [provider boundary](../README.md)
+before using them to assess archive readiness.
+
 Base: Vanllia Draft #5, `2643ee792b9fc791e24bbfc3a8efedc1f83fd69a`.
 Legacy evidence source: `anreonyr/sqware`,
 `94e114614bec53424ac55e640fc80cf19a3e7107`.
@@ -45,7 +52,7 @@ This is build/run **preparation**. No QEMU, SMP or guest acceptance was run for
 this tree. Host checks cannot prove that the latest product or alternative
 firmware boots.
 
-The current product still builds `shell` and `cat` from `legacy/sqware` and
+At this standalone #6 baseline the product still builds `shell` and `cat` from `legacy/sqware` and
 consumes the old Shell declaration. The root dev equivalence test and legacy
 aggregate retain further fixtures/APIs. Those are independent product/provider
 migrations. The old non-product scene deployments and guest fixture programs
@@ -53,7 +60,7 @@ have not been moved. The complete list and gate are in
 [`acceptance/README.md`](../acceptance/README.md).
 
 A future clean checkout can use these transport scripts and their host tests
-without the legacy checkout. **A complete current product build still cannot.**
+without the legacy checkout. **At this baseline a complete product build still cannot.**
 Remove the remaining product/fixture references, migrate required scenario
 providers, complete a clean-checkout build and obtain new runtime evidence before
 claiming independence or archiving the old repository. This PR neither merges
