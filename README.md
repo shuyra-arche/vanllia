@@ -9,7 +9,7 @@ Candidate M1 only. It owns one product `Deployment`, the new `system` bootstrap 
 Clone the fixed provider tree and use the original toolchain:
 
 ```sh
-git clone --branch codex/login-uart-rtc-intake --recurse-submodules https://github.com/shuyra-arche/vanllia.git
+git clone --branch codex/product-boot-entry --recurse-submodules https://github.com/shuyra-arche/vanllia.git
 cd vanllia
 rustup component add llvm-tools-preview --toolchain nightly-2026-09-04
 export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$PATH"
@@ -28,6 +28,51 @@ cargo image build product debug
 `target/product/release/initrd.img`. The adapter parses command, scene, profile
 and optional `--root`, then calls `vanllia_build::{image_inventory,startup_order,
 build_with}`. It does not invoke QEMU and does not implement a build engine.
+
+For the combined Kernel + product build, install Nushell **0.107.0** and use
+the Vanllia-owned entry:
+
+```sh
+nu scripts/build.nu --plan           # inspect commands; no build or QEMU
+nu scripts/build.nu release          # build both; emit a JSON artifact record
+nu scripts/build.nu debug
+```
+
+The record contains `scene`, `profile`, `initrd` and `kernel`. Paths come from
+the image adapter's `ok …` output and Cargo's `compiler-artifact` JSON, including
+custom output paths; the script does not guess an old initrd location. Command
+diagnostics go to stderr. The build uses the pinned Kernel, the explicit RV64
+target and the Kernel `semihosting` feature, and never starts QEMU.
+
+Boot and acceptance use Python 3 (tested with 3.12), Bash, GNU coreutils, Nushell
+0.107.0 and `qemu-system-riscv64` (the source transport was used with QEMU 10.x).
+For the Kernel test runner, install the precise host package, rather than the
+unrelated `cargo-qtest` package:
+
+```sh
+cargo install cargo-qemu-test --version 0.3.2 --locked --target x86_64-unknown-linux-gnu
+```
+
+Before runtime use, select an explicit user-supplied `SHUYRA_SBI` firmware file
+and preserve its provenance/notice record; see [firmware setup](docs/firmware.md).
+After runtime authorization, a Nushell session can consume the build record:
+
+```nu
+let artifacts = (nu scripts/build.nu release | from json)
+$env.SHUYRA_INITRD = $artifacts.initrd
+$env.SHUYRA_SBI = ("/absolute/path/to/fw_jump.bin" | path expand)
+$env.QEMU_SEMI = "1"
+nu scripts/runner.nu $artifacts.kernel
+# Separate acceptance run (starts QEMU and rebuilds the selected product image):
+nu scripts/qtest.nu --package kernel --scene product
+```
+
+`runner.nu` preserves the original interactive observation/archive behavior; its
+normal return is not an acceptance verdict. `qtest.nu` owns the acceptance
+verdict. Only `product` has a migrated image deployment; other scene names fail
+early. Host-only tests and the retained scenario inventory are documented in
+[acceptance/README.md](acceptance/README.md). No runtime result for this candidate
+is claimed.
 
 Equivalence tests against the PR55 legacy composition:
 
@@ -128,15 +173,20 @@ The fixed Kernel can be built separately:
 cargo build --locked --manifest-path components/kernel/Cargo.toml --release --bin shuyra --features semihosting --target-dir target/kernel
 ```
 
-Boot transport, firmware and the original acceptance scenarios still reside in
-the disclosed legacy repository (`scripts/boot.nu`, `scripts/qemu-args.nu`,
-`SBI.bin` and tests). They are additional sqware dependencies. An acceptance
-driver must select this repository's initrd and new bootstrap rather than
-rebuilding the legacy product image.
+Boot transport and Python acceptance checkers now reside in this repository's
+`scripts/` and `acceptance/tests/`. They do not read the old checkout. Firmware
+is an explicit external input; the unverified old `SBI.bin` is not copied. The
+new qtest entry builds this repository's product initrd and new bootstrap.
+Non-product scene deployments and their guest fixture programs still need
+provider migration before they can be enabled here.
 
 M2 is not complete: the two remaining legacy images `shell` and `cat`,
-`shell-declaration`, the legacy aggregate and host fixtures, and the
-firmware/boot/scenarios/tests dependencies must leave sqware before
+`shell-declaration`, the legacy aggregate and root host fixtures, and the
+remaining scene image/guest-fixture dependencies must leave sqware before
 independence can be claimed. TOML/UnitFile redesign is undecided. The old PR1
 single SMP8 evidence is prior-tree only; this slice has no QEMU and claims no
 runtime acceptance.
+
+See the [entry migration boundary](docs/boot-entry-migration.md) for exact source
+heads and the remaining archive gates. This candidate does not make the full
+product build independent of sqware.
