@@ -5,8 +5,9 @@
 use vanllia_build::{image_inventory, startup_order};
 
 const SHELL_COMMAND_IMAGES: [&str; 5] = ["emit", "upper", "fail", "spin", "workers"];
+const SHELL_OWNER_IMAGES: [&str; 7] =
+    ["shell", "cat", "emit", "upper", "fail", "spin", "workers"];
 const OWNER_IMAGES: [&str; 3] = ["login", "uart", "rtc"];
-const REMAINING_LEGACY_IMAGES: [&str; 2] = ["shell", "cat"];
 const LEGACY_MANIFEST: &str = "legacy/sqware/programs/Cargo.toml";
 const SHELL_COMMANDS_MANIFEST: &str = "components/shell/commands/Cargo.toml";
 const NO_PORTS: &[&str] = &[];
@@ -103,14 +104,14 @@ fn assert_same_non_manifest_coordinates(build: &unit::ImageBuild, expected: &uni
 }
 
 fn provider_builds() -> &'static [unit::ImageBuild] {
-    vanllia_composition::image_builds::shell_command_images_declaration::BUILDS
+    vanllia_composition::image_builds::shell_images_declaration::BUILDS
 }
 
-fn provider_command_build(image: &str) -> &'static unit::ImageBuild {
+fn shell_provider_build(image: &str) -> &'static unit::ImageBuild {
     provider_builds()
         .iter()
         .find(|build| build.image == image)
-        .expect("provider command image build")
+        .expect("provider shell image build")
 }
 
 fn owner_build(image: &str) -> &'static unit::ImageBuild {
@@ -132,7 +133,7 @@ fn owner_manifest(image: &str) -> &'static str {
 }
 
 #[test]
-fn daemon_is_provider_unit_and_build() {
+fn provider_units_and_build_coordinates_keep_frozen_fields() {
     let provider = &vanllia_composition::units::daemon::UNIT;
     let legacy = &legacy_composition::units::daemon::PROGRAM;
 
@@ -180,8 +181,22 @@ fn daemon_is_provider_unit_and_build() {
         .filter(|build| build.manifest == LEGACY_MANIFEST)
         .map(|build| build.image)
         .collect();
-    assert_eq!(legacy_images, REMAINING_LEGACY_IMAGES.to_vec());
-    assert_eq!(provider_builds().len(), SHELL_COMMAND_IMAGES.len());
+    assert!(legacy_images.is_empty());
+    assert_eq!(provider_builds().len(), SHELL_OWNER_IMAGES.len());
+    let provider_images: Vec<&str> = provider_builds()
+        .iter()
+        .map(|build| build.image)
+        .collect();
+    assert_eq!(provider_images, SHELL_OWNER_IMAGES.to_vec());
+    for image in SHELL_OWNER_IMAGES {
+        assert_eq!(
+            vanllia_composition::IMAGE_BUILDS
+                .iter()
+                .filter(|build| build.image == image)
+                .count(),
+            1
+        );
+    }
 
     for build in vanllia_composition::IMAGE_BUILDS
         .iter()
@@ -191,19 +206,33 @@ fn daemon_is_provider_unit_and_build() {
             assert_eq!(build.manifest, "bootstrap/Cargo.toml");
             continue;
         }
-        if SHELL_COMMAND_IMAGES.contains(&build.image) {
-            let provider_build = provider_command_build(build.image);
+        if SHELL_OWNER_IMAGES.contains(&build.image) {
+            let provider_build = shell_provider_build(build.image);
             assert_same_non_manifest_coordinates(build, provider_build);
-            assert_eq!(build.manifest, SHELL_COMMANDS_MANIFEST);
-            assert_eq!(provider_build.manifest, "commands/Cargo.toml");
-            assert_ne!(build.manifest, provider_build.manifest);
+            assert_eq!(
+                build.manifest.strip_prefix("components/shell/"),
+                Some(provider_build.manifest)
+            );
 
             let pr55 = legacy_composition::IMAGE_BUILDS
                 .iter()
                 .find(|pr55| pr55.image == build.image)
                 .expect("PR55 image build");
             assert_ne!(build.package, pr55.package);
-            assert_ne!(build.bin, pr55.bin);
+            if SHELL_COMMAND_IMAGES.contains(&build.image) {
+                assert_eq!(build.manifest, SHELL_COMMANDS_MANIFEST);
+                assert_eq!(provider_build.manifest, "commands/Cargo.toml");
+                assert_ne!(build.manifest, provider_build.manifest);
+                assert_ne!(build.bin, pr55.bin);
+            } else {
+                let expected_bin = match build.image {
+                    "shell" => "prog-shell",
+                    "cat" => "prog-cat",
+                    _ => unreachable!("unexpected Shell owner image"),
+                };
+                assert_eq!(build.bin, expected_bin);
+                assert_eq!(build.bin, pr55.bin);
+            }
             continue;
         }
         if OWNER_IMAGES.contains(&build.image) {
@@ -349,6 +378,55 @@ fn selected_owner_declarations_keep_registry_slots_and_frozen_fields() {
 }
 
 #[test]
+fn shell_program_keeps_registry_slot_and_frozen_source_fields() {
+    let owner = &vanllia_composition::units::shell::PROGRAM;
+    let legacy = &legacy_composition::units::shell::PROGRAM;
+
+    let slot = vanllia_composition::PROGRAMS
+        .iter()
+        .position(|program| program.name == "shell")
+        .expect("shell registry slot");
+    assert!(core::ptr::eq(vanllia_composition::PROGRAMS[slot], owner));
+    assert_observable_fields(owner, legacy);
+
+    let aggregate = &vanllia_composition::image_builds::shell_images_declaration::BUILD;
+    let owner_builds = provider_builds();
+    assert_eq!(owner_builds.len(), SHELL_OWNER_IMAGES.len());
+    let owner_images: Vec<&str> = owner_builds.iter().map(|build| build.image).collect();
+    assert_eq!(owner_images, SHELL_OWNER_IMAGES.to_vec());
+    assert_same_non_manifest_coordinates(aggregate, &owner_builds[0]);
+    assert_eq!(aggregate.manifest, owner_builds[0].manifest);
+    assert_eq!(aggregate.image, owner.loader.image);
+    assert_eq!(aggregate.image, legacy.loader.image);
+
+    assert_eq!(legacy.name, "shell");
+    assert_eq!(legacy.loader.image, "shell");
+
+    let build = image_build("shell");
+    assert_same_non_manifest_coordinates(build, aggregate);
+    assert_eq!(
+        build.manifest.strip_prefix("components/shell/"),
+        Some(aggregate.manifest)
+    );
+    assert_eq!(build.bin, "prog-shell");
+
+    for (image, legacy_bin) in [("shell", "prog-shell"), ("cat", "prog-cat")] {
+        let fixture = legacy_composition::IMAGE_BUILDS
+            .iter()
+            .find(|fixture| fixture.image == image)
+            .expect("frozen legacy build");
+        assert_eq!(fixture.package, "programs");
+        assert_eq!(fixture.bin, legacy_bin);
+        assert_eq!(fixture.manifest, "programs/Cargo.toml");
+
+        let selected = image_build(image);
+        assert_ne!(selected.package, fixture.package);
+        assert_ne!(selected.manifest, fixture.manifest);
+        assert_eq!(selected.bin, fixture.bin);
+    }
+}
+
+#[test]
 fn shell_command_catalogue_keeps_frozen_ports_and_bindings() {
     let commands = vanllia_composition::units::shell::COMMANDS;
     let expected: [(&str, &[&str]); 6] = [
@@ -382,8 +460,11 @@ fn shell_command_catalogue_keeps_frozen_ports_and_bindings() {
         .iter()
         .map(|build| build.image)
         .collect();
-    assert_eq!(provider_images, SHELL_COMMAND_IMAGES.to_vec());
+    assert_eq!(provider_images, SHELL_OWNER_IMAGES.to_vec());
     for build in provider_builds() {
+        if !SHELL_COMMAND_IMAGES.contains(&build.image) {
+            continue;
+        }
         assert!(commands.iter().any(|command| command.name == build.image));
         assert_eq!(build.bin, build.image);
     }

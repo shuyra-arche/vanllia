@@ -81,7 +81,7 @@ dependencies = [
  "router-api",
  "rtc-api 0.1.0 (git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107)",
  "session-cluster 0.1.0 (git+https://github.com/shuyra-arche/session.git?rev=f7c7542acf0bf010c1aac07d36d30a19e0591731)",
- "shell-declaration",
+ "shell-declaration 0.1.0 (git+https://github.com/anreonyr/sqware.git?rev=94e114614bec53424ac55e640fc80cf19a3e7107)",
  "system-api",
  "unit",
 ]
@@ -561,10 +561,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "shell-cat-image-declaration"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
+dependencies = [
+ "unit",
+]
+
+[[package]]
 name = "shell-command-images-declaration"
 version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/shell.git?rev=effeb09c170f0259c3d79687754b02aa41f615fe#effeb09c170f0259c3d79687754b02aa41f615fe"
+source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
 dependencies = [
+ "unit",
+]
+
+[[package]]
+name = "shell-declaration"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
+dependencies = [
+ "env",
+ "pipe-api",
+ "system-api",
  "unit",
 ]
 
@@ -576,6 +595,17 @@ dependencies = [
  "env",
  "pipe-api",
  "system-api",
+ "unit",
+]
+
+[[package]]
+name = "shell-images-declaration"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
+dependencies = [
+ "shell-cat-image-declaration",
+ "shell-command-images-declaration",
+ "shell-declaration 0.1.0 (git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba)",
  "unit",
 ]
 
@@ -791,8 +821,8 @@ dependencies = [
  "pipe-declaration",
  "router-api",
  "session-cluster 0.1.0 (git+https://github.com/shuyra-arche/session.git?rev=87abc22d08ffe311b7e43d915240d318642d510c)",
- "shell-command-images-declaration",
- "shell-declaration",
+ "shell-declaration 0.1.0 (git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba)",
+ "shell-images-declaration",
  "system-api",
  "unit",
 ]

@@ -19,5 +19,5 @@ router-api = { git = "https://github.com/shuyra-arche/router.git", rev = "94fec2
 driver-cluster = { git = "https://github.com/shuyra-arche/driver.git", rev = "bb3427e179e87b640e0d51115a44544fae231252" }
 session-cluster = { git = "https://github.com/shuyra-arche/session.git", rev = "87abc22d08ffe311b7e43d915240d318642d510c" }
 pipe-declaration = { git = "https://github.com/shuyra-arche/pipe.git", rev = "4fce76372beb6c5ab8567232516f156b3d1032eb" }
-shell-declaration = { git = "https://github.com/anreonyr/sqware.git", rev = "94e114614bec53424ac55e640fc80cf19a3e7107" }
-shell-command-images-declaration = { git = "https://github.com/shuyra-arche/shell.git", rev = "effeb09c170f0259c3d79687754b02aa41f615fe" }
+shell-declaration = { git = "https://github.com/shuyra-arche/shell.git", rev = "5d84650d37df7523d0ac59fc563e2fc7dc4025ba" }
+shell-images-declaration = { git = "https://github.com/shuyra-arche/shell.git", rev = "5d84650d37df7523d0ac59fc563e2fc7dc4025ba" }
