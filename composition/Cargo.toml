@@ -1,0 +1,22 @@
+[package]
+name = "vanllia-composition"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lib]
+path = "src/lib.rs"
+test = false
+bench = false
+doctest = false
+
+[dependencies]
+env = { git = "https://github.com/shuyra-arche/env.git", rev = "d3000253cd5d13d466e91fafd4dbb27a5ec5aaae" }
+unit = { git = "https://github.com/shuyra-arche/unit.git", rev = "90396f0fda376e0693fb1b9553aa21864d241057" }
+system-api = { git = "https://github.com/shuyra-arche/system.git", rev = "9e5d63ca536a176583cf1b0054b4ecf7ddd88257" }
+router-api = { git = "https://github.com/shuyra-arche/router.git", rev = "94fec223f3c5df6c99a49527a65d016d88de3af4" }
+driver-cluster = { git = "https://github.com/shuyra-arche/driver.git", rev = "b82a20f36684c13808d89b0f1a5b4ce2796c2dbf" }
+session-cluster = { git = "https://github.com/shuyra-arche/session.git", rev = "f7c7542acf0bf010c1aac07d36d30a19e0591731" }
+pipe-declaration = { git = "https://github.com/shuyra-arche/pipe.git", rev = "4fce76372beb6c5ab8567232516f156b3d1032eb" }
+rtc-api = { git = "https://github.com/anreonyr/sqware.git", rev = "94e114614bec53424ac55e640fc80cf19a3e7107" }
+shell-declaration = { git = "https://github.com/anreonyr/sqware.git", rev = "94e114614bec53424ac55e640fc80cf19a3e7107" }
