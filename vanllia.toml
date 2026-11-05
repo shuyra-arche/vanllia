@@ -47,4 +47,12 @@ rev = "ad50b803c3bd5cd2ef90010d80badf23551e88d5"
 
 [sources.env]
 git = "https://github.com/shuyra-arche/env.git"
-rev = "4d0f5a5526b9f7251627f58b80d769259395c9e3"
+rev = "ee9357070996e2e559095904ff137a289a4ca156"
+
+[sources.wire]
+git = "https://github.com/shuyra-arche/wire.git"
+rev = "08293d2de463901f69ac66b62e9cd3a6ab5629c3"
+
+[sources.mold]
+git = "https://github.com/shuyra-arche/mold.git"
+rev = "8e8b1c2bdf188cf01494a3a93398cc77cd12b3e6"

@@ -14,8 +14,8 @@ locks. The CLI's Cargo overlays and their generated locks live under `.vanllia`.
 
 | Selection | Unit records | Runtime ELF files | Initrd SHA-256 |
 | --- | ---: | ---: | --- |
-| Default Login + Daemon closure | 11 | 17 | `3120174018fdb856d6653ee851fb3041a2d1b4cb94f830374c1ee82d3f442e89` |
-| Pipe roundtrip | 3 | 3 | `7dccbac8c48596533ca1a05cc520e30496caf28db1e1f879fc4998aba32af3ba` |
+| Default Login + Daemon closure | 11 | 17 | `5dedec40ece34f31437844080ed7778ccfcb04da14c871a76bc876fa679827a4` |
+| Pipe roundtrip | 3 | 3 | `9d35619c8f670552b8b9296b3e427772b17f8329197ffac94100211811c3dd20` |
 
 The Kernel is a separate built boot artifact. Debug executables remain on the
 host; stripped runtime images and binary Unit records are packaged once. A Rust
@@ -89,11 +89,31 @@ EOF runs used no host-forced stop. The six 1/2/4-CPU verdicts are summarized in
 [runtime-results.json](runtime-results.json); raw serial/process evidence remains
 under the recorded local run IDs.
 
+The table now identifies the current facade-aligned artifacts. Env's default
+branch moved its ABI/ledger definitions into Kernel while this work was active.
+Env PR #2 now includes that base through an ordinary merge commit: `env` stays
+the facade, the Unit bundle belongs to `env-initrd`, and its capsule reader is a
+direct re-export of Kernel's canonical reader. No deleted ABI sources were
+restored. The root pins Env `ee935707`, Wire `08293d2d` and Mold `8e8b1c2b` together;
+selecting only the new Env had correctly failed on incompatible wire traits.
+The CLI/System dependency pins and formal locks were updated too.
+
+The published-source product rebuilt all 17 images, and both current selections
+passed fresh 1/2/4-CPU exit/reclamation acceptance. Their Kernel SHA-256 is
+`4427cefdaa834c30e35f96188fae4ba0ec077d5fdce6b023accb0e5366b0f82e`.
+`runtime-results.json` separates these six current results from six historical
+pre-alignment runs (whose Kernel hash above remains recorded). Env passed all
+52 host tests, RV64 workspace checking and scoped strict Clippy; its whole-test
+Clippy still reports two existing constant-chunk diagnostics in `tests/memory.rs`.
+The CLI's 38 tests/strict Clippy and System's two reader tests were rerun.
+
 A separate bounded [Rust syscall benchmark](../tests/syscall-cost/README.md)
 compared Kernel `3aa0a155f825fbf377fc8d04009472ca67cbbf8c` (event rings present)
 with `44e33a6ee28d86eeeabe61c225f4176c5ed64c59` (removed). Both were built with the
 same release profile, target flags, toolchain and byte-identical Cargo lock;
 the benchmark initrd and installed firmware were identical across all ten boots.
+This comparison predates the facade alignment and keeps its own exact inputs;
+it is not claimed as a new timing sample of the current product artifact.
 The only packaged Units were System and the benchmark. Each boot also passed
 native exit and reclamation checks independently of its measurement frame.
 
