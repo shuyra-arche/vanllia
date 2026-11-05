@@ -1,5 +1,10 @@
 # Remaining legacy ownership and migration order
 
+Historical inventory and former migration sequence. The user has stopped
+wholesale old-test/scene migration because destructive code changes are planned.
+The [current scope](current-migration-scope.md) supersedes the sequence below;
+these counts and old fixtures are evidence, not completion requirements.
+
 This is a source/host-plan inventory, not an enablement or runtime result.
 It uses frozen sqware `94e114614bec53424ac55e640fc80cf19a3e7107`, selected
 planner `17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f`, and Vanllia product code

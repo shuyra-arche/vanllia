@@ -1,6 +1,5 @@
 # vanllia M1 product composition
 
-Local integration candidate for #6, #7 and #8; not published or runtime accepted.
 It owns one product `Deployment`, the new `system` bootstrap and
 17 explicit `ImageBuild` coordinates. Runtime and host both consume
 `vanllia-composition`, so they cannot select different product scenes.
@@ -11,10 +10,16 @@ From a checkout of the reviewed revision, initialize the fixed provider tree and
 use the original toolchain:
 
 ```sh
-git submodule update --init --recursive
+git submodule update --init --recursive -- components/kernel components/system components/image-builder components/driver components/session components/pipe components/daemon components/shell
 rustup component add llvm-tools-preview --toolchain nightly-2026-09-04
 export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$PATH"
 ```
+
+This initializes the current provider trees. The frozen `legacy/sqware`
+checkout is optional historical material; normal builds and schema-2 evidence
+do not require its content or Git objects. Missing or changed current providers
+still fail source verification. Retained schema-1 records keep their original
+source requirements.
 
 From this directory (Linux x86_64 host):
 
@@ -110,8 +115,9 @@ combined Rust host gate has 19 cases.
 All 17 selected images have explicit product coordinates. Zero selected images
 use `legacy/sqware/programs/Cargo.toml`, and the production normal dependency
 graph has zero sqware edges. The root locked graph, including host development
-dependencies, now has zero sqware packages. The old gitlink remains for source
-inventory, provenance and pending guest-scene fixtures; this is not
+dependencies, now has zero sqware packages. The old gitlink remains as a
+historical reference; its existence is not a requirement to port every old
+test or scene. See [the current scope](docs/current-migration-scope.md). This is not
 whole-repository independence.
 
 The `login` image and `PROGRAM` now come from the immutable Session provider
@@ -202,8 +208,10 @@ new qtest entry builds this repository's product initrd and new bootstrap.
 Non-product scene deployments and their guest fixture programs still need
 provider migration before they can be enabled here.
 
-M2 is not complete. Zero selected legacy image builds does not remove the frozen
-dev fixtures, historical aggregate/checkout or pending guest-scene dependencies.
+Current scope is the product code, build and required input verification.
+Wholesale migration of the old tests and 35 guest scenes has stopped; planned
+destructive changes will need tests for the resulting behavior. Existing tests,
+source and completed checkpoints remain available as evidence.
 Firmware provenance and new runtime evidence also remain open. TOML/UnitFile
 redesign is undecided. The old PR1
 single SMP8 evidence is prior-tree only; this slice has no QEMU and claims no
@@ -212,5 +220,5 @@ runtime acceptance.
 See the [entry migration boundary](docs/boot-entry-migration.md) for exact source
 heads and the remaining archive gates. This candidate does not establish
 whole-repository independence or runtime acceptance.
-The [remaining fixture and scene inventory](docs/legacy-migration-order.md)
-sets out the minimum migration order without carrying over the old test layout.
+The [historical fixture and scene inventory](docs/legacy-migration-order.md)
+records previous dependencies; it is not a migration checklist or acceptance gate.
