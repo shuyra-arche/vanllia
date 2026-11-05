@@ -132,9 +132,11 @@ these build artifacts do not bundle a firmware binary. No firmware was silently
 substituted. The old scenarios and tests are not migrated; retained composition
 test sources, evidence scripts and earlier documents are historical material.
 
-## Draft review chain
+## Review chain
 
-All changes are Drafts; none were merged by this work:
+These PRs were prepared as Drafts and validated against the pinned commits above.
+The authorized merge uses merge commits into each repository's default branch,
+retaining those exact commits for source locks and submodules:
 
 - [CLI and host builder](https://github.com/shuyra-arche/image-builder/pull/2),
   [System](https://github.com/shuyra-arche/system/pull/1),
