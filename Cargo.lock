@@ -818,6 +818,7 @@ dependencies = [
  "daemon-declaration",
  "driver-cluster 0.1.0 (git+https://github.com/shuyra-arche/driver.git?rev=bb3427e179e87b640e0d51115a44544fae231252)",
  "env",
+ "pipe-api",
  "pipe-declaration",
  "router-api",
  "session-cluster 0.1.0 (git+https://github.com/shuyra-arche/session.git?rev=87abc22d08ffe311b7e43d915240d318642d510c)",

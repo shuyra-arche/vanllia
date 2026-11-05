@@ -58,6 +58,9 @@ publication-admission cases to composition-owned namespace contracts without
 changing dependencies. The other 17 crates are outside that batch and still
 require assertion/source-closure mapping; no frozen suite or product equivalence
 case is retired by it.
+The [second batch](test-migration-batch2.md) retires mapped plan/catalogue
+comparisons and moves image checks out of mixed cases. Three frozen declaration
+comparisons remain; the old composition dev edge is still present.
 
 ## Minimum dependency order
 

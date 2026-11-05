@@ -78,35 +78,35 @@ early. Host-only tests and the retained scenario inventory are documented in
 [acceptance/README.md](acceptance/README.md). No runtime result for this candidate
 is claimed.
 
-Equivalence tests against the PR55 legacy composition:
+Remaining declaration comparisons against the PR55 legacy composition:
 
 ```text
 cargo test --locked -p vanllia-image --target x86_64-unknown-linux-gnu --test equivalence
 ```
 
-The same suite checks the seven Shell owner builds and the actual Shell `PROGRAM`
-against the frozen Source fields, verifies that zero selected images remain on the
-legacy manifest, retains the five command-port/binding checks, compares the
-selected Login/UART/RTC owner builds and observable `UnitFile` fields with the
-frozen legacy declarations, and verifies the frozen Shell catalogue ports and
-bindings. All six equivalence cases, including the Shell/Cat owner comparison,
-are retained.
+Three cases retain Daemon, Login/UART/RTC and Shell declaration fields, registry
+slots and ownership checks. Product plan, complete image coordinates, owner
+routes and typed Shell catalogue/resource bindings now have independent
+composition contracts. The [second migration map](docs/test-migration-batch2.md)
+records the successors and the exact remaining dependency boundary.
 
 Product declaration and plan contracts live with composition and use frozen
-literal expectations. Run all five alongside the retained equivalence tests:
+literal expectations. Run all current host contracts and declaration comparisons:
 
 ```text
 cargo test --locked --offline -p vanllia-composition -p vanllia-image --tests --target x86_64-unknown-linux-gnu
 ```
 
 See [the contract coverage and provenance record](docs/product-contract-tests.md)
-for the standalone #8 baseline. The integrated contract source is unchanged;
-its image-coordinate-order case checks image names/order, while the retained
-owner equivalence case checks actual Shell/Cat build descriptors.
+for the standalone #8 baseline. Those five contract sources are unchanged;
+their coordinate-order case checks names/order, while the additional image
+contracts now freeze all descriptor fields and actual provider routes.
 
 The [first namespace policy test migration](docs/test-migration-batch1.md)
 preserves three old host cases and adds a check of the actual product registry.
-It uses existing API dependencies and retains every frozen equivalence case.
+That first checkpoint retained all old comparisons; the subsequent migration
+retires only comparisons with mapped independent successors. The current
+combined Rust host gate has 17 cases.
 
 ## Provider and legacy boundaries (disclosed)
 

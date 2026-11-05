@@ -1,5 +1,9 @@
 # First host-test migration: namespace admission
 
+This records the first checkpoint at `03b805ad8ed25f9f0e59203e64985a985b477433`.
+Its six-comparison/15-case totals are historical; see the
+[next migration map](test-migration-batch2.md) for current retirement status.
+
 Base: `31af57ebe0d639f99fa17ca5514df34343604437`.
 Frozen source: sqware `94e114614bec53424ac55e640fc80cf19a3e7107`,
 `programs/tests/publication-admission/lib.rs`, Git blob

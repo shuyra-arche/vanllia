@@ -1,0 +1,80 @@
+{
+  "base": "03b805ad8ed25f9f0e59203e64985a985b477433",
+  "old_equivalence_blob": "2f0d5bc7a529775b3dbfd294b369a68e5ff6c93e",
+  "frozen_source": "94e114614bec53424ac55e640fc80cf19a3e7107",
+  "frozen_shell_commands_blob": "b1c7e1aa6f7104d9d145935863439f2a96a53d4c",
+  "frozen_image_coordinates_blob": "5564c0ffa4f4b610dac16f8426f2fa930a59a0be",
+  "tested_sources": {
+    "composition/tests/image_coordinates.rs": {
+      "blob": "39cc36f2237cfa483187e2eae9770c571242e1e5",
+      "sha256": "3b404de293b26aaa413bf8dda9c992e5782bf3c582e646bd14767477ef4688b5"
+    },
+    "composition/tests/shell_catalogue.rs": {
+      "blob": "4a4174fef100e31192e5f967b9368b1f92c2bf98",
+      "sha256": "f9a4288fcffb30a4b83111c08af3e14cf2309aecc5f5864b3dbcd17d7961dce7"
+    },
+    "tools/product/tests/equivalence.rs": {
+      "blob": "ec401bccd3036d70e1c05e765b11fe2f05499278",
+      "sha256": "bfd3bc23aba111303a164a71b18f7323dd81ee62ada229722a44bb8a34794a14"
+    }
+  },
+  "retired_cases": [
+    "product_deployment_fields_match_pr55",
+    "product_inventory_and_startup_match_pr55",
+    "shell_command_catalogue_keeps_frozen_ports_and_bindings"
+  ],
+  "remaining_case_names": [
+    "daemon_declaration_fields_match_pr55",
+    "selected_owner_declarations_keep_registry_slots_and_frozen_fields",
+    "shell_program_keeps_registry_slot_and_frozen_source_fields"
+  ],
+  "migrated_responsibilities": [
+    "product deployment/inventory/startup -> unchanged five literal contracts",
+    "all17completeCargo coordinates and actual owner routes -> image_coordinates.rs",
+    "six Shell command typed ports, all binding fields and resource/image relation -> shell_catalogue.rs"
+  ],
+  "new_cases": 5,
+  "remaining_frozen_cases": 3,
+  "combined_host_cases": 17,
+  "isolated_composition_cases": 14,
+  "old_gate_baseline_passed": 6,
+  "field_retention_audit": {
+    "comparison": "normalized Rust token trees, not general semantic proof",
+    "daemon_field_prefix_equal": true,
+    "observable_field_helper_equal": true,
+    "old_case_static_assertion_sites": {
+      "product_deployment_fields_match_pr55": 10,
+      "product_inventory_and_startup_match_pr55": 7,
+      "provider_units_and_build_coordinates_keep_frozen_fields": 40,
+      "selected_owner_declarations_keep_registry_slots_and_frozen_fields": 6,
+      "shell_command_catalogue_keeps_frozen_ports_and_bindings": 9,
+      "shell_program_keeps_registry_slot_and_frozen_source_fields": 16
+    },
+    "remaining_cases": 3,
+    "selected_owner_body_equal_except_two_migrated_coordinate_statements": true,
+    "shell_field_prefix_and_two_literal_guards_equal": true
+  },
+  "new_dev_edge": "pipe-api@4fce76372beb6c5ab8567232516f156b3d1032eb (existing lock identity, new composition dev edge)",
+  "package_identity_changes": 0,
+  "locked_packages": 95,
+  "normal_graph_unchanged": true,
+  "workspace_legacy_fixture_packages_remaining": 4,
+  "remaining_legacy_values": [
+    "daemon::PROGRAM",
+    "login::PROGRAM",
+    "uart::PROGRAM",
+    "rtc::PROGRAM",
+    "shell::PROGRAM"
+  ],
+  "negative_variants": 37,
+  "actual_composition_input_variants": 26,
+  "local_copy_slice_or_output_variants": 11,
+  "compilation_failures": 0,
+  "provider_or_planner_algorithm_mutation_proof": false,
+  "whole_file_restore_and_all_mutable_files_verified": true,
+  "physical_legacy_checkout_not_initialized_in_isolated_run": true,
+  "legacy_dev_edge_removed": false,
+  "frozen_oracle_self_checks_verified_once_not_recreated_as_constant_self_assertions": true,
+  "python_cases_unchanged_not_rerun": 320,
+  "guest_scene_gates_unchanged": 35
+}
