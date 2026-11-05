@@ -1,0 +1,21 @@
+[package]
+name = "vanllia-product-lifecycle-tests"
+version = "0.1.0"
+edition = "2024"
+publish = false
+[workspace]
+
+[[test]]
+name = "product"
+path = "product.rs"
+
+[[test]]
+name = "cost"
+path = "cost.rs"
+
+[dependencies]
+vanllia = { path = "../../components/image-builder/cli" }
+vanllia-build = { path = "../../components/image-builder" }
+unit = { git = "https://github.com/shuyra-arche/unit.git", rev = "ad50b803c3bd5cd2ef90010d80badf23551e88d5" }
+sha2 = "0.10"
+serde_json = "1"

@@ -3,32 +3,54 @@
 version = 4
 
 [[package]]
-name = "account-api"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/account.git?rev=7dc701facdbe6368fbc09f7429920ad49dacdfca#7dc701facdbe6368fbc09f7429920ad49dacdfca"
-dependencies = [
- "env",
- "mold",
- "system-api",
- "wire",
-]
-
-[[package]]
-name = "account-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/account.git?rev=7dc701facdbe6368fbc09f7429920ad49dacdfca#7dc701facdbe6368fbc09f7429920ad49dacdfca"
-dependencies = [
- "account-api",
- "env",
- "system-api",
- "unit",
-]
-
-[[package]]
-name = "allocator-api2"
-version = "0.4.0"
+name = "anstream"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c880a97d28a3681c0267bd29cff89621202715b065127cd445fa0f0fe0aa2880"
+checksum = "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d"
+dependencies = [
+ "anstyle",
+ "anstyle-parse",
+ "anstyle-query",
+ "anstyle-wincon",
+ "colorchoice",
+ "is_terminal_polyfill",
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000"
+
+[[package]]
+name = "anstyle-parse"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e"
+dependencies = [
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle-query"
+version = "1.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
+dependencies = [
+ "windows-sys",
+]
+
+[[package]]
+name = "anstyle-wincon"
+version = "3.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d"
+dependencies = [
+ "anstyle",
+ "once_cell_polyfill",
+ "windows-sys",
+]
 
 [[package]]
 name = "bitflags"
@@ -67,6 +89,61 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
 
 [[package]]
+name = "clap"
+version = "4.6.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa8876b300ab35ba921adea3dfd70157a46249b33f95c9084ae5709785478946"
+dependencies = [
+ "clap_builder",
+ "clap_derive",
+]
+
+[[package]]
+name = "clap_builder"
+version = "4.6.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0797fb7aeb1406c84efac526901f7ec3ead2124f946b494e72879d4b54704d"
+dependencies = [
+ "anstream",
+ "anstyle",
+ "clap_lex",
+ "strsim",
+]
+
+[[package]]
+name = "clap_derive"
+version = "4.6.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9c751b79415d4e559e3d1fcf128e09e720eb673a06d26cf6f392d37d75b66e0"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.9",
+]
+
+[[package]]
+name = "clap_lex"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c133bc6a41be0d194c306b5506d15e6feeea7b1d6604bd3f8310dfb2ca96486"
+
+[[package]]
+name = "cobs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fa961b519f0b462e3a3b4a34b64d119eeaca1d59af726fe450bbba07a9fc0a1"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
+name = "colorchoice"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -97,14 +174,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "daemon-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/daemon.git?rev=4e4ae06ee488e9f02e15d74405b989f20a5a286f#4e4ae06ee488e9f02e15d74405b989f20a5a286f"
-dependencies = [
- "unit",
-]
-
-[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -127,22 +196,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "driver-cluster"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/driver.git?rev=bb3427e179e87b640e0d51115a44544fae231252#bb3427e179e87b640e0d51115a44544fae231252"
-dependencies = [
- "hub-declaration",
- "router-declaration",
- "rtc-declaration",
- "uart-declaration",
- "unit",
-]
-
-[[package]]
 name = "elf"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55dd888a213fc57e957abf2aa305ee3e8a28dbe05687a251f33b637cd46b0070"
+
+[[package]]
+name = "embedded-io"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef1a6892d9eef45c8fa6b9e0086428a2cca8491aca8f787c534a3d6d0bcb3ced"
+
+[[package]]
+name = "embedded-io"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
 
 [[package]]
 name = "env"
@@ -153,6 +222,14 @@ dependencies = [
  "erra",
  "mold",
  "wire",
+]
+
+[[package]]
+name = "env-initrd"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/env.git?rev=ee9357070996e2e559095904ff137a289a4ca156#ee9357070996e2e559095904ff137a289a4ca156"
+dependencies = [
+ "kernel-api-env",
 ]
 
 [[package]]
@@ -168,20 +245,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc36b9bc9f9fd011eb63c44cdba19d47c4e77f4759cddb0c448b1d23d27abc1e"
 
 [[package]]
-name = "execution"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/execution.git?rev=1b333a28bc4c34beaea3f7986a9bb6e8ab2db414#1b333a28bc4c34beaea3f7986a9bb6e8ab2db414"
-dependencies = [
- "env",
- "spinning_top",
- "talc",
-]
-
-[[package]]
-name = "fdt"
-version = "0.1.5"
+name = "escape8259"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "784a4df722dc6267a04af36895398f59d21d07dce47232adf31ec0ff2fa45e67"
+checksum = "9f1f0d310082fd5de539d4f41601182241147498444a7695c520288a0cdbead6"
 
 [[package]]
 name = "generic-array"
@@ -200,26 +267,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 
 [[package]]
-name = "hub-api"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/hub.git?rev=cccef3f325198c8390007ae88b064bae0f21f93e#cccef3f325198c8390007ae88b064bae0f21f93e"
-dependencies = [
- "env",
- "mold",
- "system-api",
- "wire",
-]
-
-[[package]]
-name = "hub-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/hub.git?rev=daa23b2611fee0c503bc6bd31a16121d97698ad6#daa23b2611fee0c503bc6bd31a16121d97698ad6"
-dependencies = [
- "env",
- "hub-api",
- "system-api",
- "unit",
-]
+name = "heck"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "indexmap"
@@ -232,14 +283,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "ipc"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/ipc.git?rev=29ad97dc08d9dfc4ea6578b1b77874261229b3b5#29ad97dc08d9dfc4ea6578b1b77874261229b3b5"
-dependencies = [
- "env",
- "resource",
- "wire",
-]
+name = "is_terminal_polyfill"
+version = "1.70.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "itoa"
@@ -248,26 +295,47 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
+name = "kernel-api-env"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=a9986c82127cf25183bf5c30e7d42e4a9376b734#a9986c82127cf25183bf5c30e7d42e4a9376b734"
+dependencies = [
+ "bitflags",
+ "erra",
+ "kernel-api-macros",
+ "kernel-api-wire",
+]
+
+[[package]]
+name = "kernel-api-macros"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=a9986c82127cf25183bf5c30e7d42e4a9376b734#a9986c82127cf25183bf5c30e7d42e4a9376b734"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "kernel-api-wire"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=a9986c82127cf25183bf5c30e7d42e4a9376b734#a9986c82127cf25183bf5c30e7d42e4a9376b734"
+
+[[package]]
 name = "libc"
 version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
-name = "lock_api"
-version = "0.4.14"
+name = "libtest-mimic"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965"
+checksum = "14e6ba06f0ade6e504aff834d7c34298e5155c6baca353cc6a4aaff2f9fd7f33"
 dependencies = [
- "scopeguard",
-]
-
-[[package]]
-name = "login-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/session-login.git?rev=ce8e9007817d7494e05c057e23a7ba907a5d5ba8#ce8e9007817d7494e05c057e23a7ba907a5d5ba8"
-dependencies = [
- "unit",
+ "anstream",
+ "anstyle",
+ "clap",
+ "escape8259",
 ]
 
 [[package]]
@@ -314,25 +382,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef25abbcd74fb2609453eb695bd2f860d389e457f67dc17cafc8b8cbc89d0c33"
 
 [[package]]
-name = "pipe-api"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/pipe.git?rev=4fce76372beb6c5ab8567232516f156b3d1032eb#4fce76372beb6c5ab8567232516f156b3d1032eb"
-dependencies = [
- "env",
- "mold",
- "stream",
- "wire",
-]
+name = "once_cell_polyfill"
+version = "1.70.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
-name = "pipe-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/pipe.git?rev=4fce76372beb6c5ab8567232516f156b3d1032eb#4fce76372beb6c5ab8567232516f156b3d1032eb"
+name = "postcard"
+version = "1.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6764c3b5dd454e283a30e6dfe78e9b31096d9e32036b5d1eaac7a6119ccb9a24"
 dependencies = [
- "env",
- "pipe-api",
- "system-api",
- "unit",
+ "cobs",
+ "embedded-io 0.4.0",
+ "embedded-io 0.6.1",
+ "serde",
 ]
 
 [[package]]
@@ -352,71 +416,6 @@ checksum = "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "resource"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/resource.git?rev=dbc96834f50f094b5c386e54a0a2ae5560dcd7f8#dbc96834f50f094b5c386e54a0a2ae5560dcd7f8"
-dependencies = [
- "env",
- "erra",
-]
-
-[[package]]
-name = "router-api"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/router.git?rev=94fec223f3c5df6c99a49527a65d016d88de3af4#94fec223f3c5df6c99a49527a65d016d88de3af4"
-dependencies = [
- "env",
- "mold",
- "system-api",
- "wire",
-]
-
-[[package]]
-name = "router-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/router.git?rev=8a9416277539aefbc759c4f6519e1e8d93d63be3#8a9416277539aefbc759c4f6519e1e8d93d63be3"
-dependencies = [
- "env",
- "router-api",
- "system-api",
- "unit",
-]
-
-[[package]]
-name = "rtc-api"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/driver-rtc.git?rev=f14cca51af02061350b2d1aa9f00f95c6dc06e15#f14cca51af02061350b2d1aa9f00f95c6dc06e15"
-dependencies = [
- "env",
- "mold",
- "system-api",
- "wire",
-]
-
-[[package]]
-name = "rtc-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/driver-rtc.git?rev=f14cca51af02061350b2d1aa9f00f95c6dc06e15#f14cca51af02061350b2d1aa9f00f95c6dc06e15"
-dependencies = [
- "env",
- "router-api",
- "rtc-api",
- "system-api",
- "unit",
-]
-
-[[package]]
-name = "schedule"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/schedule.git?rev=a806630061a1d939f31ad8c683d544d00a385854#a806630061a1d939f31ad8c683d544d00a385854"
-
-[[package]]
-name = "scopeguard"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "serde"
@@ -462,14 +461,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "session-cluster"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/session.git?rev=87abc22d08ffe311b7e43d915240d318642d510c#87abc22d08ffe311b7e43d915240d318642d510c"
+name = "serde_spanned"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e7523beb55eece201a2356bee0bbca0d1ab466c14c07703b2e0ee6d42cb0c2c"
 dependencies = [
- "account-declaration",
- "login-declaration",
- "terminal-declaration",
- "unit",
+ "serde_core",
 ]
 
 [[package]]
@@ -484,56 +481,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "shell-cat-image-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
-dependencies = [
- "unit",
-]
-
-[[package]]
-name = "shell-command-images-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
-dependencies = [
- "unit",
-]
-
-[[package]]
-name = "shell-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
-dependencies = [
- "env",
- "pipe-api",
- "system-api",
- "unit",
-]
-
-[[package]]
-name = "shell-images-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/shell.git?rev=5d84650d37df7523d0ac59fc563e2fc7dc4025ba#5d84650d37df7523d0ac59fc563e2fc7dc4025ba"
-dependencies = [
- "shell-cat-image-declaration",
- "shell-command-images-declaration",
- "shell-declaration",
- "unit",
-]
-
-[[package]]
-name = "spinning_top"
-version = "0.3.0"
+name = "strsim"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d96d2d1d716fb500937168cc09353ffdc7a012be8475ac7308e1bdf0e3923300"
-dependencies = [
- "lock_api",
-]
-
-[[package]]
-name = "stream"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/stream.git?rev=ebd1c6db4823e28591650d967d7e8c8dd1939687#ebd1c6db4823e28591650d967d7e8c8dd1939687"
+checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "syn"
@@ -568,66 +519,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "system-client"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/system.git?rev=5a792ff2d39901a970925b1a6d63206adf6c16d8#5a792ff2d39901a970925b1a6d63206adf6c16d8"
-dependencies = [
- "env",
- "execution",
- "ipc",
- "resource",
- "system-api",
- "wire",
-]
-
-[[package]]
-name = "system-server"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/system.git?rev=9001af65f97501dfa490c9397c61d593c871136d#9001af65f97501dfa490c9397c61d593c871136d"
-dependencies = [
- "env",
- "erra",
- "execution",
- "hub-api",
- "ipc",
- "resource",
- "schedule",
- "system-api",
- "system-client",
- "system-support",
- "unit",
- "wire",
-]
-
-[[package]]
-name = "system-support"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/system.git?rev=5a792ff2d39901a970925b1a6d63206adf6c16d8#5a792ff2d39901a970925b1a6d63206adf6c16d8"
-dependencies = [
- "env",
- "execution",
- "fdt",
- "hub-api",
- "resource",
-]
-
-[[package]]
-name = "talc"
-version = "5.1.1"
+name = "thiserror"
+version = "2.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53f8ad14fa1c1b8635114abf9721076fe1e869572a5f26a52690f407292c80dc"
+checksum = "09e52cb86a36cede5cb101bf8908837b3e4c6e5e59fe7fd85c23fb56200d189e"
 dependencies = [
- "allocator-api2",
- "lock_api",
+ "thiserror-impl",
 ]
 
 [[package]]
-name = "terminal-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/terminal.git?rev=d120e3ddf4b4a6c00685f32310897622d3440dd5#d120e3ddf4b4a6c00685f32310897622d3440dd5"
+name = "thiserror-impl"
+version = "2.0.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524"
 dependencies = [
- "system-api",
- "unit",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -646,6 +554,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84c8b9f757e028cee9fa244aea147aab2a9ec09d5325a9b01e0a49730c2b5269"
 dependencies = [
  "indexmap",
+ "serde_core",
+ "serde_spanned",
  "toml_datetime",
  "toml_parser",
  "toml_writer",
@@ -658,7 +568,7 @@ version = "1.1.5+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baa693a8032d7e1cada7d0041e96126df243179ff061456783ac7f12bda4744c"
 dependencies = [
- "winnow 1.0.4",
+ "winnow 1.0.5",
 ]
 
 [[package]]
@@ -672,15 +582,6 @@ name = "typenum"
 version = "1.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
-
-[[package]]
-name = "uart-declaration"
-version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/driver-uart.git?rev=298bc8809f297f46bc7592aebc96540b7b492efc#298bc8809f297f46bc7592aebc96540b7b492efc"
-dependencies = [
- "system-api",
- "unit",
-]
 
 [[package]]
 name = "unicode-ident"
@@ -698,9 +599,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "unit"
+version = "0.1.0"
+source = "git+https://github.com/shuyra-arche/unit.git?rev=ad50b803c3bd5cd2ef90010d80badf23551e88d5#ad50b803c3bd5cd2ef90010d80badf23551e88d5"
+dependencies = [
+ "env",
+ "postcard",
+ "serde",
+ "system-api",
+]
+
+[[package]]
+name = "utf8parse"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
+
+[[package]]
+name = "vanllia"
+version = "0.1.0"
+dependencies = [
+ "ctrlc",
+ "env-initrd",
+ "libtest-mimic",
+ "serde",
+ "serde_json",
+ "sha2",
+ "toml_edit",
+ "unit 0.1.0 (git+https://github.com/shuyra-arche/unit.git?rev=ad50b803c3bd5cd2ef90010d80badf23551e88d5)",
+ "vanllia-build",
+]
+
+[[package]]
 name = "vanllia-build"
 version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/image-builder.git?rev=17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f#17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f"
 dependencies = [
  "ctrlc",
  "elf",
@@ -711,48 +643,18 @@ dependencies = [
  "sha2",
  "system-api",
  "toml_edit",
- "unit",
+ "unit 0.1.0 (git+https://github.com/shuyra-arche/unit.git?rev=90396f0fda376e0693fb1b9553aa21864d241057)",
 ]
 
 [[package]]
-name = "vanllia-composition"
+name = "vanllia-product-lifecycle-tests"
 version = "0.1.0"
 dependencies = [
- "daemon-declaration",
- "driver-cluster",
- "env",
- "pipe-api",
- "pipe-declaration",
- "router-api",
- "session-cluster",
- "shell-declaration",
- "shell-images-declaration",
- "system-api",
- "unit",
+ "serde_json",
+ "sha2",
+ "unit 0.1.0 (git+https://github.com/shuyra-arche/unit.git?rev=ad50b803c3bd5cd2ef90010d80badf23551e88d5)",
+ "vanllia",
  "vanllia-build",
-]
-
-[[package]]
-name = "vanllia-image"
-version = "0.1.0"
-dependencies = [
- "unit",
- "vanllia-build",
- "vanllia-composition",
-]
-
-[[package]]
-name = "vanllia-system"
-version = "0.1.0"
-dependencies = [
- "env",
- "execution",
- "mold",
- "router-api",
- "system-server",
- "system-support",
- "unit",
- "vanllia-composition",
 ]
 
 [[package]]
@@ -787,9 +689,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "1.0.4"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23b97319f7b8343df12cc98938e5c3eb436064524c8d2b4e30a1d3a36eecdf81"
+checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "wire"
