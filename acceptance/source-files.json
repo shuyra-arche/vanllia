@@ -1,0 +1,496 @@
+{
+  "repository": "https://github.com/anreonyr/sqware.git",
+  "commit": "94e114614bec53424ac55e640fc80cf19a3e7107",
+  "files": [
+    {
+      "source_path": "programs/tests/daemon-recovery/daemon_rtc.py",
+      "source_blob": "dc68b3632e32a047453b036ebb72e11a861c059c",
+      "previous_path": "acceptance/tests/daemon-recovery/daemon_rtc.py",
+      "paths": [
+        "acceptance/oracles/daemon/rtc.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/daemon-recovery/daemon_stop.py",
+      "source_blob": "b76abf1aea9e89ed6539a4d376c512a79b701dc2",
+      "previous_path": "acceptance/tests/daemon-recovery/daemon_stop.py",
+      "paths": [
+        "acceptance/oracles/daemon/stop.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/daemon-recovery/daemon_target.py",
+      "source_blob": "7a8d7eaf6fce632ad964759c8026c2f53e055be8",
+      "previous_path": "acceptance/tests/daemon-recovery/daemon_target.py",
+      "paths": [
+        "acceptance/oracles/daemon/target.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/daemon-recovery/test_daemon_rtc.py",
+      "source_blob": "31b354afcec34d847c797150ec1aafabcedb834c",
+      "previous_path": "acceptance/tests/daemon-recovery/test_daemon_rtc.py",
+      "paths": [
+        "tests/oracles/daemon/test_daemon_rtc.py",
+        "tests/fixtures/daemon/rtc.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/daemon-recovery/test_daemon_stop.py",
+      "source_blob": "01f883566b41da1a9c5097d1ee14c1b0cda8ee4d",
+      "previous_path": "acceptance/tests/daemon-recovery/test_daemon_stop.py",
+      "paths": [
+        "tests/oracles/daemon/test_daemon_stop.py",
+        "tests/fixtures/daemon/stop.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/daemon-recovery/test_daemon_target.py",
+      "source_blob": "5335f0743ba03e749f53e3afea3a80cb91483b18",
+      "previous_path": "acceptance/tests/daemon-recovery/test_daemon_target.py",
+      "paths": [
+        "tests/oracles/daemon/test_daemon_target.py",
+        "tests/fixtures/daemon/target.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/block.py",
+      "source_blob": "f2036b614f2b331d598fb7d40f1b4a696602e032",
+      "previous_path": "acceptance/tests/device-recovery/block.py",
+      "paths": [
+        "acceptance/fixtures/block_device.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/confirmation.py",
+      "source_blob": "f9e900867f739dc3017ac083817837a8064237e0",
+      "previous_path": "acceptance/tests/device-recovery/confirmation.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/confirmation.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/dual_check.py",
+      "source_blob": "09b5f32c4d1c383f7cee339fc7b24b2e2582744e",
+      "previous_path": "acceptance/tests/device-recovery/dual_check.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/dual.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/confirmation.py",
+      "source_blob": "cba1e9a4326ed487756d90f275ece780baff3bfd",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/confirmation.py",
+      "paths": [
+        "tests/fixtures/device_recovery/confirmation.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/dual.py",
+      "source_blob": "95c61bc1536efb7d547261f91ed20932f00cf244",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/dual.py",
+      "paths": [
+        "tests/fixtures/device_recovery/dual.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/forced.py",
+      "source_blob": "747f2c5cc4eb2223a0404d69d763db6dbaa16965",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/forced.py",
+      "paths": [
+        "tests/fixtures/device_recovery/forced.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/guard.py",
+      "source_blob": "dadf3debc86da189bf0f7550775aace0a209f55f",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/guard.py",
+      "paths": [
+        "tests/fixtures/device_recovery/guard.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/hardware.py",
+      "source_blob": "d8bc409757ba4de10cb6c407d093dc616e4b3c16",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/hardware.py",
+      "paths": [
+        "tests/fixtures/device_recovery/hardware.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/readback.py",
+      "source_blob": "052ad823ef4e8d773afcdd86fef0ef238842417b",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/readback.py",
+      "paths": [
+        "tests/fixtures/device_recovery/readback.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/ruin.py",
+      "source_blob": "9d3b0d724334d091296203c8614af0725599ea51",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/ruin.py",
+      "paths": [
+        "tests/fixtures/device_recovery/ruin.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/fixtures/soak.py",
+      "source_blob": "7fa238297845f285d51323b90da3bbb2f8d5ad23",
+      "previous_path": "acceptance/tests/device-recovery/fixtures/soak.py",
+      "paths": [
+        "tests/fixtures/device_recovery/soak.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/forced.py",
+      "source_blob": "34301d18bdf2f22e8820f9a40f7fc66f68d4d65f",
+      "previous_path": "acceptance/tests/device-recovery/forced.py",
+      "paths": [
+        "acceptance/drivers/device_recovery/forced.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/guard.py",
+      "source_blob": "1d576a6035a8a04143be1dbd2bef27ddac881a9f",
+      "previous_path": "acceptance/tests/device-recovery/guard.py",
+      "paths": [
+        "acceptance/drivers/device_recovery/guard.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/guard_check.py",
+      "source_blob": "7da4c2eb34f75b4acbac6ca85f54952a00eefc3a",
+      "previous_path": "acceptance/tests/device-recovery/guard_check.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/guard.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/hardware.py",
+      "source_blob": "44f933eec8698d85f9cbcd2f01e8015e527f158a",
+      "previous_path": "acceptance/tests/device-recovery/hardware.py",
+      "paths": [
+        "acceptance/drivers/device_recovery/hardware.py",
+        "acceptance/contracts/device_recovery.py",
+        "acceptance/evidence/device_tree.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/hardware_check.py",
+      "source_blob": "3e4fc25868b97b8f56bcea8aef76fb9af630b3a1",
+      "previous_path": "acceptance/tests/device-recovery/hardware_check.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/hardware.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/readback.py",
+      "source_blob": "61df3601ddd3ff9fe8031bf8507a9e27208dd48d",
+      "previous_path": "acceptance/tests/device-recovery/readback.py",
+      "paths": [
+        "acceptance/drivers/device_recovery/readback.py",
+        "acceptance/contracts/device_recovery.py",
+        "acceptance/evidence/device_tree.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/readback_check.py",
+      "source_blob": "57361eda5429437a4c11a3dd1830b9266e224450",
+      "previous_path": "acceptance/tests/device-recovery/readback_check.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/readback.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/ruin.py",
+      "source_blob": "5c2ba03efd67cb69edf21d3a4907310646683ed0",
+      "previous_path": "acceptance/tests/device-recovery/ruin.py",
+      "paths": [
+        "acceptance/drivers/device_recovery/ruin.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/ruin_check.py",
+      "source_blob": "3fd34bc64a9eb0ecfad8ba64f40f440f01624aa1",
+      "previous_path": "acceptance/tests/device-recovery/ruin_check.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/ruin.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/soak.py",
+      "source_blob": "7328dc69f3b25e5a11c1de4b963798c396b2e8a5",
+      "previous_path": "acceptance/tests/device-recovery/soak.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/soak.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_block.py",
+      "source_blob": "d850c966531a00e7d59b3f70cac61653f558c99f",
+      "previous_path": "acceptance/tests/device-recovery/test_block.py",
+      "paths": [
+        "tests/transport/test_block_device.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_confirmation.py",
+      "source_blob": "38ce412bee0cb5af57b872c74c23212490863991",
+      "previous_path": "acceptance/tests/device-recovery/test_confirmation.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_confirmation.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_dual.py",
+      "source_blob": "4632ed9f9114a922cef7ccf669e4f1cdadf6ebe3",
+      "previous_path": "acceptance/tests/device-recovery/test_dual.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_dual.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_forced.py",
+      "source_blob": "54b327b3b1b5edb08fb0d0d31a6eac85f5f991cf",
+      "previous_path": "acceptance/tests/device-recovery/test_forced.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_forced.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_guard.py",
+      "source_blob": "c422b89715ba68612c4c38bc0112e39eae708893",
+      "previous_path": "acceptance/tests/device-recovery/test_guard.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_guard.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_hardware.py",
+      "source_blob": "32280d619f6bdcab8aeee5b4677cce38fea1a4ab",
+      "previous_path": "acceptance/tests/device-recovery/test_hardware.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_hardware.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_readback.py",
+      "source_blob": "1d9a8e7373f5b867ff782e5db755df3ad984158a",
+      "previous_path": "acceptance/tests/device-recovery/test_readback.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_readback.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_ruin.py",
+      "source_blob": "8c475cfeb4433ddf8f1758e16f746105f1501190",
+      "previous_path": "acceptance/tests/device-recovery/test_ruin.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_ruin.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_soak.py",
+      "source_blob": "abb23af87703739511486bc741b7c3fb23b1451c",
+      "previous_path": "acceptance/tests/device-recovery/test_soak.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_soak.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_trace.py",
+      "source_blob": "982891b5c2c4238830bd0936f32ba5e5b3f00dcd",
+      "previous_path": "acceptance/tests/device-recovery/test_trace.py",
+      "paths": [
+        "tests/oracles/device_recovery/test_trace.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/test_wrapper.py",
+      "source_blob": "2541fc7002f5140296305d8ee1ab39ae02c979ee",
+      "previous_path": "acceptance/tests/device-recovery/test_wrapper.py",
+      "paths": [
+        "tests/transport/test_qemu_wrapper.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/device-recovery/trace.py",
+      "source_blob": "52dadbcdb86735d7f0c26867b911ab9cf581905a",
+      "previous_path": "acceptance/tests/device-recovery/trace.py",
+      "paths": [
+        "acceptance/oracles/device_recovery/execution.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/console.py",
+      "source_blob": "0644ae64c57b8b3d31ab636a38624c75e32cf9db",
+      "previous_path": "acceptance/tests/memory-transfer/console.py",
+      "paths": [
+        "acceptance/transport/console.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/driver.py",
+      "source_blob": "84713c4af9100631fd76c4dac00ba202ccbbcdd2",
+      "previous_path": "acceptance/tests/memory-transfer/driver.py",
+      "paths": [
+        "acceptance/drivers/memory_transfer/driver.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/fresh.py",
+      "source_blob": "7b3b8dc7ad70d48a53f6bf052f4e4d5c94897ed1",
+      "previous_path": "acceptance/tests/memory-transfer/fresh.py",
+      "paths": [
+        "acceptance/drivers/memory_transfer/fresh.py",
+        "acceptance/oracles/memory_transfer/fresh.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/harness.py",
+      "source_blob": "b647685e68b362415d3c900969f5cdcc6a61c61f",
+      "previous_path": "acceptance/tests/memory-transfer/harness.py",
+      "paths": [
+        "acceptance/drivers/memory_transfer/harness.py",
+        "acceptance/oracles/memory_transfer/phases.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/race.py",
+      "source_blob": "f3ace0eec53484e9bdaaf1e888b397d67e4092f8",
+      "previous_path": "acceptance/tests/memory-transfer/race.py",
+      "paths": [
+        "acceptance/drivers/memory_transfer/race.py",
+        "acceptance/oracles/memory_transfer/race.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/test_fresh.py",
+      "source_blob": "b406844fd1dbd8f86cf62281fdf0bff40625c442",
+      "previous_path": "acceptance/tests/memory-transfer/test_fresh.py",
+      "paths": [
+        "tests/oracles/memory_transfer/test_fresh.py",
+        "tests/fixtures/memory_transfer/fresh.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/test_observer.py",
+      "source_blob": "49011ad09fa33c98fefe8d94dc0681e23430cfa7",
+      "previous_path": "acceptance/tests/memory-transfer/test_observer.py",
+      "paths": [
+        "tests/evidence/test_kernel_events.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/test_race.py",
+      "source_blob": "35e321a0bdb9f49bf7da84a16e20e746f6541025",
+      "previous_path": "acceptance/tests/memory-transfer/test_race.py",
+      "paths": [
+        "tests/oracles/memory_transfer/test_race.py",
+        "tests/fixtures/memory_transfer/race.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/test_tlb.py",
+      "source_blob": "325b83349e94eac4fb9c40493d0bab72ce50aacc",
+      "previous_path": "acceptance/tests/memory-transfer/test_tlb.py",
+      "paths": [
+        "tests/oracles/memory_transfer/test_tlb.py",
+        "tests/fixtures/memory_transfer/tlb.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/tlb.py",
+      "source_blob": "80236340e569304352c1ca6d3744d000993474be",
+      "previous_path": "acceptance/tests/memory-transfer/tlb.py",
+      "paths": [
+        "acceptance/drivers/memory_transfer/tlb.py",
+        "acceptance/oracles/memory_transfer/tlb.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/memory-transfer/traces.py",
+      "source_blob": "ce149c480b24c8f7646636ffb7a3c5748a79c42c",
+      "previous_path": "acceptance/tests/memory-transfer/traces.py",
+      "paths": [
+        "acceptance/evidence/kernel_events.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/shell/edges.py",
+      "source_blob": "d356184e4f2ffe45501ef9d9b4dbdd91ff9d6b78",
+      "previous_path": "acceptance/tests/shell/edges.py",
+      "paths": [
+        "acceptance/drivers/shell/edges.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/shell/idle.py",
+      "source_blob": "8506b25ba8c0cbe01977abc4eb2481b7784e04d3",
+      "previous_path": "acceptance/tests/shell/idle.py",
+      "paths": [
+        "acceptance/drivers/shell/idle.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/shell/shutdown.py",
+      "source_blob": "4c417ea3780f2fb87396581a77a2800f133357db",
+      "previous_path": "acceptance/tests/shell/shutdown.py",
+      "paths": [
+        "acceptance/drivers/shell/shutdown.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/shell/smoke.py",
+      "source_blob": "0efa7014bef830337655614423a9253696fa2684",
+      "previous_path": "acceptance/tests/shell/smoke.py",
+      "paths": [
+        "acceptance/drivers/shell/smoke.py"
+      ]
+    },
+    {
+      "source_path": "programs/tests/terminal/session.py",
+      "source_blob": "87d6ae0cf7379fa56f2cd256d9f71891dfca67c0",
+      "previous_path": "acceptance/tests/terminal/session.py",
+      "paths": [
+        "acceptance/drivers/terminal/session.py"
+      ]
+    },
+    {
+      "source_path": "scripts/boot.nu",
+      "source_blob": "e2b15daaae1e95cbf92682689222dfd132d702e2",
+      "previous_path": "scripts/boot.nu",
+      "paths": [
+        "scripts/boot.nu"
+      ]
+    },
+    {
+      "source_path": "scripts/qemu-args.nu",
+      "source_blob": "a279b468ca738dd28c4396e06433a965a9a3ceee",
+      "previous_path": "scripts/qemu-args.nu",
+      "paths": [
+        "scripts/qemu-args.nu"
+      ]
+    },
+    {
+      "source_path": "scripts/qtest.nu",
+      "source_blob": "65af838399eef168b71f73feb2f72debc773da91",
+      "previous_path": "scripts/qtest.nu",
+      "paths": [
+        "scripts/qtest.nu",
+        "acceptance/scenes.nu",
+        "acceptance/verdicts.nu",
+        "acceptance/transport/feed.py"
+      ]
+    },
+    {
+      "source_path": "scripts/runner.nu",
+      "source_blob": "f653a8f8b6dc665a678f31360f63aaaa3dc62712",
+      "previous_path": "scripts/runner.nu",
+      "paths": [
+        "scripts/runner.nu"
+      ]
+    }
+  ],
+  "organization_base": "ff2c059c7df1545afedb95eb74dce71f40ca3f8d"
+}

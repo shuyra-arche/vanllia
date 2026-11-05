@@ -22,3 +22,6 @@
 [submodule "components/daemon"]
 	path = components/daemon
 	url = https://github.com/shuyra-arche/daemon.git
+[submodule "components/shell"]
+	path = components/shell
+	url = https://github.com/shuyra-arche/shell.git

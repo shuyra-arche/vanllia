@@ -1,0 +1,51 @@
+def valid_evidence():
+    console = "\n".join(
+        [
+            "boot: entry task=10",
+            "stop-root: root task=10",
+            "stop-root: old task=17 team=21",
+            "system: static construct name=fixturetarget task=17 team=21 owner=10",
+            "system: static construct name=daemon task=18 team=22 owner=10",
+            "system: static construct name=daemon-ctl-stop task=30 team=35 owner=10",
+            "stop-root: actor task=29 identity=inherited",
+            "stop-root: actor task=29 faces=ruin,state",
+            "system: activate daemon tid=18",
+            "daemon-ctl-stop: outsider source=30 observe=10 recover=10 denied=Denied",
+            "daemon-ctl-stop: observed old task=17 helper=25 before=100",
+            "daemon-ctl-stop: checked entry host=10 rejected=7 fake_owner=30 reclaimed=2",
+            "daemon-ctl-stop: publisher task=17 host=10 entry_owner=17 entry_mark=44 expected_mark=44",
+            "stop-root: request controller=30 old task=17 helper=25 before=100 ack=44",
+            "stop-root: kill old task=17 team=21 before=100",
+            "stop-root: actor request queued",
+            "system: ruin merged target=fixturetarget pending_origin=Reaper",
+            "system: lifecycle received target=fixturetarget sender=29 action=ruin",
+            "system: lifecycle intent target=fixturetarget run=false",
+            "system: retired name=fixturetarget task=17 team=21",
+            "daemon-stop-actor: target=fixturetarget reply=ok",
+            "daemon-stop-actor: target=fixturetarget state=Dead",
+            "stop-root: ack controller=30 run=false state=dead",
+            "daemon-ctl-stop: ack from=10 old task=17 helper=25",
+            "daemon-ctl-stop: stable dead checks=12 missing=12 target=fixturetarget elapsed_ns=650000000",
+            "daemon-ctl-stop: publisher revoked checks=12 host=10 target=17",
+            "exit tid=30 reason=0x0 note: daemon-ctl-stop: done",
+            "system: retired name=daemon task=18 team=22",
+            "exit tid=10 reason=0x0 note: daemon-stop: done",
+            "task: all tasks exited, system halted",
+            "memory: frame_allocations before=87 after=87",
+        ]
+    )
+    events = [
+        {"h": 1, "when": 1000, "kind": {"room": {"spawn": {"tid": 17}}}},
+        {"h": 1, "when": 1050, "kind": {"room": {"spawn": {"tid": 25}}}},
+        {"h": 1, "when": 1100, "kind": {"room": {"spawn": {"tid": 29}}}},
+        {"h": 2, "when": 1150, "kind": {"room": {"spawn": {"tid": 18}}}},
+        {"h": 3, "when": 1200, "kind": {"room": {"spawn": {"tid": 30}}}},
+        {"h": 1, "when": 3000, "kind": {"room": {"reap": {"tid": 17}}}},
+        {"h": 1, "when": 3100, "kind": {"room": {"reap": {"tid": 25}}}},
+        {"h": 1, "when": 4000, "kind": {"room": {"reap": {"tid": 29}}}},
+        {"h": 3, "when": 4100, "kind": {"room": {"reap": {"tid": 30}}}},
+        {"h": 2, "when": 4200, "kind": {"room": {"reap": {"tid": 18}}}},
+        {"h": 0, "when": 4300, "kind": {"halt": "halt"}},
+    ]
+    qtest = "test embedded::tests::scene ... ok\ntest result: ok. 1 passed; 0 failed"
+    return console, events, qtest, 0

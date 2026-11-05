@@ -2,6 +2,9 @@
 
 use unit::ImageBuild;
 
+// Host equivalence reads the provider's ordered aggregate through composition.
+pub use shell_images_declaration;
+
 const TARGET: &str = "riscv64gc-unknown-none-elf";
 const PROFILE: &str = "release";
 
@@ -60,6 +63,21 @@ const TERMINAL: ImageBuild = ImageBuild {
     default_features: true,
 };
 
+const LOGIN: ImageBuild = ImageBuild {
+    manifest: "components/session/units/login/server/Cargo.toml",
+    ..session_cluster::login::BUILD
+};
+
+const UART: ImageBuild = ImageBuild {
+    manifest: "components/driver/units/uart/server/Cargo.toml",
+    ..driver_cluster::uart::BUILD
+};
+
+const RTC: ImageBuild = ImageBuild {
+    manifest: "components/driver/units/rtc/server/Cargo.toml",
+    ..driver_cluster::rtc::BUILD
+};
+
 const DAEMON: ImageBuild = ImageBuild {
     manifest: "components/daemon/server/Cargo.toml",
     ..daemon_declaration::BUILD
@@ -76,20 +94,44 @@ const SYSTEM: ImageBuild = ImageBuild {
     default_features: true,
 };
 
-macro_rules! legacy_image {
-    ($image:literal) => {
-        ImageBuild {
-            image: $image,
-            manifest: "legacy/sqware/programs/Cargo.toml",
-            package: "programs",
-            bin: concat!("prog-", $image),
-            features: &[],
-            target: TARGET,
-            profile: PROFILE,
-            default_features: true,
-        }
-    };
-}
+const SHELL_MANIFEST: &str = "components/shell/server/entry/Cargo.toml";
+const CAT_MANIFEST: &str = "components/shell/cat/command/Cargo.toml";
+const SHELL_COMMANDS_MANIFEST: &str = "components/shell/commands/Cargo.toml";
+
+const SHELL: ImageBuild = ImageBuild {
+    manifest: SHELL_MANIFEST,
+    ..shell_images_declaration::BUILDS[0]
+};
+
+const CAT: ImageBuild = ImageBuild {
+    manifest: CAT_MANIFEST,
+    ..shell_images_declaration::BUILDS[1]
+};
+
+const EMIT: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_images_declaration::BUILDS[2]
+};
+
+const UPPER: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_images_declaration::BUILDS[3]
+};
+
+const FAIL: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_images_declaration::BUILDS[4]
+};
+
+const SPIN: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_images_declaration::BUILDS[5]
+};
+
+const WORKERS: ImageBuild = ImageBuild {
+    manifest: SHELL_COMMANDS_MANIFEST,
+    ..shell_images_declaration::BUILDS[6]
+};
 
 pub const IMAGE_BUILDS: &[ImageBuild] = &[
     HUB,
@@ -98,15 +140,15 @@ pub const IMAGE_BUILDS: &[ImageBuild] = &[
     ACCOUNT,
     TERMINAL,
     SYSTEM,
-    legacy_image!("login"),
-    legacy_image!("uart"),
-    legacy_image!("rtc"),
+    LOGIN,
+    UART,
+    RTC,
     DAEMON,
-    legacy_image!("shell"),
-    legacy_image!("cat"),
-    legacy_image!("emit"),
-    legacy_image!("upper"),
-    legacy_image!("fail"),
-    legacy_image!("spin"),
-    legacy_image!("workers"),
+    SHELL,
+    CAT,
+    EMIT,
+    UPPER,
+    FAIL,
+    SPIN,
+    WORKERS,
 ];
