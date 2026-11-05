@@ -52,12 +52,30 @@ firmware. No switch to `fw_dynamic`, a payload image, or `-bios default` is made
 implicitly. See upstream [FW_JUMP contract](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/docs/firmware/fw_jump.md)
 and [generic defaults](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/platform/generic/objects.mk).
 
+The official recipe was built locally; see the
+[build and license findings](integration-build-validation.md). It produces a
+traceable alternative artifact, with no claim of boot equivalence.
+
 OpenSBI's [README](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/README.md)
 states BSD-2-Clause, with reused libfdt code selected under its BSD option.
-Preserve upstream `COPYING.BSD`, `ThirdPartyNotices.md`, and the copyright and
-license notices in reused source files (including `lib/utils/libfdt/`) when
-preparing any distribution. This PR redistributes neither upstream firmware
-nor the old binary and does not add a blanket license to either repository.
+That summary does not describe every selected file. At this exact revision the
+default generic build also compiles GPL-2.0-marked
+[`andes_pma.c`](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/platform/generic/andes/andes_pma.c)
+and [`rzfive.c`](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/platform/generic/renesas/rzfive/rzfive.c),
+plus their GPL-marked headers; their functions are present in the generated ELF.
+Selected `atcsmu` and `htif` files carry BSD-3-Clause notices.
+
+Do not describe or redistribute the resulting generic firmware as BSD-2-Clause
+only. Retain the complete exact source, build/configuration record,
+`COPYING.BSD`, `ThirdPartyNotices.md`, and each selected file's copyright and
+license notices. A distribution needs the applicable GPL source/license and
+BSD-3-Clause material as well as the BSD-2-Clause/libfdt notices; that complete
+distribution assessment is still open. No driver or platform is disabled to
+hide this finding. Alternatively, supply a separately documented firmware
+artifact with its own verified source and notice record.
+
+No firmware binary is added to Vanllia or selected as its default. This work
+does not add a blanket license to either repository.
 
 ## Old artifact investigation
 

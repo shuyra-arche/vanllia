@@ -39,6 +39,9 @@ nu scripts/build.nu release          # build both; emit a JSON artifact record
 nu scripts/build.nu debug
 ```
 
+The combined release entry has been built locally; see the exact
+[build results and firmware license findings](docs/integration-build-validation.md).
+
 The record contains `scene`, `profile`, `initrd` and `kernel`. Paths come from
 the image adapter's `ok …` output and Cargo's `compiler-artifact` JSON, including
 custom output paths; the script does not guess an old initrd location. Command
