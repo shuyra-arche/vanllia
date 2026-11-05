@@ -59,7 +59,8 @@ vanllia test -- pipe.roundtrip
 ```
 
 These last two commands execute managed QEMU with headless serial evidence.
-No QEMU, guest or SMP acceptance was run
-for this migration. See [docs/dynamic-build-validation.md](docs/dynamic-build-validation.md)
+The minimal Pipe case passed single-core QEMU with native exit and reclaim checks;
+full product runtime and SMP acceptance remain unrun.
+See [docs/dynamic-build-validation.md](docs/dynamic-build-validation.md)
 for current evidence. Earlier `cargo image`, Nushell build/runner entries and
 static Deployment files are retired.

@@ -15,7 +15,7 @@ locks. The CLI's Cargo overlays and their generated locks live under `.vanllia`.
 | Selection | Unit records | Runtime ELF files | Initrd SHA-256 |
 | --- | ---: | ---: | --- |
 | Default Login + Daemon closure | 11 | 17 | `3120174018fdb856d6653ee851fb3041a2d1b4cb94f830374c1ee82d3f442e89` |
-| Pipe roundtrip | 3 | 3 | `d74d172d1a7286760895dc5ba93df9ad855418166034e8ca208efd67591605a6` |
+| Pipe roundtrip | 3 | 3 | `7dccbac8c48596533ca1a05cc520e30496caf28db1e1f879fc4998aba32af3ba` |
 
 The Kernel is a separate built boot artifact. Debug executables remain on the
 host; stripped runtime images and binary Unit records are packaged once. A Rust
@@ -45,7 +45,7 @@ not passing guest evidence.
 
 ## Scoped host verification
 
-- CLI: 37 Rust tests, strict Clippy and formatting passed. Two tests build real
+- CLI: 38 Rust tests, strict Clippy and formatting passed. Two tests build real
   RV64 artifacts; other cases cover discovery, source locks, overlays, workspace
   editor configuration and typed native lifecycle verdicts.
 - Host library: 22 inline and 8 retained integration cases passed, including
@@ -60,9 +60,19 @@ not passing guest evidence.
 
 ## Runtime boundary
 
-No QEMU, guest, SMP or performance acceptance was run. Typed event delivery,
-native task exits and final resource reclamation still need authorized guest
-acceptance. The new runner is managed and records headless serial evidence.
+The minimal three-Unit Rust Pipe case passed single-core QEMU 10.0.13 (Debian
+1:10.0.13+ds-0+deb13u1) with OpenSBI 1.6. Native Reap/zero exit, explicit endpoint
+revocation, acknowledged retirement and VM exit zero all passed. `verdict.json`
+binds that result to the exact input hashes. Kernel SHA-256 is
+`563948be2580411cbe2812ac114e31f215c3e54c8a5e407bb76080e201f477ae`;
+installed firmware SHA-256 is
+`8f34d231fde9554e1a3c511bb1efac489da310ab0462504c512994601e12d213`
+(273472 bytes). The machine-specific firmware path was used only for this local
+run and is not committed. The first runs exposed UART CRLF framing and an
+incorrect test cleanup order; both were fixed and the final case also exercises
+partial I/O with a payload larger than capacity. No failure was converted to a pass.
+Full product runtime, SMP and performance acceptance remain unrun.
+The new runner is managed and records headless serial evidence.
 Boot firmware must be configured with an explicit file/URL, SHA-256 and length;
 these build artifacts do not bundle a firmware binary. No firmware was silently
 substituted. The old scenarios and tests are not migrated; retained composition
