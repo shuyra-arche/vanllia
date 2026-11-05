@@ -104,6 +104,10 @@ for the standalone #8 baseline. The integrated contract source is unchanged;
 its image-coordinate-order case checks image names/order, while the retained
 owner equivalence case checks actual Shell/Cat build descriptors.
 
+The [first namespace policy test migration](docs/test-migration-batch1.md)
+preserves three old host cases and adds a check of the actual product registry.
+It uses existing API dependencies and retains every frozen equivalence case.
+
 ## Provider and legacy boundaries (disclosed)
 
 All 17 selected images have explicit product coordinates. Zero selected images

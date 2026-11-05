@@ -53,6 +53,11 @@ was retired and these 18 suites were not rerun here. Provider-green results
 alone do not prove that their assertions or real source closures were preserved.
 Keep new tests with the owning responsibility; cross-owner contracts stay with
 integration, and host fixtures stay separate from runtime/driver code.
+The [first completed host batch](test-migration-batch1.md) maps the three
+publication-admission cases to composition-owned namespace contracts without
+changing dependencies. The other 17 crates are outside that batch and still
+require assertion/source-closure mapping; no frozen suite or product equivalence
+case is retired by it.
 
 ## Minimum dependency order
 
