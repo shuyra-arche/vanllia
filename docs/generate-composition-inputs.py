@@ -39,8 +39,9 @@ def fingerprint(data, sha):
 
 def inventory(root, commit):
     records = []
+    historical = []
 
-    def visit(relative, sha, url, historical=False):
+    def visit(relative, sha, url):
         repo = root / relative
         # An uninitialized submodule must not silently resolve to its parent's Git repo.
         top = Path(git(repo, "rev-parse", "--show-toplevel").decode().strip()).resolve()
@@ -54,7 +55,7 @@ def inventory(root, commit):
             "repository": url,
             "commit": sha,
             "tree": git(repo, "rev-parse", f"{sha}^{{tree}}").decode().strip(),
-            "role": "historical-dev-fixture" if historical else "source-inventory",
+            "role": "required-source",
             "release_version": None,
             "manifests": [],
             "locks": [],
@@ -78,17 +79,25 @@ def inventory(root, commit):
                 if child.is_absolute() or ".." in child.parts:
                     raise ValueError(f"unsafe gitlink path: {path}")
                 child_url = module_urls[path]
+                reference = relative == Path(".") and child == PurePosixPath("legacy/sqware")
+                if reference and child_url != "https://github.com/anreonyr/sqware.git":
+                    raise ValueError("unexpected repository for historical legacy/sqware reference")
                 item["gitlinks"].append({
                     "path": path, "commit": object_sha, "repository": child_url,
-                    "expanded": not historical,
+                    "expanded": not reference,
+                    "role": "historical-reference" if reference else "required-source",
                 })
-                if not historical:
+                if reference:
+                    historical.append({
+                        "path": (relative / path).as_posix(), "repository": child_url,
+                        "commit": object_sha, "role": "historical-reference",
+                        "checkout_required": False, "content_status": "not-inventoried",
+                    })
+                else:
                     child_path = relative / path
-                    visit(child_path, object_sha, child_url, child_path == Path("legacy/sqware"))
+                    visit(child_path, object_sha, child_url)
                 continue
             if kind != "blob":
-                continue
-            if historical and path not in {"Cargo.toml", "Cargo.lock", "rust-toolchain.toml"}:
                 continue
             name = PurePosixPath(path).name
             if path == "scripts/build.nu" or path.endswith(".cargo/config.toml"):
@@ -125,7 +134,7 @@ def inventory(root, commit):
 
     visit(Path("."), commit, "https://github.com/shuyra-arche/vanllia.git")
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "kind": "committed-input-inventory",
         "is_release_manifest": False,
         "is_dependency_graph": False,
@@ -136,10 +145,11 @@ def inventory(root, commit):
             "source": "Git objects, not worktree files; no network or Cargo resolution",
             "locks": "all tracked locks in expanded sources, not a selected production closure",
             "lock_content": "full Git package identities for the root lock; other locks use content hashes/counts",
-            "historical": "legacy/sqware recorded at top level; its child gitlinks are not expanded",
+            "historical": "legacy/sqware is a committed Git reference only; its checkout and content are not read or verified",
             "package_versions": "declared metadata only; workspace references stay unresolved",
         },
         "repositories": records,
+        "historical_references": historical,
         "build_records": [],
         "firmware_selection": None,
         "runtime_evidence": [],

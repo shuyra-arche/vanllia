@@ -161,8 +161,11 @@ release tag to repair an artifact. A repair gets a new version and evidence.
 committed objects at a required full SHA, follows
 initialized production-side recursive gitlinks and records their exact commits,
 trees, manifest/package metadata, lock hashes/counts and toolchain/config hashes.
-It records the legacy checkout at its frozen top level; its child gitlinks are
-listed but not expanded. This boundary is explicit and does not remove it.
+The current schema-2 helper records the legacy Git URL/SHA as an unexpanded
+historical reference without reading its checkout or objects. Required sources
+remain recursively expanded and unavailable required sources still fail. This
+classification is the committed inventory policy, not a new Cargo dependency
+resolver or proof that every registered provider is used by every action.
 
 ```sh
 candidate_sha=$(git rev-parse HEAD)
@@ -183,7 +186,7 @@ Ambiguous duplicate submodule paths are rejected rather than silently choosing
 one URL. An independently cloned source directory is usable if it contains the
 exact gitlink object; its current checkout HEAD is not the source authority.
 
-At this checkpoint the inventory expands 18 repository checkouts, including
+At the historical schema-1 checkpoint the inventory expanded 18 repository checkouts, including
 Vanllia and the legacy top level. It records 102 tracked locks across those
 trees, including test/integration locks; this is **not** 102 selected production
 builds. Only the root lock's Git package identities are expanded in JSON; the
@@ -196,11 +199,18 @@ packages can share a source, and a repository can supply several revisions.
 The 102 figure counts tracked files. None of these counts describes a selected
 production closure or a complete release manifest.
 
-Output has `kind: committed-input-inventory`, `schema_version: 1`, an explicit
+Current output has `kind: committed-input-inventory`, `schema_version: 2`, an explicit
 Vanllia source commit, and null Vanllia/component release versions. It leaves
 `release_approved: false`, `build_records: []`, `firmware_selection: null` and
 `runtime_evidence: []`. These are honest missing facts, not release defaults.
 `is_release_manifest` and `is_dependency_graph` are both explicitly false.
+`repositories` contains required-source records; `historical_references` names
+the committed legacy gitlink with `checkout_required: false` and
+`content_status: not-inventoried`. That metadata stays identical when the old
+checkout is missing, present or dirty. Optional presence observations belong
+to execution records, outside the committed-input hash. Retained schema-1
+records keep their prior interpretation; see [execution evidence](execution-evidence.md)
+and [group consistency](evidence-group.md) for matching-version checks.
 Save generated records outside the source commit (or as future authorized
 release attachments), avoiding a self-referential manifest commit hash.
 

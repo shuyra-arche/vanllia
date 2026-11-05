@@ -49,14 +49,32 @@ def file_record(path):
     return {"bytes": after.st_size, "sha256": digest.hexdigest()}
 
 
+def checkout_dirty(path, historical=()):
+    # Historical worktree content is outside the required input set. Its staged
+    # gitlink is still part of the root source commit and may not change.
+    if historical and git(path, "diff", "--cached", "--name-only", "--ignore-submodules=none", "HEAD", "--", *historical):
+        return "staged historical gitlink change"
+    exclusions = [":(top,exclude,literal)" + name for name in historical]
+    return git(path, "status", "--porcelain", "--untracked-files=all", "--ignore-submodules=none", "--", ".", *exclusions)
+
+
+def historical_observation(root, inventory):
+    return [{
+        "path": reference["path"], "commit": reference["commit"],
+        "checkout": "present-unverified" if os.path.lexists(root / reference["path"]) else "absent",
+        "content_verified": False,
+    } for reference in inventory["historical_references"]]
+
+
 def source_check(root, inventory):
     observations = []
+    historical = [item["path"] for item in inventory["historical_references"]]
     for repository in inventory["repositories"]:
         path = root / repository["path"]
         if Path(git(path, "rev-parse", "--show-toplevel")).resolve() != path.resolve():
             raise ValueError(f"missing source checkout: {repository['path']}")
         head = git(path, "rev-parse", "HEAD")
-        dirty = git(path, "status", "--porcelain", "--untracked-files=all", "--ignore-submodules=none")
+        dirty = checkout_dirty(path, historical if repository["path"] == "." else ())
         if head != repository["commit"] or dirty:
             raise ValueError(f"source does not match clean snapshot checkout: {repository['path']}")
         observations.append({"path": repository["path"], "commit": head, "clean": True})
@@ -67,12 +85,13 @@ def observe(args, output):
     root = args.root.resolve()
     producer_bytes = Path(__file__).read_bytes()
     record = {
-        "schema_version": 1, "kind": "execution-evidence",
+        "schema_version": 2, "kind": "execution-evidence",
         "is_release_manifest": False, "release_approved": False,
         "status": "incomplete", "input": None, "source": {"status": "unverified"},
         "producer": {"sha256": hashlib.sha256(producer_bytes).hexdigest()},
         "action": args.action, "configuration": {}, "tools": [],
         "execution": {"status": "not-run", "returncode": None},
+        "historical": {"status": "reference-only-not-verified", "before": [], "after": []},
         "artifacts": [], "missing": [],
         "not_evaluated": [
             "dependency graphs", "test case counts and coverage", "artifact freshness",
@@ -107,6 +126,8 @@ def observe(args, output):
         snapshot_bytes = args.inputs.read_bytes()
         (output / "inputs.json").write_bytes(snapshot_bytes)
         inventory = json.loads(snapshot_bytes)
+        if not isinstance(inventory, dict) or type(inventory.get("schema_version")) is not int or inventory["schema_version"] != 2:
+            raise ValueError("recorder requires input schema 2; retained schema-1 groups keep their original meaning")
         commit = inventory["vanllia_commit"]
         if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
             raise ValueError("snapshot has no full input commit")
@@ -116,9 +137,8 @@ def observe(args, output):
             "inventory_sha256": hashlib.sha256(snapshot_bytes).hexdigest(),
             "verified": False,
         }
-        if git(root, "rev-parse", "HEAD") != commit or git(
-            root, "status", "--porcelain", "--untracked-files=all", "--ignore-submodules=none"
-        ):
+        historical = [item["path"] for item in inventory["historical_references"]]
+        if git(root, "rev-parse", "HEAD") != commit or checkout_dirty(root, historical):
             raise ValueError("root must be a clean checkout at the snapshot commit")
         if git_bytes(root, "show", commit + ":scripts/record-evidence.py") != producer_bytes:
             raise ValueError("recorder bytes differ from the input commit")
@@ -132,6 +152,7 @@ def observe(args, output):
         ) != inventory:
             raise ValueError("input snapshot does not match regenerated committed inputs")
         record["source"]["before"] = source_check(root, inventory)
+        record["historical"]["before"] = historical_observation(root, inventory)
         record["input"].update({"verified": True, "tree": git(root, "rev-parse", commit + "^{tree}")})
         configuration = record["configuration"]
         configuration["input_inventory_sha256"] = record["input"]["inventory_sha256"]
@@ -215,6 +236,7 @@ def observe(args, output):
         if record["input"] and record["input"]["verified"]:
             try:
                 record["source"]["after"] = source_check(root, inventory)
+                record["historical"]["after"] = historical_observation(root, inventory)
                 if record["source"].get("before") != record["source"]["after"]:
                     raise ValueError("source checks before and after differ")
                 record["source"]["status"] = "verified-before-and-after"

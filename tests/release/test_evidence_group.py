@@ -106,6 +106,105 @@ class EvidenceGroup(unittest.TestCase):
     def store(self, action):
         (self.directories[action] / "record.json").write_text(json.dumps(self.records[action], indent=2))
 
+    def rebind(self):
+        self.inputs.write_text(json.dumps(self.inventory, indent=2) + "\n")
+        self.input_hash = self.digest(self.inputs)
+        sources = [{"path": x["path"], "commit": x["commit"], "clean": True} for x in self.inventory["repositories"]]
+        for action, record in self.records.items():
+            directory = self.directories[action]
+            (directory / "inputs.json").write_bytes(self.inputs.read_bytes())
+            record["input"]["inventory_sha256"] = self.input_hash
+            record["configuration"]["input_inventory_sha256"] = self.input_hash
+            record["source"]["before"] = copy.deepcopy(sources)
+            record["source"]["after"] = copy.deepcopy(sources)
+            replay = record["inventory_replay"]["stdout"]
+            path = directory / replay["path"]
+            path.write_bytes(self.inputs.read_bytes())
+            replay.update(self.fingerprint(path))
+            self.store(action)
+
+    def schema_two(self):
+        self.inventory["schema_version"] = 2
+        for repository in self.inventory["repositories"]:
+            repository.update({"role": "required-source", "repository": "https://example.invalid/" + repository["path"], "gitlinks": []})
+        self.reference = {"path": "legacy/sqware", "repository": "https://github.com/anreonyr/sqware.git",
+            "commit": "e" * 40, "role": "historical-reference", "checkout_required": False,
+            "content_status": "not-inventoried"}
+        self.inventory["historical_references"] = [self.reference]
+        root, child = self.inventory["repositories"]
+        root["gitlinks"] = [
+            {"path": child["path"], "commit": child["commit"], "repository": child["repository"], "role": "required-source", "expanded": True},
+            {**{key: self.reference[key] for key in ("path", "commit", "repository", "role")}, "expanded": False},
+        ]
+        observation = {"path": self.reference["path"], "commit": self.reference["commit"],
+                       "checkout": "absent", "content_verified": False}
+        for record in self.records.values():
+            record["schema_version"] = 2
+            record["historical"] = {"status": "reference-only-not-verified", "before": [copy.deepcopy(observation)], "after": [copy.deepcopy(observation)]}
+        self.rebind()
+
+    def test_schema_two_history_can_be_absent_or_present_without_claiming_verification(self):
+        self.schema_two()
+        self.records["build"]["historical"]["after"][0]["checkout"] = "present-unverified"
+        self.store("build")
+        result, report = self.invoke()
+        self.assertEqual(result.returncode, 0, report)
+        self.assertEqual(report["status"], "consistent")
+
+    def test_schema_two_history_cannot_be_claimed_verified_or_omitted(self):
+        self.schema_two()
+        original = copy.deepcopy(self.records["build"])
+        self.records["build"]["historical"]["before"][0]["content_verified"] = True
+        self.store("build")
+        self.rejected("historical content cannot be claimed verified")
+        self.records["build"] = copy.deepcopy(original)
+        self.records["build"].pop("historical")
+        self.store("build")
+        self.rejected("missing unverified historical observation")
+
+    def test_schema_two_history_observation_must_match_the_committed_reference(self):
+        self.schema_two()
+        self.records["build"]["historical"]["after"][0]["commit"] = "f" * 40
+        self.store("build")
+        self.rejected("historical observations differ")
+
+    def test_schema_two_required_provider_cannot_be_reclassified_or_dropped(self):
+        self.schema_two()
+        self.inventory["repositories"][1]["role"] = "historical-reference"
+        self.rebind()
+        self.rejected("repositories must be required sources")
+        self.inventory["repositories"].pop()
+        self.rebind()
+        self.rejected("required gitlink source missing")
+
+    def test_schema_two_historical_reference_must_match_the_root_gitlink(self):
+        self.schema_two()
+        self.reference["commit"] = "f" * 40
+        self.rebind()
+        self.rejected("historical reference differs from committed gitlink")
+
+    def test_schema_two_only_the_known_historical_repository_can_be_optional(self):
+        self.schema_two()
+        self.reference["path"] = "components/fixture"
+        self.rebind()
+        self.rejected("unexpected historical repository")
+
+    def test_schema_versions_cannot_be_mixed(self):
+        self.schema_two()
+        self.records["rust-tests"]["schema_version"] = 1
+        self.store("rust-tests")
+        self.rejected("record/input schema mismatch")
+
+    def test_retained_schema_one_still_requires_its_historical_source_observations(self):
+        self.inventory["repositories"].append({"path": "legacy/sqware", "commit": "e" * 40,
+            "tree": "f" * 40, "role": "historical-dev-fixture"})
+        self.rebind()
+        result, report = self.invoke()
+        self.assertEqual(result.returncode, 0, report)
+        self.records["build"]["source"]["after"].pop()
+        self.store("build")
+        self.rejected("source before/after")
+
     def invoke(self, actions=None, profile="release"):
         actions = list(self.directories) if actions is None else actions
         argv = [sys.executable, "-B", str(ROOT / "scripts/check-evidence.py"), "--inputs", str(self.inputs), "--profile", profile]
