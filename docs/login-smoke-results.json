@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "base_main": "c61cd031370ccc99745fbeeef22ee879e4a408fc",
+  "system_followup": "0e899cd9bed908dec4d7c102f78077fd6610ef07",
+  "clean_default_build": {
+    "initrd": {
+      "path": "initrd.img",
+      "sha256": "034a02c1e94842a7f2508f657d764352a6ef49e9666f54af9de75db425efe0f9",
+      "bytes": 2990080
+    },
+    "kernel": {
+      "path": "image-9fd8f80072dd50bc007587c5a17b223f9203e0616adfd2e631835f35533eff9c",
+      "sha256": "9fd8f80072dd50bc007587c5a17b223f9203e0616adfd2e631835f35533eff9c",
+      "bytes": 1795704
+    },
+    "runtime_executables": 17
+  },
+  "main_receipt_gap": {
+    "evidence": ".vanllia/runs/login-1793904895378248728",
+    "verdict": {
+      "command": "(+ 314000 159)",
+      "cpus": 1,
+      "error": "natural shutdown deadline",
+      "expected_result": 314159,
+      "firmware_sha256": "8f34d231fde9554e1a3c511bb1efac489da310ab0462504c512994601e12d213",
+      "host_forced_stop": true,
+      "initrd_sha256": "034a02c1e94842a7f2508f657d764352a6ef49e9666f54af9de75db425efe0f9",
+      "kernel_sha256": "9fd8f80072dd50bc007587c5a17b223f9203e0616adfd2e631835f35533eff9c",
+      "native_verdict": "Err(Workflow(\"System completion event missing\"))",
+      "passed": false,
+      "process": "Ok(ExitStatus(unix_wait_status(0)))",
+      "purpose": "login_requested_shell_command_cleanup",
+      "schema": 1,
+      "sent_eof": false,
+      "session": "Shell",
+      "shell_task": null,
+      "shell_verdict": "Err(Workflow(\"System completion event missing\"))"
+    }
+  },
+  "minimum_login_smoke": {
+    "selection": [
+      "login"
+    ],
+    "selected_unit_templates": 9,
+    "runtime_executables": 15,
+    "ordinary_instances": 8,
+    "evidence": ".vanllia/runs/login-1793905937140645269",
+    "verdict": {
+      "command": "(+ 314000 159)",
+      "cpus": 1,
+      "error": null,
+      "expected_result": 314159,
+      "firmware_sha256": "8f34d231fde9554e1a3c511bb1efac489da310ab0462504c512994601e12d213",
+      "host_forced_stop": false,
+      "initrd_sha256": "ec1ddf1b1ef573e49da5b7b3fcb6690d98a9277a45e768e80cc8ce110fda5f87",
+      "kernel_sha256": "9fd8f80072dd50bc007587c5a17b223f9203e0616adfd2e631835f35533eff9c",
+      "native_verdict": "Ok(())",
+      "passed": true,
+      "process": "Ok(ExitStatus(unix_wait_status(0)))",
+      "purpose": "login_requested_shell_command_cleanup",
+      "schema": 1,
+      "sent_eof": true,
+      "session": "Done",
+      "shell_task": 11,
+      "shell_verdict": "Ok(())"
+    }
+  },
+  "limitations": [
+    "normal live owner only; early owner exit not covered",
+    "old scenarios not migrated; no further SMP run"
+  ]
+}
