@@ -1,0 +1,17 @@
+schema = 1
+
+[sources.env]
+git = "https://github.com/shuyra-arche/env.git"
+commit = "4d0f5a5526b9f7251627f58b80d769259395c9e3"
+
+[sources.env.reference]
+kind = "revision"
+value = "4d0f5a5526b9f7251627f58b80d769259395c9e3"
+
+[sources.unit]
+git = "https://github.com/shuyra-arche/unit.git"
+commit = "ad50b803c3bd5cd2ef90010d80badf23551e88d5"
+
+[sources.unit.reference]
+kind = "revision"
+value = "ad50b803c3bd5cd2ef90010d80badf23551e88d5"

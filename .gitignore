@@ -1,4 +1,5 @@
 /target/
+/.vanllia/
 __pycache__/
 *.pyc
 /trace/

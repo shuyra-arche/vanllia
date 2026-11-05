@@ -1,0 +1,50 @@
+schema = 1
+units = ["login", "daemon"]
+
+[boot]
+system = "system"
+
+[boot.kernel]
+image = "shuyra"
+
+[platform]
+target = "riscv64gc-unknown-none-elf"
+profile = "release"
+
+[runner]
+machine = "virt"
+memory = "256M"
+cpus = 1
+timeout = 60
+
+[sources.system]
+path = "components/system"
+
+[sources.kernel]
+path = "components/kernel"
+
+[sources.image-builder]
+path = "components/image-builder"
+
+[sources.driver]
+path = "components/driver"
+
+[sources.session]
+path = "components/session"
+
+[sources.pipe]
+path = "components/pipe"
+
+[sources.daemon]
+path = "components/daemon"
+
+[sources.shell]
+path = "components/shell"
+
+[sources.unit]
+git = "https://github.com/shuyra-arche/unit.git"
+rev = "ad50b803c3bd5cd2ef90010d80badf23551e88d5"
+
+[sources.env]
+git = "https://github.com/shuyra-arche/env.git"
+rev = "4d0f5a5526b9f7251627f58b80d769259395c9e3"
