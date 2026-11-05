@@ -56,3 +56,32 @@ This target always uses one CPU and a bounded 120-second VM deadline. It adds no
 test Unit and does not change the supplied artifact. Per-run input snapshots,
 serial/process evidence and `verdict.json` live under `.vanllia/runs/login-*`.
 It is a new minimum smoke check; no old scenario suite is migrated.
+
+## PCI, IOMMU and VirtIO block discovery
+
+The ignored `drivers` target runs the fixed `test.virtio-blk-discovery` artifact
+from the VirtIO provider. It enables QEMU's real emulated platform IOMMU and
+adds one modern PCI VirtIO block device backed by a generated, read-only 4 MiB
+zero disk. No static BAR, DMA source or hardware resource is fabricated.
+
+The provider probe authenticates System State and the Hub publisher/list face,
+then waits for exactly `virtio-blk-pci-1` in the Hub class. The host requires
+exactly five instances, all four resident drivers Ready, probe Reap/zero, every
+instance retired, successful System completion and natural VM exit zero. It
+uses the selected CLI's typed native verifier; prose cannot replace receipts.
+
+```sh
+vanllia build --offline --unit test.virtio-blk-discovery
+# Set VANLLIA_TEST_ARTIFACT to the printed directory and the same exact
+# VANLLIA_TEST_FIRMWARE, _SHA256 and _BYTES inputs described above.
+cargo test --manifest-path tests/product-lifecycle/Cargo.toml \
+  --test drivers --target x86_64-unknown-linux-gnu --locked --offline \
+  -- --ignored --nocapture
+```
+
+This target uses one CPU and a 60-second deadline. Each run preserves verified
+kernel/initrd/firmware inputs, the generated disk, command arguments, serial,
+process receipts and `verdict.json` under `.vanllia/runs/drivers-*`.
+It verifies authenticated discovery, observed domain establishment and Hub
+enrollment. It does not exercise block requests, queue DMA, data integrity,
+recovery, DMA isolation, physical hardware or SMP.
