@@ -16,10 +16,11 @@ export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$
 ```
 
 This initializes the current provider trees. The frozen `legacy/sqware`
-checkout is optional historical material; normal builds and schema-2 evidence
-do not require its content or Git objects. Missing or changed current providers
-still fail source verification. Retained schema-1 records keep their original
-source requirements.
+gitlink is no longer registered, so unrestricted recursive initialization also
+fetches only current providers. An existing local checkout is preserved and
+ignored at that exact path; normal builds and schema-2 evidence do not require
+its content or Git objects. Missing or changed current providers still fail
+source verification. Retained schema-1 records keep their original meaning.
 
 From this directory (Linux x86_64 host):
 
@@ -115,10 +116,11 @@ combined Rust host gate has 19 cases.
 All 17 selected images have explicit product coordinates. Zero selected images
 use `legacy/sqware/programs/Cargo.toml`, and the production normal dependency
 graph has zero sqware edges. The root locked graph, including host development
-dependencies, now has zero sqware packages. The old gitlink remains as a
-historical reference; its existence is not a requirement to port every old
-test or scene. See [the current scope](docs/current-migration-scope.md). This is not
-whole-repository independence.
+dependencies, now has zero sqware packages. The old gitlink is removed from
+the current tree; its frozen SHA and migration records remain in history and
+documentation. Existing local source data is retained, and old tests/scenes
+are not migration prerequisites. See [the current scope](docs/current-migration-scope.md).
+This does not establish runtime acceptance or archive readiness.
 
 The `login` image and `PROGRAM` now come from the immutable Session provider
 `https://github.com/shuyra-arche/session.git` at full revision

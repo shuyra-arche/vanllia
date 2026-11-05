@@ -204,10 +204,12 @@ Vanllia source commit, and null Vanllia/component release versions. It leaves
 `release_approved: false`, `build_records: []`, `firmware_selection: null` and
 `runtime_evidence: []`. These are honest missing facts, not release defaults.
 `is_release_manifest` and `is_dependency_graph` are both explicitly false.
-`repositories` contains required-source records; `historical_references` names
-the committed legacy gitlink with `checkout_required: false` and
-`content_status: not-inventoried`. That metadata stays identical when the old
-checkout is missing, present or dirty. Optional presence observations belong
+`repositories` contains required-source records. `historical_references` is
+empty for the current tree, which no longer registers the old gitlink. For
+retained revisions containing that link, it names the committed legacy pin
+with `checkout_required: false` and `content_status: not-inventoried`.
+That metadata stays identical when the old checkout is missing, present or
+dirty. Optional presence observations for retained revisions belong
 to execution records, outside the committed-input hash. Retained schema-1
 records keep their prior interpretation; see [execution evidence](execution-evidence.md)
 and [group consistency](evidence-group.md) for matching-version checks.

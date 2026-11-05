@@ -61,16 +61,19 @@ The hash binds the supplied file bytes, including formatting.
 
 It checks HEAD and clean status for every required-source inventory checkout
 before and after the run. Unlike a pure object inventory, execution requires
-those checkouts at the selected commits. The fixed `legacy/sqware` gitlink is
-a historical reference in input schema 2: its committed URL/SHA remain in the
-snapshot, but its checkout and content are not read or verified. This keeps the
+those checkouts at the selected commits. For retained revisions with the fixed
+`legacy/sqware` gitlink, input schema 2 treats it as a historical reference:
+its committed URL/SHA remain in the snapshot, but its checkout and content are
+not read or verified. The current tree has no such gitlink, so generated
+`historical_references` and before/after historical observations are empty.
+Existing local source at `/legacy/sqware/` is ignored exactly. This keeps the
 snapshot deterministic whether that checkout is absent, uninitialized, dirty
 or present. The policy is explicit; it is not a Cargo/source-closure analysis.
 All other registered gitlinks retain the existing strict expansion requirement.
 
-Only that exact historical worktree path is excluded from the root clean check.
-Its staged gitlink changes still fail, as do tracked source/configuration
-changes, ordinary untracked files (including similarly named paths), and
+For retained revisions, only that exact historical worktree path is excluded
+from the root clean check. Its staged gitlink changes still fail, as do tracked
+source/configuration changes, ordinary untracked files (including similarly named paths), and
 missing, dirty or mismatched required providers. Historical checkout presence
 is recorded before/after as `absent` or `present-unverified`, always with
 `content_verified: false`. Availability may change without changing required

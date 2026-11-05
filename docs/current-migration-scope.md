@@ -39,6 +39,9 @@ Preserved local checkpoints are `05db64f263d36f70accde7654c8a3f79b32c7a47`
 (one provider-coverage note) and `a085887bf94d8c514f78320abdc8b8d9e600e106`
 (paused fixture workspace). Neither is an ancestor of this active outcome.
 Raw results and verified recovery copies live under
-`/workspace/boot-review/parallel-next-batch/`. The historical repository,
-gitlink and immutable source pins are retained; no archive or source-data
-deletion is part of this change.
+`/workspace/boot-review/parallel-next-batch/`. The current tree no longer
+registers the `legacy/sqware` gitlink or its `.gitmodules` entry. The frozen
+revision `94e114614bec53424ac55e640fc80cf19a3e7107`, prior commits and records
+remain historical evidence. Existing local source and its Git directory are
+preserved; `/legacy/sqware/` is ignored exactly so it does not dirty the current
+checkout. No archive or source-data deletion is part of this change.
