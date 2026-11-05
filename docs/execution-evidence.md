@@ -136,8 +136,10 @@ failure/missing states and rejection of edited approval claims. They are not
 product/Kernel build evidence. The full host discovery also preserves the
 original acceptance assertion fingerprints.
 
-This implements independent build/test observations. Joining multiple runs,
-evaluating release gates or coverage, authenticating tools, validating selected
+This implements independent build/test observations. A separate read-only
+[evidence-group checker](evidence-group.md) now compares the three required
+records and their retained files against one expected input snapshot. It does
+not rerun commands or approve release gates. Evaluating coverage, authenticating tools, validating selected
 dependency graphs, selecting firmware, runtime acceptance, assigning versions,
 publishing and signing release records remain separate work. Successful local
 records do not authorize the previously rejected Vanllia merge.
