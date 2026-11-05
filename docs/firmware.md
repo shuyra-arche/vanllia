@@ -70,9 +70,12 @@ only. Retain the complete exact source, build/configuration record,
 `COPYING.BSD`, `ThirdPartyNotices.md`, and each selected file's copyright and
 license notices. A distribution needs the applicable GPL source/license and
 BSD-3-Clause material as well as the BSD-2-Clause/libfdt notices; that complete
-distribution assessment is still open. No driver or platform is disabled to
-hide this finding. Alternatively, supply a separately documented firmware
-artifact with its own verified source and notice record.
+distribution assessment is still open. This default-generic result remains
+intact. A separate [optional configuration candidate](../firmware/opensbi/README.md)
+uses official switches to exclude two platforms, with two-build repeatability
+and source/link evidence; it is not adopted by a boot entry. Alternatively,
+supply a separately documented firmware artifact with its own verified source
+and notice record.
 
 No firmware binary is added to Vanllia or selected as its default. This work
 does not add a blanket license to either repository.

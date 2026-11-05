@@ -1,0 +1,759 @@
+{
+  "frozen_source": "94e114614bec53424ac55e640fc80cf19a3e7107",
+  "planner": "17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f",
+  "pending": [
+    {
+      "entry_scene": "accept",
+      "frozen_deployment": "accept",
+      "entry": "accept-system",
+      "images": [
+        "probe-operator-land",
+        "probe-operator-gate",
+        "probe-control",
+        "probe-coalition",
+        "probe-rack-guest",
+        "probe-rack-mount",
+        "probe-rack",
+        "probe-bound",
+        "probe-lease",
+        "probe-watch-gone",
+        "probe-watch-after",
+        "probe-watch",
+        "probe-rule-other",
+        "probe-rule",
+        "probe-owner",
+        "probe-denied",
+        "member",
+        "subject",
+        "sleeper",
+        "rtc",
+        "uart",
+        "router",
+        "lodger",
+        "passer",
+        "guest",
+        "probe-terminal",
+        "login",
+        "terminal",
+        "account",
+        "shell",
+        "cat",
+        "emit",
+        "upper",
+        "fail",
+        "spin",
+        "workers",
+        "pipe",
+        "hub",
+        "accept-system"
+      ],
+      "additional_to_current_product": [
+        "probe-operator-land",
+        "probe-operator-gate",
+        "probe-control",
+        "probe-coalition",
+        "probe-rack-guest",
+        "probe-rack-mount",
+        "probe-rack",
+        "probe-bound",
+        "probe-lease",
+        "probe-watch-gone",
+        "probe-watch-after",
+        "probe-watch",
+        "probe-rule-other",
+        "probe-rule",
+        "probe-owner",
+        "probe-denied",
+        "member",
+        "subject",
+        "sleeper",
+        "lodger",
+        "passer",
+        "guest",
+        "probe-terminal",
+        "accept-system"
+      ]
+    },
+    {
+      "entry_scene": "system-fault",
+      "frozen_deployment": "system-fault",
+      "entry": "system-fault",
+      "images": [
+        "system-child",
+        "system-dependent",
+        "rtc",
+        "uart",
+        "router",
+        "account",
+        "shell",
+        "cat",
+        "emit",
+        "upper",
+        "fail",
+        "spin",
+        "workers",
+        "pipe",
+        "hub",
+        "system-fault",
+        "system-fault-unit"
+      ],
+      "additional_to_current_product": [
+        "system-child",
+        "system-dependent",
+        "system-fault",
+        "system-fault-unit"
+      ]
+    },
+    {
+      "entry_scene": "rig",
+      "frozen_deployment": "rig",
+      "entry": "rig",
+      "images": [
+        "rig",
+        "hang"
+      ],
+      "additional_to_current_product": [
+        "rig",
+        "hang"
+      ]
+    },
+    {
+      "entry_scene": "load",
+      "frozen_deployment": "load",
+      "entry": "load",
+      "images": [
+        "load",
+        "busy",
+        "park"
+      ],
+      "additional_to_current_product": [
+        "load",
+        "busy",
+        "park"
+      ]
+    },
+    {
+      "entry_scene": "group",
+      "frozen_deployment": "group",
+      "entry": "group",
+      "images": [
+        "group",
+        "waiter"
+      ],
+      "additional_to_current_product": [
+        "group",
+        "waiter"
+      ]
+    },
+    {
+      "entry_scene": "beat",
+      "frozen_deployment": "beat",
+      "entry": "beat",
+      "images": [
+        "beat"
+      ],
+      "additional_to_current_product": [
+        "beat"
+      ]
+    },
+    {
+      "entry_scene": "again",
+      "frozen_deployment": "again",
+      "entry": "again",
+      "images": [
+        "again",
+        "churn"
+      ],
+      "additional_to_current_product": [
+        "again",
+        "churn"
+      ]
+    },
+    {
+      "entry_scene": "memory-transfer",
+      "frozen_deployment": "memory-transfer",
+      "entry": "memory-transfer",
+      "images": [
+        "memory-transfer",
+        "memory-transfer-unit"
+      ],
+      "additional_to_current_product": [
+        "memory-transfer",
+        "memory-transfer-unit"
+      ]
+    },
+    {
+      "entry_scene": "memory-transfer-tlb",
+      "frozen_deployment": "memory-transfer-tlb",
+      "entry": "memory-transfer-tlb",
+      "images": [
+        "memory-transfer-tlb"
+      ],
+      "additional_to_current_product": [
+        "memory-transfer-tlb"
+      ]
+    },
+    {
+      "entry_scene": "memory-transfer-fresh",
+      "frozen_deployment": "memory-transfer-fresh",
+      "entry": "memory-transfer-fresh",
+      "images": [
+        "memory-transfer-fresh"
+      ],
+      "additional_to_current_product": [
+        "memory-transfer-fresh"
+      ]
+    },
+    {
+      "entry_scene": "memory-transfer-race",
+      "frozen_deployment": "memory-transfer-race",
+      "entry": "memory-transfer-race",
+      "images": [
+        "memory-transfer-race",
+        "memory-transfer-race-unit"
+      ],
+      "additional_to_current_product": [
+        "memory-transfer-race",
+        "memory-transfer-race-unit"
+      ]
+    },
+    {
+      "entry_scene": "daemon-rtc",
+      "frozen_deployment": "daemon-rtc",
+      "entry": "daemon-rtc",
+      "images": [
+        "daemon-ctl-rtc",
+        "daemon",
+        "rtc",
+        "router",
+        "hub",
+        "daemon-rtc"
+      ],
+      "additional_to_current_product": [
+        "daemon-ctl-rtc",
+        "daemon-rtc"
+      ]
+    },
+    {
+      "entry_scene": "daemon-target",
+      "frozen_deployment": "daemon-target",
+      "entry": "daemon-target",
+      "images": [
+        "daemon-ctl-target",
+        "daemon",
+        "fixturetarget",
+        "daemon-target"
+      ],
+      "additional_to_current_product": [
+        "daemon-ctl-target",
+        "fixturetarget",
+        "daemon-target"
+      ]
+    },
+    {
+      "entry_scene": "daemon-stop",
+      "frozen_deployment": "daemon-stop",
+      "entry": "daemon-stop",
+      "images": [
+        "daemon-ctl-stop",
+        "daemon",
+        "fixturetarget",
+        "daemon-stop"
+      ],
+      "additional_to_current_product": [
+        "daemon-ctl-stop",
+        "fixturetarget",
+        "daemon-stop"
+      ]
+    },
+    {
+      "entry_scene": "iommu-probe",
+      "frozen_deployment": "iommu-probe",
+      "entry": "iommu-probe",
+      "images": [
+        "iommu-probe"
+      ],
+      "additional_to_current_product": [
+        "iommu-probe"
+      ]
+    },
+    {
+      "entry_scene": "iommu-dma",
+      "frozen_deployment": "iommu-dma",
+      "entry": "iommu-dma",
+      "images": [
+        "iommu-dma"
+      ],
+      "additional_to_current_product": [
+        "iommu-dma"
+      ]
+    },
+    {
+      "entry_scene": "iommu-product",
+      "frozen_deployment": "iommu-product",
+      "entry": "system",
+      "images": [
+        "device-ctl",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "daemon",
+        "rtc",
+        "uart",
+        "router",
+        "login",
+        "terminal",
+        "account",
+        "shell",
+        "cat",
+        "emit",
+        "upper",
+        "fail",
+        "spin",
+        "workers",
+        "pipe",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-product-fault",
+      "frozen_deployment": "iommu-product-fault",
+      "entry": "system",
+      "images": [
+        "device-ctl-fault",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "daemon",
+        "rtc",
+        "uart",
+        "router",
+        "login",
+        "terminal",
+        "account",
+        "shell",
+        "cat",
+        "emit",
+        "upper",
+        "fail",
+        "spin",
+        "workers",
+        "pipe",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-fault",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-product-start-before",
+      "frozen_deployment": "iommu-product-before",
+      "entry": "system",
+      "images": [
+        "device-ctl-before",
+        "device-work-before",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "daemon",
+        "rtc",
+        "uart",
+        "router",
+        "login",
+        "terminal",
+        "account",
+        "shell",
+        "cat",
+        "emit",
+        "upper",
+        "fail",
+        "spin",
+        "workers",
+        "pipe",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-before",
+        "device-work-before",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-product-start-after",
+      "frozen_deployment": "iommu-product-after",
+      "entry": "system",
+      "images": [
+        "device-ctl-after",
+        "device-work-after",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "daemon",
+        "rtc",
+        "uart",
+        "router",
+        "login",
+        "terminal",
+        "account",
+        "shell",
+        "cat",
+        "emit",
+        "upper",
+        "fail",
+        "spin",
+        "workers",
+        "pipe",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-after",
+        "device-work-after",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-dual",
+      "frozen_deployment": "iommu-dual",
+      "entry": "system",
+      "images": [
+        "device-ctl-dual",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-dual",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-dual-long",
+      "frozen_deployment": "iommu-dual-long",
+      "entry": "system",
+      "images": [
+        "device-ctl-dual",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-dual",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-soak",
+      "frozen_deployment": "iommu-soak",
+      "entry": "system",
+      "images": [
+        "device-ctl-soak",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-soak",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-soak-long",
+      "frozen_deployment": "iommu-soak-long",
+      "entry": "system",
+      "images": [
+        "device-ctl-soak",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-soak",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-ruin",
+      "frozen_deployment": "iommu-ruin",
+      "entry": "iommu-ruin",
+      "images": [
+        "device-ctl-ruin",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-ruin"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-ruin",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-ruin"
+      ]
+    },
+    {
+      "entry_scene": "iommu-forced",
+      "frozen_deployment": "iommu-forced",
+      "entry": "system",
+      "images": [
+        "device-ctl-forced",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-forced",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-fail-invalidate",
+      "frozen_deployment": "iommu-fail-invalidate",
+      "entry": "iommu-confirmation",
+      "images": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-confirmation"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-confirmation"
+      ]
+    },
+    {
+      "entry_scene": "iommu-fail-reset",
+      "frozen_deployment": "iommu-fail-reset",
+      "entry": "iommu-confirmation",
+      "images": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-confirmation"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-confirmation"
+      ]
+    },
+    {
+      "entry_scene": "iommu-fail-release",
+      "frozen_deployment": "iommu-fail-release",
+      "entry": "iommu-confirmation",
+      "images": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-confirmation"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-confirmation"
+      ]
+    },
+    {
+      "entry_scene": "iommu-fail-reference",
+      "frozen_deployment": "iommu-fail-reference",
+      "entry": "iommu-confirmation",
+      "images": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-confirmation"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-confirmation",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-confirmation"
+      ]
+    },
+    {
+      "entry_scene": "iommu-fail-fence",
+      "frozen_deployment": "iommu-fail-fence",
+      "entry": "system",
+      "images": [
+        "device-ctl-fault",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-fault",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-fail-readback",
+      "frozen_deployment": "iommu-fail-readback",
+      "entry": "system",
+      "images": [
+        "device-ctl-fault",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "system"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-fault",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci"
+      ]
+    },
+    {
+      "entry_scene": "iommu-guard-pci",
+      "frozen_deployment": "iommu-guard-pci",
+      "entry": "iommu-guard",
+      "images": [
+        "device-ctl-guard",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-guard"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-guard",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-guard"
+      ]
+    },
+    {
+      "entry_scene": "iommu-guard-iommu",
+      "frozen_deployment": "iommu-guard-iommu",
+      "entry": "iommu-guard",
+      "images": [
+        "device-ctl-guard",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-guard"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-guard",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-guard"
+      ]
+    },
+    {
+      "entry_scene": "iommu-guard-virtio-blk",
+      "frozen_deployment": "iommu-guard-virtio-blk",
+      "entry": "iommu-guard",
+      "images": [
+        "device-ctl-guard",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "hub",
+        "iommu-guard"
+      ],
+      "additional_to_current_product": [
+        "device-ctl-guard",
+        "device-work",
+        "virtio-blk",
+        "iommu",
+        "pci",
+        "iommu-guard"
+      ]
+    }
+  ]
+}

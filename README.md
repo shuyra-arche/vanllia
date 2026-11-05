@@ -211,3 +211,5 @@ runtime acceptance.
 See the [entry migration boundary](docs/boot-entry-migration.md) for exact source
 heads and the remaining archive gates. This candidate does not establish
 whole-repository independence or runtime acceptance.
+The [remaining fixture and scene inventory](docs/legacy-migration-order.md)
+sets out the minimum migration order without carrying over the old test layout.
