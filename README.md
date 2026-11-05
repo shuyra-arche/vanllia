@@ -52,6 +52,13 @@ Local choices live in ignored `.vanllia/overrides.toml`; the editor configuratio
 and build use the same Cargo overlay. The CLI prepares missing packages and
 locks real commits; refresh intentionally with `vanllia fetch --update`.
 
+The pinned SDK uses Kernel's API as the ABI definition and Kernel's Client for
+calls and client state. Env, Wire and Mold preserve their existing facade paths;
+Execution adapts the existing startup code to that Client. The product selects
+these published sources together, including IOMMU's API-only hold dependency.
+See [SDK consumer validation](docs/sdk-consumer-validation.md) for exact pins,
+the real Cargo graphs and the remaining legacy startup constraints.
+
 Build receipts identify exact initrd/kernel bytes, debug images, Cargo locks,
 toolchain and source hashes under `.vanllia/artifacts/`. To run a saved artifact,
 configure a specific firmware input first, then rebuild the artifact to include
@@ -65,9 +72,10 @@ vanllia test -- pipe.roundtrip
 ```
 
 These last two commands execute managed QEMU with headless serial evidence.
-The minimal Pipe case passed 1/2/4-core QEMU with native exit and reclaim checks;
-the unchanged full product also passed startup and terminal EOF cleanup at each
-CPU count. A bounded paired syscall benchmark measured event-log removal.
-See [docs/dynamic-build-validation.md](docs/dynamic-build-validation.md)
-for current evidence. Earlier `cargo image`, Nushell build/runner entries and
-static Deployment files are retired.
+The current SDK pins passed the default release build, the five-image
+`virtio-blk` closure build and single-core Pipe QEMU with native exit and reclaim
+checks. [SDK consumer validation](docs/sdk-consumer-validation.md) records those
+fresh artifacts. Earlier 1/2/4-core product and Pipe runs and the bounded syscall
+benchmark remain in [dynamic build validation](docs/dynamic-build-validation.md)
+with their own older pins. Earlier `cargo image`, Nushell build/runner entries
+and static Deployment files are retired.

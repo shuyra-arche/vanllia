@@ -1,0 +1,679 @@
+{
+  "schema": 1,
+  "kernel_gitlink": "90d43dbf3ee43fd146f487718eb39e88f2507c05",
+  "sources": {
+    "env": {
+      "git": "https://github.com/shuyra-arche/env.git",
+      "commit": "f54f9a1ab3f0df3631fb80ff2bf5d0cfaecbe927"
+    },
+    "execution": {
+      "git": "https://github.com/shuyra-arche/execution.git",
+      "commit": "ea49192e5df8bf744e083ced23ff0908b5bab3a3"
+    },
+    "iommu": {
+      "git": "https://github.com/shuyra-arche/driver-iommu.git",
+      "commit": "90f59ef91d3c4c157fb78bb691991ee7abe4f175"
+    },
+    "mold": {
+      "git": "https://github.com/shuyra-arche/mold.git",
+      "commit": "1addd302789e6a1c0dea6a7adf27e975a05d5ada"
+    },
+    "unit": {
+      "git": "https://github.com/shuyra-arche/unit.git",
+      "commit": "ad50b803c3bd5cd2ef90010d80badf23551e88d5"
+    },
+    "wire": {
+      "git": "https://github.com/shuyra-arche/wire.git",
+      "commit": "4b7619fda4bbd202e9a5c952872a84c2145c681e"
+    }
+  },
+  "public_manifest_sha256": "556ffd63100db7f1c9a52bbfb8dc1b256fecceaa496d5f2cd66a641d394e1cf3",
+  "source_lock_sha256": "181ad69e115d6b04540a047890f6d553939e0371ee1d2779bb1e8df8f9a92764",
+  "local_source_overrides": {},
+  "graph_query": [
+    "tree",
+    "--edges",
+    "normal,build",
+    "--target",
+    "riscv64gc-unknown-none-elf",
+    "--package",
+    "PACKAGE",
+    "--prefix",
+    "none",
+    "--format",
+    "{p}",
+    "--locked",
+    "--offline",
+    "--manifest-path",
+    "MANIFEST",
+    "--config",
+    "OVERLAY"
+  ],
+  "builds": [
+    {
+      "artifact": ".vanllia/artifacts/1793913263541098745-62856-0",
+      "receipt_sha256": "0a0426b25be0e8f18f4280760636fd55ccbd4c53a0408f872dccccf7a20e7b8b",
+      "initrd": {
+        "path": "initrd.img",
+        "sha256": "62af1ad1b8659c0acaa0e3a8fb8370c786ae5e5023ff6636620c2c47fcb122a4",
+        "bytes": 3018752
+      },
+      "kernel": {
+        "path": "image-26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+        "sha256": "26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+        "bytes": 1797544
+      },
+      "firmware": null,
+      "rustc": "rustc 1.101.0-nightly (a30aa9064 2026-10-08)\nbinary: rustc\ncommit-hash: a30aa9064df6a504b6a323c6884a2f4cfbfff666\ncommit-date: 2026-10-08\nhost: x86_64-unknown-linux-gnu\nrelease: 1.101.0-nightly\nLLVM version: 23.1.3\n",
+      "cargo": "cargo 1.101.0-nightly (29c5daa1a 2026-10-07)\n",
+      "builder_sha256": "81fe6f04b247801289b2cedc2fdbdb6b697187549476fc6ffa22b60d5e4fefb8",
+      "kernel_features": [],
+      "images": [
+        "account",
+        "daemon",
+        "emit",
+        "fail",
+        "hub",
+        "login",
+        "pipe",
+        "prog-cat",
+        "prog-shell",
+        "router",
+        "rtc",
+        "spin",
+        "system",
+        "terminal",
+        "uart",
+        "upper",
+        "workers"
+      ],
+      "locks": {
+        "components/daemon": {
+          "path": "cargo-0.lock",
+          "sha256": "17e403b28543109464eb7f387cc4ca5b2539c71a633226ebd68e1aab597dead9",
+          "bytes": 17928
+        },
+        "components/driver/units/hub": {
+          "path": "cargo-1.lock",
+          "sha256": "4ab2ebb0c848d9de5b97fb111282828eec3cc8caf2239eecf544e19ce4aada9a",
+          "bytes": 18913
+        },
+        "components/driver/units/router": {
+          "path": "cargo-2.lock",
+          "sha256": "e6dd544507592894b2fbd6f821751f95586f7c00a6144a6c8354a349d14f9920",
+          "bytes": 19736
+        },
+        "components/driver/units/rtc": {
+          "path": "cargo-3.lock",
+          "sha256": "cee07dc9c984a168745e7ba81623333a17c90c7061d5fda46fd0a815a96f46d8",
+          "bytes": 19165
+        },
+        "components/driver/units/uart": {
+          "path": "cargo-4.lock",
+          "sha256": "dd78b299ee058870a80233ad1366838f2680bebc5963daad0d5e6dc0487757b4",
+          "bytes": 19100
+        },
+        "components/kernel": {
+          "path": "cargo-5.lock",
+          "sha256": "b888d3fde029bcc4caaacb78de06dd8733a30b7847cacd9092b0b667558a982e",
+          "bytes": 21274
+        },
+        "components/pipe": {
+          "path": "cargo-6.lock",
+          "sha256": "fe75c57d4908d1c032e168c11d68f982870ba169c3316fc106b4d9801b38ed8d",
+          "bytes": 18350
+        },
+        "components/session/units/account": {
+          "path": "cargo-7.lock",
+          "sha256": "f292355fe22d84d7ea66aa6d63a0334f5046696c18b939bec2e5646ad0b3a04d",
+          "bytes": 18422
+        },
+        "components/session/units/login": {
+          "path": "cargo-8.lock",
+          "sha256": "bf161d262c7578bfdd2a501cc1d2266c1799a78eca78a26a68716de424fac9f4",
+          "bytes": 22425
+        },
+        "components/session/units/terminal": {
+          "path": "cargo-9.lock",
+          "sha256": "9f19285e74ee7377807277d4539d5e5570924aac97386d54a139ee7c408a3d87",
+          "bytes": 18820
+        },
+        "components/shell/cat": {
+          "path": "cargo-10.lock",
+          "sha256": "e05e4f0b08a4982aa193845211f5367c2e3e338b2261b8ea053171fe6c985764",
+          "bytes": 15995
+        },
+        "components/shell/commands": {
+          "path": "cargo-11.lock",
+          "sha256": "1e7812607abed6b33f4efbdb317f1c0ffaa6128a50eabe6e86df7f6697de87a5",
+          "bytes": 15362
+        },
+        "components/shell/server": {
+          "path": "cargo-12.lock",
+          "sha256": "c02ae343c748e78021fadcac4185acf84d1809867caad656a03bb41bbbc57715",
+          "bytes": 21077
+        },
+        "components/system": {
+          "path": "cargo-13.lock",
+          "sha256": "eb3043d1f48299e7ebf0b32f8f34f2b4f2931fc266742d8aeff33644d572fd75",
+          "bytes": 18994
+        }
+      },
+      "graphs": {
+        "daemon-server": {
+          "bins": [
+            "daemon"
+          ],
+          "workspace": "components/daemon",
+          "overlay": ".vanllia/cargo/bc03907149edee90a0fe34c13bb2ef8d62c798dd349ecfe32892320778748e9b/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "hub-server": {
+          "bins": [
+            "hub"
+          ],
+          "workspace": "components/driver/units/hub",
+          "overlay": ".vanllia/cargo/f3697bb8729e4889cbe0db408329e82c7af1d89df398036d499cfe7b5b29b2fc/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "router-server": {
+          "bins": [
+            "router"
+          ],
+          "workspace": "components/driver/units/router",
+          "overlay": ".vanllia/cargo/377d697bca5042224e3abd3237ef65cadc87100359d8cf8cff6a8b66f8be2e47/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "rtc-server": {
+          "bins": [
+            "rtc"
+          ],
+          "workspace": "components/driver/units/rtc",
+          "overlay": ".vanllia/cargo/df4beb757364e437021a1508ee79f3b3c4317b4a3b7bdfad6bb8da61ed49f3db/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "uart-server": {
+          "bins": [
+            "uart"
+          ],
+          "workspace": "components/driver/units/uart",
+          "overlay": ".vanllia/cargo/bd44940a4ac37dab5bc73b6b436e4513671b84248042ba6d9abe59e857a51ddd/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "kernel": {
+          "bins": [
+            "shuyra"
+          ],
+          "workspace": "components/kernel",
+          "overlay": ".vanllia/cargo/be79b71b55c7dcdfab574fe979cc53f5580453beff58685a0fe4fe6f5cc794aa/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [],
+          "iommu_protocol": [
+            "iommu-hold v0.1.0 (.vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175/hold)"
+          ]
+        },
+        "pipe-server": {
+          "bins": [
+            "pipe"
+          ],
+          "workspace": "components/pipe",
+          "overlay": ".vanllia/cargo/f1d6135a294f1a7fefa60fd3d2c071416e47371a1a6c26114f21ffc98f3d7598/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "account-server": {
+          "bins": [
+            "account"
+          ],
+          "workspace": "components/session/units/account",
+          "overlay": ".vanllia/cargo/1e0680a346a0c1849a82f989544ad289ea068adb2f78d0df299319d897752ace/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "login-server": {
+          "bins": [
+            "login"
+          ],
+          "workspace": "components/session/units/login",
+          "overlay": ".vanllia/cargo/b7c882290a967957c85de361a5c0f5096aa9cfc88142d7e62a7b5e7100a5f65a/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "terminal-server": {
+          "bins": [
+            "terminal"
+          ],
+          "workspace": "components/session/units/terminal",
+          "overlay": ".vanllia/cargo/c9a9d2ee1d57f51697c9bf1f4eaf01a7920b0f385281ef74359d54e590b1c18e/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "cat": {
+          "bins": [
+            "prog-cat"
+          ],
+          "workspace": "components/shell/cat",
+          "overlay": ".vanllia/cargo/fbc44964ab1f8eb000501bb6bad2005c1a358fcc957f6575382b506209c6f2ae/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "shell-command-images": {
+          "bins": [
+            "emit",
+            "fail",
+            "spin",
+            "upper",
+            "workers"
+          ],
+          "workspace": "components/shell/commands",
+          "overlay": ".vanllia/cargo/a145fd0ed02806300891e37ae7819a49aec4f9175267f448cf6a3c56f2a26743/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "shell-entry": {
+          "bins": [
+            "prog-shell"
+          ],
+          "workspace": "components/shell/server",
+          "overlay": ".vanllia/cargo/cbc6951c8bfbd5c7c8aeab27288f0a88dab9a410c48fc26461c5ff20a1bba256/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "system-server": {
+          "bins": [
+            "system"
+          ],
+          "workspace": "components/system",
+          "overlay": ".vanllia/cargo/63fa3adfdc36d4e6c127d184c554fe9f0eca2da133835f0120b9a106623fd3ac/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        }
+      }
+    },
+    {
+      "artifact": ".vanllia/artifacts/1793913412685619874-68771-0",
+      "receipt_sha256": "a3acdb41d0c2ca4a58411d558d3f45f37fca1b0f9dc421a323103c78de617fba",
+      "initrd": {
+        "path": "initrd.img",
+        "sha256": "86ee368aa9cc160a8d0e4b0ab6af24bd3545f5edcd30cc8d08e4f7c8e6a6254c",
+        "bytes": 1929216
+      },
+      "kernel": {
+        "path": "image-26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+        "sha256": "26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+        "bytes": 1797544
+      },
+      "firmware": null,
+      "rustc": "rustc 1.101.0-nightly (a30aa9064 2026-10-08)\nbinary: rustc\ncommit-hash: a30aa9064df6a504b6a323c6884a2f4cfbfff666\ncommit-date: 2026-10-08\nhost: x86_64-unknown-linux-gnu\nrelease: 1.101.0-nightly\nLLVM version: 23.1.3\n",
+      "cargo": "cargo 1.101.0-nightly (29c5daa1a 2026-10-07)\n",
+      "builder_sha256": "81fe6f04b247801289b2cedc2fdbdb6b697187549476fc6ffa22b60d5e4fefb8",
+      "kernel_features": [],
+      "images": [
+        "hub",
+        "iommu",
+        "pci",
+        "system",
+        "virtio-blk"
+      ],
+      "locks": {
+        ".vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175": {
+          "path": "cargo-0.lock",
+          "sha256": "ce7ebd3d4678fee61476b7c6d348fc573bdb53c24c544ba4db7015a80065a7c3",
+          "bytes": 19357
+        },
+        "components/driver/units/hub": {
+          "path": "cargo-1.lock",
+          "sha256": "4ab2ebb0c848d9de5b97fb111282828eec3cc8caf2239eecf544e19ce4aada9a",
+          "bytes": 18913
+        },
+        "components/driver/units/pci": {
+          "path": "cargo-2.lock",
+          "sha256": "65427557105e96bd9ee3c867c55241e2cbbf710c776231435f684058c59ec22c",
+          "bytes": 19083
+        },
+        "components/driver/units/virtio-blk": {
+          "path": "cargo-3.lock",
+          "sha256": "25d262d27281f82a82bbdcd79cef6c07c3fe2f76d35232efb11eeff3ba53913c",
+          "bytes": 19813
+        },
+        "components/kernel": {
+          "path": "cargo-4.lock",
+          "sha256": "b888d3fde029bcc4caaacb78de06dd8733a30b7847cacd9092b0b667558a982e",
+          "bytes": 21274
+        },
+        "components/system": {
+          "path": "cargo-5.lock",
+          "sha256": "eb3043d1f48299e7ebf0b32f8f34f2b4f2931fc266742d8aeff33644d572fd75",
+          "bytes": 18994
+        }
+      },
+      "graphs": {
+        "iommu-server": {
+          "bins": [
+            "iommu"
+          ],
+          "workspace": ".vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175",
+          "overlay": ".vanllia/cargo/6df61aa0f7debbb5751f8d648c70aa802725c1425df0ea1c594f30268bcd3f13/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": [
+            "iommu-api v0.1.0 (.vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175/api)",
+            "iommu-hold v0.1.0 (.vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175/hold)",
+            "iommu-server v0.1.0 (.vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175/server)"
+          ]
+        },
+        "hub-server": {
+          "bins": [
+            "hub"
+          ],
+          "workspace": "components/driver/units/hub",
+          "overlay": ".vanllia/cargo/f3697bb8729e4889cbe0db408329e82c7af1d89df398036d499cfe7b5b29b2fc/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "pci-server": {
+          "bins": [
+            "pci"
+          ],
+          "workspace": "components/driver/units/pci",
+          "overlay": ".vanllia/cargo/aae95343c632455c59d8c4ad61ec932b7d677d311a2a39e738f717fb69601468/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "virtio-blk-server": {
+          "bins": [
+            "virtio-blk"
+          ],
+          "workspace": "components/driver/units/virtio-blk",
+          "overlay": ".vanllia/cargo/31d8f95bc9ebb84910881afcaea621676a764c8526b9319bbc8f2c89f366192d/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": [
+            "iommu-api v0.1.0 (https://github.com/shuyra-arche/iommu.git?rev=3d210b4da522ee0c7427265ce0a0d8946e124b21#3d210b4d)"
+          ]
+        },
+        "kernel": {
+          "bins": [
+            "shuyra"
+          ],
+          "workspace": "components/kernel",
+          "overlay": ".vanllia/cargo/be79b71b55c7dcdfab574fe979cc53f5580453beff58685a0fe4fe6f5cc794aa/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [],
+          "iommu_protocol": [
+            "iommu-hold v0.1.0 (.vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175/hold)"
+          ]
+        },
+        "system-server": {
+          "bins": [
+            "system"
+          ],
+          "workspace": "components/system",
+          "overlay": ".vanllia/cargo/63fa3adfdc36d4e6c127d184c554fe9f0eca2da133835f0120b9a106623fd3ac/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        }
+      }
+    },
+    {
+      "artifact": ".vanllia/artifacts/1793913480955620851-72181-0",
+      "receipt_sha256": "e71e8b5b5a773e5873940fc11c75de388739212363da9a91d194abe644dad5d2",
+      "initrd": {
+        "path": "initrd.img",
+        "sha256": "1f423543d225fe44d65f6225b07d02e39194dcc157999f3895d6bbfc6b41874f",
+        "bytes": 1593344
+      },
+      "kernel": {
+        "path": "image-26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+        "sha256": "26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+        "bytes": 1797544
+      },
+      "firmware": {
+        "path": "firmware.bin",
+        "sha256": "8f34d231fde9554e1a3c511bb1efac489da310ab0462504c512994601e12d213",
+        "bytes": 273472
+      },
+      "rustc": "rustc 1.101.0-nightly (a30aa9064 2026-10-08)\nbinary: rustc\ncommit-hash: a30aa9064df6a504b6a323c6884a2f4cfbfff666\ncommit-date: 2026-10-08\nhost: x86_64-unknown-linux-gnu\nrelease: 1.101.0-nightly\nLLVM version: 23.1.3\n",
+      "cargo": "cargo 1.101.0-nightly (29c5daa1a 2026-10-07)\n",
+      "builder_sha256": "81fe6f04b247801289b2cedc2fdbdb6b697187549476fc6ffa22b60d5e4fefb8",
+      "kernel_features": [],
+      "images": [
+        "pipe",
+        "system",
+        "test-pipe-roundtrip"
+      ],
+      "locks": {
+        "components/kernel": {
+          "path": "cargo-0.lock",
+          "sha256": "b888d3fde029bcc4caaacb78de06dd8733a30b7847cacd9092b0b667558a982e",
+          "bytes": 21274
+        },
+        "components/pipe": {
+          "path": "cargo-1.lock",
+          "sha256": "fe75c57d4908d1c032e168c11d68f982870ba169c3316fc106b4d9801b38ed8d",
+          "bytes": 18350
+        },
+        "components/pipe/tests/roundtrip": {
+          "path": "cargo-2.lock",
+          "sha256": "695c1e20cd8aeefee629c15ff950b0bbd0576b279de719c0c9aca3f482549eb0",
+          "bytes": 15270
+        },
+        "components/system": {
+          "path": "cargo-3.lock",
+          "sha256": "eb3043d1f48299e7ebf0b32f8f34f2b4f2931fc266742d8aeff33644d572fd75",
+          "bytes": 18994
+        }
+      },
+      "graphs": {
+        "kernel": {
+          "bins": [
+            "shuyra"
+          ],
+          "workspace": "components/kernel",
+          "overlay": ".vanllia/cargo/be79b71b55c7dcdfab574fe979cc53f5580453beff58685a0fe4fe6f5cc794aa/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [],
+          "iommu_protocol": [
+            "iommu-hold v0.1.0 (.vanllia/sources/0ef3c57d8363791ccaa899c5e01eaea0ed471512c754e0b87849dd40f75814be/90f59ef91d3c4c157fb78bb691991ee7abe4f175/hold)"
+          ]
+        },
+        "pipe-server": {
+          "bins": [
+            "pipe"
+          ],
+          "workspace": "components/pipe",
+          "overlay": ".vanllia/cargo/f1d6135a294f1a7fefa60fd3d2c071416e47371a1a6c26114f21ffc98f3d7598/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "pipe-roundtrip-test": {
+          "bins": [
+            "test-pipe-roundtrip"
+          ],
+          "workspace": "components/pipe/tests/roundtrip",
+          "overlay": ".vanllia/cargo/0f1701a0607b358202b33b2a58460f0e56b879060964a623262cd47ba33ded00/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        },
+        "system-server": {
+          "bins": [
+            "system"
+          ],
+          "workspace": "components/system",
+          "overlay": ".vanllia/cargo/63fa3adfdc36d4e6c127d184c554fe9f0eca2da133835f0120b9a106623fd3ac/overlay.toml",
+          "api_owners": [
+            "kernel-api-env v0.1.0 (components/kernel/api/env)"
+          ],
+          "client_owners": [
+            "kernel-client v0.1.0 (components/kernel/client)"
+          ],
+          "iommu_protocol": []
+        }
+      }
+    }
+  ],
+  "pipe_run": {
+    "directory": ".vanllia/runs/1793913494654980316-72181-0",
+    "machine": "virt",
+    "memory": "256M",
+    "cpus": 1,
+    "timeout_seconds": 60,
+    "verdict": {
+      "case": {
+        "expected": "clean",
+        "name": "pipe.roundtrip",
+        "schema": 1,
+        "timeout": 60,
+        "unit": "test.pipe-roundtrip"
+      },
+      "error": null,
+      "firmware_sha256": "8f34d231fde9554e1a3c511bb1efac489da310ab0462504c512994601e12d213",
+      "initrd_sha256": "1f423543d225fe44d65f6225b07d02e39194dcc157999f3895d6bbfc6b41874f",
+      "kernel_sha256": "26bf3ed691e229a0674431727736d0e3b6cbd3a1171d1fd9e659bb2e27dc6be6",
+      "passed": true,
+      "schema": 1,
+      "vm_exit": 0
+    },
+    "process_exit": {
+      "code": 0,
+      "signal": null,
+      "success": true
+    },
+    "process_result": {
+      "elapsed_ms": 1358,
+      "pid": 73567,
+      "result": "Ok(())",
+      "success": true
+    },
+    "local_firmware_manifest_sha256": "9965eae1448a036ca8de1d42ca09f46a86af506b9ac3b857cf24ea966508c1a2",
+    "native_event_frames": [
+      "\u001eVNE1:0001",
+      "\u001eVNE1:0104706970650403",
+      "\u001eVNE1:0204",
+      "\u001eVNE1:0113746573742e706970652d726f756e64747269700504",
+      "\u001eVNE1:0205",
+      "\u001eVNE1:03050000",
+      "\u001eVNE1:0405",
+      "\u001eVNE1:030401feffffff0f",
+      "\u001eVNE1:0404",
+      "\u001eVNE1:050100"
+    ],
+    "evidence_sha256": {
+      "input.json": "e71e8b5b5a773e5873940fc11c75de388739212363da9a91d194abe644dad5d2",
+      "serial.log": "361862ef41f2794503f16123500bfcad1206df1ad1c89700aa3db180c99c9bf8",
+      "verdict.json": "cedcaa7ee38445c74c4918ca8b02d5feb68af128df60a680b399556701548fed",
+      "process/execution.json": "a7a4dd6cd52bf16ca65c2bdbf5e6681b370eb932ad1793a5361c5a3518035c21",
+      "process/exit.json": "f0b3645fd4484e1807c3f697bbd63ad4e32904df7c776092335cb3fc5df532f0",
+      "process/result.json": "dea9f6325f5d985f2855d30aab1d0ec9529dfc8a5f5edff9cde738f50a57a8a9"
+    }
+  }
+}

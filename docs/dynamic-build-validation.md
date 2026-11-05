@@ -1,5 +1,9 @@
 # Dynamic build migration validation
 
+This record describes the earlier dynamic-build and facade-alignment revisions.
+For the later Kernel API/Client consumer pins and fresh build/runtime receipts,
+see [SDK consumer validation](sdk-consumer-validation.md).
+
 The product entry is `vanllia.toml` and the independent `vanllia` CLI. The root
 has no Cargo composition, bootstrap, image adapter or Nushell build/runner entry.
 Provider-owned TOML supplies Unit policy and actual Cargo bin identity; the
