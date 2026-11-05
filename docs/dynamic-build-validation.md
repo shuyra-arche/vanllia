@@ -82,8 +82,30 @@ An earlier observer stopped the VM after readiness only; that observation is
 kept distinct from the later natural-exit/reclamation verdict. Initial EOF test
 attempts failed because the socket capture was not drained and input preceded
 Login's terminal attachment; neither failure is counted as a pass.
-Authenticated Shell creation, old scenarios, SMP and performance benchmarks
-remain outside this runtime check.
+The same unchanged product artifact and minimal Pipe case also passed at 2 and
+4 CPUs, using the same firmware and Kernel hashes. Every run required native
+zero exit, acknowledged retirement, System completion and VM exit zero. Product
+EOF runs used no host-forced stop. The six 1/2/4-CPU verdicts are summarized in
+[runtime-results.json](runtime-results.json); raw serial/process evidence remains
+under the recorded local run IDs.
+
+A separate bounded [Rust syscall benchmark](../tests/syscall-cost/README.md)
+compared Kernel `3aa0a155f825fbf377fc8d04009472ca67cbbf8c` (event rings present)
+with `44e33a6ee28d86eeeabe61c225f4176c5ed64c59` (removed). Both were built with the
+same release profile, target flags, toolchain and byte-identical Cargo lock;
+the benchmark initrd and installed firmware were identical across all ten boots.
+The only packaged Units were System and the benchmark. Each boot also passed
+native exit and reclamation checks independently of its measurement frame.
+
+| 100,000 SelfId calls, single-core QEMU | Median | Minimum–maximum, 5 samples |
+| --- | ---: | ---: |
+| Event rings present | 2267.129 ms | 2214.871–2283.292 ms |
+| Event rings removed | 2155.845 ms | 2130.424–2219.071 ms |
+
+The median decreased 4.91% in this fixed workload. This is a small paired QEMU
+microbenchmark, not a general throughput or hardware performance claim. Timing
+excludes boot, measurement output and teardown. Authenticated Shell creation and
+old scenarios remain outside this runtime check.
 The new runner is managed and records headless serial evidence.
 Boot firmware must be configured with an explicit file/URL, SHA-256 and length;
 these build artifacts do not bundle a firmware binary. No firmware was silently

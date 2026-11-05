@@ -1,0 +1,9 @@
+schema = 1
+id = "benchmark.syscall-cost"
+
+[loader]
+image = "benchmark-syscall-cost"
+
+[control]
+creation = "startup"
+ending = "transient"

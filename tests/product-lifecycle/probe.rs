@@ -20,7 +20,11 @@ pub fn run(
     firmware: &Path,
     hash: &str,
     length: u64,
+    cpus: u8,
 ) -> Result<(), String> {
+    if !(1..=4).contains(&cpus) {
+        return Err("CPU count must be between 1 and 4".into());
+    }
     let receipt = vanllia::runner::load(artifact).map_err(|e| e.to_string())?;
     let catalog = vanllia::load(root).map_err(|e| e.to_string())?;
     let plan = vanllia::plan(&catalog, &vanllia::Selection::Default).map_err(|e| e.to_string())?;
@@ -64,7 +68,7 @@ pub fn run(
         return Err("firmware identity".into());
     }
     std::fs::write(directory.join("firmware.bin"), bytes).map_err(|e| e.to_string())?;
-    std::fs::write(directory.join("input.json"), serde_json::to_vec_pretty(&serde_json::json!({"artifact":receipt,"firmware_sha256":firmware_hash,"cpus":1,"expected_startup":expected,"input":"terminal EOF after native readiness and attachment interval"})).map_err(|e|e.to_string())?).map_err(|e| e.to_string())?;
+    std::fs::write(directory.join("input.json"), serde_json::to_vec_pretty(&serde_json::json!({"artifact":receipt,"firmware_sha256":firmware_hash,"cpus":cpus,"expected_startup":expected,"input":"terminal EOF after native readiness and attachment interval"})).map_err(|e|e.to_string())?).map_err(|e| e.to_string())?;
     let mut command = Command::new("qemu-system-riscv64");
     command.current_dir(&directory).args([
         "-machine",
@@ -72,7 +76,7 @@ pub fn run(
         "-m",
         "256M",
         "-smp",
-        "1",
+        &cpus.to_string(),
         "-bios",
         "firmware.bin",
         "-kernel",
@@ -211,7 +215,7 @@ pub fn run(
         && verdict.is_ok();
     let report = serde_json::json!({"schema":1,"purpose":"product_terminal_eof_cleanup","passed":passed,"sent_eof":sent_eof,
         "error":failure,"native_verdict":format!("{verdict:?}"),"process":format!("{status:?}"),
-        "host_forced_stop":failure.is_some(),"initrd_sha256":receipt.initrd.sha256,
+        "host_forced_stop":failure.is_some(),"cpus":cpus,"initrd_sha256":receipt.initrd.sha256,
         "kernel_sha256":receipt.kernel.as_ref().unwrap().sha256,"firmware_sha256":firmware_hash});
     std::fs::write(
         directory.join("verdict.json"),

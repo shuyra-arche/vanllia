@@ -2,7 +2,7 @@ mod probe;
 use std::path::{Path, PathBuf};
 
 #[test]
-#[ignore = "executes single-core QEMU; requires explicit artifact and hashed firmware inputs"]
+#[ignore = "executes QEMU; requires explicit artifact and hashed firmware inputs"]
 fn product_eof_reclaims_all_native_instances() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -18,5 +18,9 @@ fn product_eof_reclaims_all_native_instances() {
         .expect("VANLLIA_TEST_FIRMWARE_BYTES")
         .parse()
         .expect("firmware length");
-    probe::run(root, &artifact, &firmware, &hash, bytes).unwrap();
+    let cpus = std::env::var("VANLLIA_TEST_CPUS")
+        .unwrap_or_else(|_| "1".into())
+        .parse()
+        .expect("CPU count");
+    probe::run(root, &artifact, &firmware, &hash, bytes, cpus).unwrap();
 }

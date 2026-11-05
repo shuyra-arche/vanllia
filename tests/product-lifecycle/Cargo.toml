@@ -9,6 +9,10 @@ publish = false
 name = "product"
 path = "product.rs"
 
+[[test]]
+name = "cost"
+path = "cost.rs"
+
 [dependencies]
 vanllia = { path = "../../components/image-builder/cli" }
 vanllia-build = { path = "../../components/image-builder" }
