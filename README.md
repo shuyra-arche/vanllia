@@ -25,6 +25,12 @@ all selected Unit templates in initrd. System is the always-included core boot
 Unit; Operator/Identity bootstrap are its internal threads. Shell is requested
 and can be instantiated at runtime. Packaging does not imply startup creation.
 
+Driver also includes optional PCI, IOMMU and VirtIO block providers. Select
+`virtio-blk` for their minimal resident closure, or use the provider's
+`test.virtio-blk-discovery` Unit with the opt-in host QEMU smoke. See
+[driver intake validation](docs/driver-intake-validation.md) for the exact
+source pins, hardware inputs, native verdict and remaining I/O limits.
+
 ```sh
 vanllia plan --unit test.pipe-roundtrip
 vanllia build --unit test.pipe-roundtrip

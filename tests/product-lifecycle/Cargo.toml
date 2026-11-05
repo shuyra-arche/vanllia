@@ -17,6 +17,10 @@ path = "login.rs"
 name = "cost"
 path = "cost.rs"
 
+[[test]]
+name = "drivers"
+path = "drivers.rs"
+
 [dependencies]
 vanllia = { path = "../../components/image-builder/cli" }
 vanllia-build = { path = "../../components/image-builder" }
