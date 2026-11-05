@@ -71,7 +71,19 @@ installed firmware SHA-256 is
 run and is not committed. The first runs exposed UART CRLF framing and an
 incorrect test cleanup order; both were fixed and the final case also exercises
 partial I/O with a payload larger than capacity. No failure was converted to a pass.
-Full product runtime, SMP and performance acceptance remain unrun.
+The unchanged full product artifact also passed single-core runtime acceptance.
+All nine ordinary startup instances became ready; the Shell template stayed
+uninstantiated. Terminal EOF then ended Login with native Reap/zero, all nine
+instances retired, System completed with zero and QEMU shut down naturally.
+No host-forced stop was used. The reusable
+[Rust acceptance test](../tests/product-lifecycle/README.md) passed from its
+formal lock and remains explicitly ignored unless runtime execution is requested.
+An earlier observer stopped the VM after readiness only; that observation is
+kept distinct from the later natural-exit/reclamation verdict. Initial EOF test
+attempts failed because the socket capture was not drained and input preceded
+Login's terminal attachment; neither failure is counted as a pass.
+Authenticated Shell creation, old scenarios, SMP and performance benchmarks
+remain outside this runtime check.
 The new runner is managed and records headless serial evidence.
 Boot firmware must be configured with an explicit file/URL, SHA-256 and length;
 these build artifacts do not bundle a firmware binary. No firmware was silently

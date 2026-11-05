@@ -60,7 +60,8 @@ vanllia test -- pipe.roundtrip
 
 These last two commands execute managed QEMU with headless serial evidence.
 The minimal Pipe case passed single-core QEMU with native exit and reclaim checks;
-full product runtime and SMP acceptance remain unrun.
+the unchanged full product also passed startup and terminal EOF cleanup.
+SMP and performance measurements remain unrun.
 See [docs/dynamic-build-validation.md](docs/dynamic-build-validation.md)
 for current evidence. Earlier `cargo image`, Nushell build/runner entries and
 static Deployment files are retired.
