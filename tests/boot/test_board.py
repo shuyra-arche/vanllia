@@ -8,7 +8,8 @@ from tests.support.boot import BootCase, NU
 
 class BoardEntry(BootCase):
     def test_firmware_bad(self):
-        missing = self.invoke("qemu-args.nu", "--board-only")
+        missing = self.invoke("qemu-args.nu", "--board-only",
+                              env={"SHUYRA_SBI": str(self.tmp / "missing")})
         self.assertNotEqual(missing.returncode, 0)
         self.assertIn("SHUYRA_SBI", missing.stderr)
         for bad in (self.tmp / "missing", self.tmp / "dir"):
@@ -18,6 +19,30 @@ class BoardEntry(BootCase):
                                capture_output=True, text=True,
                                env={**self.env, "SHUYRA_SBI": str(bad)})
             self.assertNotEqual(r.returncode, 0, bad)
+
+    def test_default_firmware_is_qemu_token_in_board_and_kernel_arguments(self):
+        elf = self.sample("kernel.elf")
+        for env in ({}, {"SHUYRA_SBI": ""}, {"SHUYRA_SBI": "default"}):
+            for argv in (["--board-only"], [str(elf)]):
+                with self.subTest(env=env, argv=argv):
+                    result = self.invoke("qemu-args.nu", *argv, env=env)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    args = result.stdout.splitlines()
+                    self.assertEqual(args.count("-bios"), 1)
+                    self.assertEqual(args[args.index("-bios") + 1], "default")
+                    self.assertEqual("-kernel" in args, argv != ["--board-only"])
+
+    def test_custom_firmware_path_is_validated_and_default_filename_can_be_explicit(self):
+        (self.tmp / "default").write_text("custom firmware")
+        for raw in ("./default", "none", "absent"):
+            result = self.invoke("qemu-args.nu", "--board-only", env={"SHUYRA_SBI": raw})
+            if raw == "./default":
+                self.assertEqual(result.returncode, 0, result.stderr)
+                args = result.stdout.splitlines()
+                self.assertEqual(args[args.index("-bios") + 1], str(self.tmp / "default"))
+            else:
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("SHUYRA_SBI", result.stderr)
 
 
     def test_board_only(self):

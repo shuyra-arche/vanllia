@@ -1,5 +1,12 @@
 # Local product, Kernel and firmware build evidence
 
+This is the historical build checkpoint below. Subsequent #6 convergence was
+merged at `7e284f600b919d9e19fcdae6b96352e1c8a4ef79`; the
+[third host migration](test-migration-batch3.md) removes the root legacy dev
+edge, and [firmware setup](firmware.md) now defaults to QEMU's bundled OpenSBI.
+Those changes do not turn this old FW_JUMP build into runtime evidence for the
+QEMU default.
+
 Recorded 2026-11-05 against integration code head
 `29d51e2c0406b6cf3b03e2344ae941089626e703`, tree
 `f31602ebe41b7d3428836da76a7b90be0a791a93`. A documentation-only follow-up

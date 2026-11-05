@@ -12,13 +12,28 @@ class QtestEntry(BootCase):
             r = self.invoke("qtest.nu", *args)
             self.assertNotEqual(r.returncode, 0, args)
             self.assertEqual(self.calls(), [])
-        r = self.invoke("qtest.nu", "--scene", "product")
+        r = self.invoke("qtest.nu", "--scene", "product",
+                        env={"SHUYRA_SBI": str(self.tmp / "missing")})
         self.assertNotEqual(r.returncode, 0)
         self.assertEqual(self.calls(), [])
         r = self.invoke("qtest.nu", "--help")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("qtest.nu", r.stdout)
         self.assertEqual(self.calls(), [])
+
+    def test_qtest_default_firmware_reaches_board_only_runner_arguments(self):
+        self.prepare_qtest()
+        self.env.pop("SHUYRA_SBI")
+        result = self.invoke("qtest.nu", "--scene", "product", "--feed-after", "0")
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        args = self.calls()[-1]["argv"]
+        self.assertEqual(args.count("--qemu-arg=-bios"), 1)
+        index = args.index("--qemu-arg=-bios")
+        self.assertEqual(args[index + 1], "--qemu-arg=default")
+        self.env["STUB_QTEST_EXIT"] = "1"
+        result = self.invoke("qtest.nu", "--scene", "product", "--feed-after", "0")
+        self.assertEqual(result.returncode, 1, result.stderr + result.stdout)
+        self.assertTrue((self.tmp / "trace/scene-product-qtest.log").is_file())
 
 
     def test_qtest_uses_vanllia_image_and_pinned_kernel_workspace(self):

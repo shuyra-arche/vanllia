@@ -52,8 +52,7 @@ def main [elf: path] {
   }
   # Pass the same absolute choice through the trace-directory cd.
   $env.SHUYRA_INITRD = ($initrd | into string)
-  # Freeze the firmware before cd changes the caller's directory: boot.nu and
-  # qemu-args.nu then see an absolute path regardless of where they run from.
+  # Freeze the firmware before cd: preserve `default`, resolve custom paths.
   let sbi = (chosen-sbi)
   $env.SHUYRA_SBI = ($sbi | into string)
   let cfg = config $elf
@@ -77,7 +76,7 @@ def config [elf: path] {
 
 def run_qemu [cfg: record] {
   # 起 qemu 前 cd 进归档目录：导出文件与 console 捕获都就地落盘，消除对调用者 CWD 的隐式
-  # 依赖（boot.nu 里的 -kernel/-bios 均为绝对路径，cd 无损）。
+  # 依赖（-kernel 是绝对路径；-bios 是 default 或已校验的绝对路径，cd 无损）。
   cd $cfg.trapdir
   rm --force sqware-diagnose.jsonl   # 干净基线（guest create 本会 truncate，双保险）
   # 上一轮的残留捕获：先归档再起跑，**不删**——终端捕获是「挂在哪一步」的唯一直接证据。

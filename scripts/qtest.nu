@@ -72,7 +72,7 @@ def --wrapped main [--package: string, --scene: string = "", --profile: string, 
   if $feed_after < 0 {
     error make {msg: "--feed-after must be nonnegative"}
   }
-  # Freeze the firmware before helpers, cargo or QEMU run.
+  # Preserve `default` or freeze a validated custom path before helpers/cargo.
   $env.SHUYRA_SBI = ((chosen-sbi) | into string)
   if ($env.QEMU_ICOUNT? | is-empty) { $env.QEMU_ICOUNT = "" }
 
