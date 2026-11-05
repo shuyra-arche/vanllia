@@ -30,3 +30,29 @@ and OpenSBI 1.6.
 This covers startup and terminal EOF cleanup. It does not exercise authenticated
 Shell creation or old scenarios. The separate ignored `cost` target measures
 [paired syscall cost](../syscall-cost/README.md); it is not part of this lifecycle test.
+
+## Login and requested Shell smoke
+
+The separate ignored `login` target uses the product's existing public Login
+fixture from `components/session/units/login/tests/login/lib.rs`. Build only
+Login and its necessary dependency closure; Daemon/RTC are not selected. It requires
+the startup set without Shell, authenticates, then waits for Shell's native
+binding/readiness before evaluating `(+ 314000 159)`. The numeric result must be
+`314159`. EOF closes Shell, then Login. Both must have native Reap/zero receipts;
+every instance must be retired, System must complete successfully and QEMU must
+exit zero naturally. Prompts schedule input and cannot replace native receipts.
+
+Build the minimum artifact, set `VANLLIA_TEST_ARTIFACT` to the printed artifact
+directory, and use the same hashed firmware variables above:
+
+```sh
+vanllia build --offline --unit login
+cargo test --manifest-path tests/product-lifecycle/Cargo.toml \
+  --test login --target x86_64-unknown-linux-gnu --locked --offline \
+  -- --ignored --nocapture
+```
+
+This target always uses one CPU and a bounded 120-second VM deadline. It adds no
+test Unit and does not change the supplied artifact. Per-run input snapshots,
+serial/process evidence and `verdict.json` live under `.vanllia/runs/login-*`.
+It is a new minimum smoke check; no old scenario suite is migrated.
