@@ -78,7 +78,7 @@ def check_observation(directory, observation, cwd):
 def expected_input(path):
     data = path.read_bytes()
     inventory = object_json(data, "input snapshot")
-    require(type(inventory.get("schema_version")) is int and inventory["schema_version"] == 1, "unsupported input schema")
+    require(type(inventory.get("schema_version")) is int and inventory["schema_version"] in (1, 2), "unsupported input schema")
     require(inventory.get("kind") == "committed-input-inventory", "wrong input kind")
     for key in ("is_release_manifest", "is_dependency_graph", "release_approved"):
         require(inventory.get(key) is False, f"input {key} must be false")
@@ -97,6 +97,43 @@ def expected_input(path):
     roots = [x for x in repositories if x.get("path") == "."]
     require(len(roots) == 1 and roots[0].get("commit") == commit, "input root commit mismatch")
     root = roots[0]
+    if inventory["schema_version"] == 1:
+        require("historical_references" not in inventory, "schema-1 input cannot reclassify historical sources")
+    else:
+        require(all(item.get("role") == "required-source" for item in repositories), "schema-2 repositories must be required sources")
+        historical = inventory.get("historical_references")
+        require(isinstance(historical, list), "missing historical references")
+        references = {}
+        for item in historical:
+            require(isinstance(item, dict) and set(item) == {"path", "repository", "commit", "role", "checkout_required", "content_status"}, "invalid historical reference")
+            require(item["path"] == "legacy/sqware" and item["repository"] == "https://github.com/anreonyr/sqware.git", "unexpected historical repository")
+            require(item["path"] not in references and item["path"] not in paths, "duplicate/conflicting historical reference")
+            require(item["role"] == "historical-reference" and item["checkout_required"] is False and item["content_status"] == "not-inventoried", "historical content must remain unverified")
+            require(isinstance(item["commit"], str) and re.fullmatch(r"[0-9a-f]{40}", item["commit"]), "invalid historical commit")
+            references[item["path"]] = item
+        expanded = {"."}
+        found_historical = set()
+        sources_by_path = {item["path"]: item for item in repositories}
+        for parent in repositories:
+            links = parent.get("gitlinks")
+            require(isinstance(links, list), "missing required-source gitlinks")
+            for link in links:
+                require(isinstance(link, dict) and isinstance(link.get("path"), str), "invalid gitlink")
+                child = Path(link["path"])
+                require(bool(link["path"]) and not child.is_absolute() and ".." not in child.parts, "invalid gitlink path")
+                child_path = (Path(parent["path"]) / child).as_posix()
+                if child_path in references:
+                    reference = references[child_path]
+                    require(parent["path"] == "." and link.get("expanded") is False and link.get("role") == "historical-reference", "historical gitlink must be an unexpanded root reference")
+                    require(all(link.get(key) == reference[key] for key in ("commit", "repository")), "historical reference differs from committed gitlink")
+                    found_historical.add(child_path)
+                else:
+                    require(link.get("expanded") is True and link.get("role") == "required-source", "required gitlink must be expanded")
+                    source = sources_by_path.get(child_path)
+                    require(source is not None and all(link.get(key) == source.get(key) for key in ("commit", "repository")), "required gitlink source missing or mismatched")
+                    require(child_path not in expanded, "duplicate required gitlink")
+                    expanded.add(child_path)
+        require(expanded == set(paths) and found_historical == set(references), "source/reference list differs from committed gitlinks")
     require(isinstance(root.get("tree"), str) and re.fullmatch(r"[0-9a-f]{40}", root["tree"]), "missing input root tree")
     toolchains = root.get("toolchains")
     require(isinstance(toolchains, list), "missing configured root toolchains")
@@ -109,7 +146,7 @@ def expected_input(path):
 
 
 def check_record(directory, record, inventory, input_hash, root, channel, sources, profile):
-    require(type(record.get("schema_version")) is int and record["schema_version"] == 1, "unsupported record schema")
+    require(type(record.get("schema_version")) is int and record["schema_version"] == inventory["schema_version"], "record/input schema mismatch")
     require(record.get("kind") == "execution-evidence", "wrong record kind")
     require(record.get("is_release_manifest") is False and record.get("release_approved") is False, "record must not claim release approval")
     require(record.get("status") == "observed" and record.get("missing") == [], "record is failed/incomplete or has missing evidence")
@@ -123,6 +160,17 @@ def check_record(directory, record, inventory, input_hash, root, channel, source
     source = record["source"]
     require(source.get("status") == "verified-before-and-after" and source.get("before") == sources and source.get("after") == sources, "source before/after does not match snapshot")
     require(all(x.get("clean") is True for phase in ("before", "after") for x in source[phase]), "source clean status must be true")
+    if inventory["schema_version"] == 2:
+        historical = record.get("historical")
+        require(isinstance(historical, dict) and historical.get("status") == "reference-only-not-verified", "missing unverified historical observation")
+        expected = [{"path": item["path"], "commit": item["commit"]} for item in inventory["historical_references"]]
+        for phase in ("before", "after"):
+            observations = historical.get(phase)
+            require(isinstance(observations, list) and all(isinstance(item, dict) for item in observations), "invalid historical observations")
+            require([{key: item.get(key) for key in ("path", "commit")} for item in observations] == expected, "historical observations differ from input references")
+            require(all(set(item) == {"path", "commit", "checkout", "content_verified"} and item["content_verified"] is False and item["checkout"] in ("absent", "present-unverified") for item in observations), "historical content cannot be claimed verified")
+    else:
+        require("historical" not in record, "schema-1 record cannot use schema-2 historical observations")
     producer = record["producer"].get("sha256")
     require(isinstance(producer, str) and re.fullmatch(r"[0-9a-f]{64}", producer), "missing recorder fingerprint")
     config = record["configuration"]

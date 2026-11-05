@@ -1,10 +1,38 @@
 # Firmware input
 
-Vanllia does not ship firmware. Set `SHUYRA_SBI` to an absolute path to a
-user-supplied, regular firmware file before using `scripts/qemu-args.nu`,
-`scripts/boot.nu`, `scripts/runner.nu` or `scripts/qtest.nu`. An unset variable,
-missing file or directory is an error. There is no implicit QEMU default or
-legacy binary fallback.
+Vanllia's QEMU `virt` entry uses **`-bios default`** when `SHUYRA_SBI` is unset,
+empty or exactly `default`. QEMU supplies the OpenSBI firmware; Vanllia does not
+copy or redistribute a firmware binary. This selection is shared by
+`qemu-args.nu`, `boot.nu`, `runner.nu` and the board-only qtest arguments.
+
+QEMU documents its [default OpenSBI boot flow](https://www.qemu.org/docs/master/system/riscv/virt.html#boot-options).
+Its [RISC-V loader](https://github.com/qemu/qemu/blob/master/hw/riscv/boot.c)
+resolves `default` through QEMU's own firmware search path. The
+[RV64 default name](https://github.com/qemu/qemu/blob/master/include/hw/riscv/boot.h)
+is `opensbi-riscv64-generic-fw_dynamic.bin`. These upstream references establish
+selection behavior, not the version or contents of any installed package.
+
+Install QEMU with its matching OpenSBI data package. A missing or unloadable
+bundled firmware must surface as a QEMU startup error; Vanllia does not search
+for an old `SBI.bin`, switch to `-bios none`, or retry with another firmware.
+`boot.nu` preserves QEMU's failure code and qtest preserves its runner's failure.
+The interactive `runner.nu` retains its observation/archive contract: it prints
+the startup diagnostic and exit observation, keeps the console log, and returns
+normally. Use boot/qtest when a process failure must propagate to a caller.
+No emulator was run to test an installed QEMU package in this change.
+
+The upstream loader suppresses a missing-BIOS error in QEMU's low-level
+`-qtest` mode. The currently enabled product/health entry does not request that
+channel. Before enabling the disabled device scenes that use a qtest socket,
+verify missing-firmware failure and the guest verdict explicitly; constructing
+those board arguments is not a firmware-availability preflight.
+
+To override the QEMU default, set `SHUYRA_SBI` to a user-supplied regular firmware
+file. Missing paths and directories fail before launch. Relative paths are
+resolved before the runner changes its working directory. The bare word
+`default` is reserved; use `./default` for a custom file with that name.
+This policy is specific to QEMU `virt`: real hardware needs its own board boot
+chain, firmware selection, configuration and provenance.
 
 Record the source, full revision, build command, compiler version, SHA-256 and
 applicable license/notice bundle with the artifact. A checksum identifies bytes;
@@ -48,8 +76,10 @@ claim. Do not use `make run` during build preparation: that starts QEMU.
 `0x82200000` explicitly selects generic-platform's FDT destination. Check the
 actual Kernel ELF load ranges for overlap before runtime use. QEMU's `-kernel`
 and `-initrd` remain separate inputs; no Kernel or product is embedded in this
-firmware. No switch to `fw_dynamic`, a payload image, or `-bios default` is made
-implicitly. See upstream [FW_JUMP contract](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/docs/firmware/fw_jump.md)
+firmware. This optional explicit-path recipe uses FW_JUMP; the QEMU default
+above uses the installed FW_DYNAMIC firmware and may place the FDT differently.
+Its compatibility with the selected Kernel still needs a separately authorized
+runtime check. See upstream [FW_JUMP contract](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/docs/firmware/fw_jump.md)
 and [generic defaults](https://github.com/riscv-software-src/opensbi/blob/bd613dd92113f683052acfb23d9dc8ba60029e0a/platform/generic/objects.mk).
 
 The official recipe was built locally; see the
@@ -77,8 +107,10 @@ and source/link evidence; it is not adopted by a boot entry. Alternatively,
 supply a separately documented firmware artifact with its own verified source
 and notice record.
 
-No firmware binary is added to Vanllia or selected as its default. This work
-does not add a blanket license to either repository.
+No firmware binary is added to Vanllia. The QEMU default selects an artifact
+owned by the installed QEMU distribution; record that package's version,
+firmware hash and source/notice provenance for runtime or distribution evidence.
+It is not a pinned firmware input or a blanket licensing determination.
 
 ## Old artifact investigation
 

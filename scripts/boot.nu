@@ -55,7 +55,7 @@ fi
 rm -f "$tmp"'
 
 def main [elf: path] {
-  # Freeze the firmware and initrd choice before runner changes cwd.
+  # Preserve QEMU's `default` token or the validated absolute firmware path.
   let sbi = (chosen-sbi)
   $env.SHUYRA_SBI = ($sbi | into string)
   let initrd = (chosen-initrd ($elf | path expand))

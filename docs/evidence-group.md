@@ -23,17 +23,28 @@ profiles. There is no option to skip a required action or declare it passed.
 
 ## Checks
 
-For each supplied record, the checker requires the supported version-1 input
-and execution-record formats, successful recording state, no missing items,
+For each supplied record, the checker requires matching input/record versions
+(1/1 or 2/2), successful recording state, no missing items,
 zero process return codes and these associations:
 
 - Input commit/tree and exact snapshot SHA-256 match the expected snapshot.
   The retained `inputs.json` copy hashes to that same value. The recorded
   inventory-replay stdout decodes to the same snapshot value, allowing the
   original input formatting to differ from generator formatting.
-- Stored source checks before and after name exactly the expanded snapshot
+- Stored source checks before and after name exactly the required snapshot
   repositories/commits with clean status. This is comparison of retained
   observations; it does not perform a fresh source checkout check.
+- Input schema 2 separates `historical_references` from required sources. Each
+  reference must match its unexpanded root gitlink; all other gitlinks must
+  have matching expanded required-source records. The only historical policy
+  is `legacy/sqware` at its committed repository URL. Every run names those
+  references in before/after `historical` observations, with `absent` or
+  `present-unverified` checkout status and `content_verified: false`. Their
+  availability may differ; claiming verified historical content is rejected.
+  Historical data is not included in the required clean-source observations.
+- Retained schema-1 groups keep the original required observation set,
+  including an inventoried legacy checkout. Schema-1 inputs cannot use the new
+  optional-reference fields, and versions cannot be mixed to omit old checks.
 - Configuration points to the same snapshot hash and configured root toolchain.
   Build/Rust selections match its channel, including the stored active-toolchain
   probe output. The expected build profile matches the captured plan and result;

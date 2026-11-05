@@ -77,7 +77,10 @@ branches/checkers are retained for subsequent provider intake; their presence
 does not mean the corresponding images are available. There is no legacy image
 builder fallback and no implicit mapping from `accept` to `product`.
 
-The pending scene inventory is:
+The historical scene inventory is retained below. These are not a migration
+backlog or a requirement to preserve old test counts; wholesale porting has
+stopped. Current scope is [product code and build independence](../docs/current-migration-scope.md).
+The runtime gate still rejects these scenes:
 
 - `accept`, `system-fault`, `rig`, `load`, `group`, `beat`, `again`;
 - `memory-transfer`, `memory-transfer-tlb`, `memory-transfer-fresh`,

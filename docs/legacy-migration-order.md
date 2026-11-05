@@ -1,5 +1,10 @@
 # Remaining legacy ownership and migration order
 
+Historical inventory and former migration sequence. The user has stopped
+wholesale old-test/scene migration because destructive code changes are planned.
+The [current scope](current-migration-scope.md) supersedes the sequence below;
+these counts and old fixtures are evidence, not completion requirements.
+
 This is a source/host-plan inventory, not an enablement or runtime result.
 It uses frozen sqware `94e114614bec53424ac55e640fc80cf19a3e7107`, selected
 planner `17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f`, and Vanllia product code
@@ -21,14 +26,13 @@ are the inputs needed to regenerate the scene plan.
 
 ## Remaining source dependencies
 
-The selected 17 production image inputs are independent of sqware; the root
-dev edge `tools/product -> legacy-composition` still fetches four frozen sqware
-packages: composition, Shell declaration, RTC API and fixturetarget API.
-The five new literal product contracts do not automatically replace all six
-retained equivalence cases. Preserve their checks until each successor assertion
-and negative sensitivity is mapped, including owner descriptors, namespaces,
-registry slots, catalogue ports and bindings. Do not copy a second complete
-legacy registry into production to remove the dev edge.
+The selected 17 production image inputs are independent of sqware. The
+[third host batch](test-migration-batch3.md) maps the last three declaration
+comparisons to independent contracts and removes `tools/product ->
+legacy-composition`. The root all-kind locked graph has zero sqware packages;
+its 86 identities retain the selected provider pins. The assertion mapping,
+including namespaces, registry ownership and Shell construction/supplies,
+remains explicit. No second production registry is copied from legacy.
 
 The physical `legacy/sqware` gitlink, `.gitmodules` entry and workspace exclusion
 also remain. Removing a Cargo edge and removing this checkout are separate
@@ -60,7 +64,9 @@ require assertion/source-closure mapping; no frozen suite or product equivalence
 case is retired by it.
 The [second batch](test-migration-batch2.md) retires mapped plan/catalogue
 comparisons and moves image checks out of mixed cases. Three frozen declaration
-comparisons remain; the old composition dev edge is still present.
+comparisons remained at that checkpoint. The third batch completes their
+successors and removes the old composition dev edge; this does not retire the
+other legacy host suites or migrate guest fixtures.
 
 ## Minimum dependency order
 
@@ -70,7 +76,7 @@ image builds and integration contracts can be reviewed together.
 
 | Order | Outcome and smallest first slice | Completion boundary |
 |---|---|---|
-| 1 | Map the six product equivalence cases to independent expected data/contracts, then migrate only the host assertions whose owners are already providers. | Preserve all assertions and import/source-closure evidence before dropping the frozen root dev edge; do not delete old suites by directory name. |
+| 1 (host declaration gate complete) | Independent product expectations and the namespace admission slice are implemented across three mapped batches. | The frozen root dev edge is removed; remaining legacy host suites and guest fixtures still need their own assertion/source-closure mapping. |
 | 2 | Daemon scene family: begin with `daemon-rtc` (two additional images), then target/stop together (five distinct additional images, sharing fixturetarget). | Daemon owns policy and its host cases; test-support owns guest entry/controller images and fixturetarget API. Reuse current Hub/Router/RTC/Daemon providers and preserve `scene`/`supervised` membership and final cleanup checks. |
 | 3 | Small supervisor fixtures: rig/load/group/beat/again (ten distinct additional images), then system-fault (four). | Separate actual entry/resources from reusable mechanism; publish explicit image coordinates without importing the old programs aggregate. Preserve source-derived failure/termination behavior. |
 | 4 | Memory-transfer family: basic pair, TLB entry, then fresh and race entries/peer (six distinct additional images total). | Retain pinned Kernel test API, diagnostic input and streaming/final predicates. Fresh/race require their Kernel feature and debug-assertion contracts; current scene runner forces a release test target, so changing only the scene gate is insufficient. |

@@ -52,27 +52,44 @@ the selected environment values and does not invoke the Rust test entry.
 
 ## What is checked and recorded
 
-The recorder first requires root HEAD to equal the input commit and root to
-be clean, including ordinary untracked files. Its own bytes must equal the
+The recorder first requires root HEAD to equal the input commit and required
+sources to be clean, including ordinary untracked files. Its own bytes must equal the
 recorder committed at that input. It reuses the existing inventory generator
 and compares its regenerated JSON value to the supplied JSON. A manually
 edited source/version/approval assertion cannot become a verified input.
 The hash binds the supplied file bytes, including formatting.
 
-It checks HEAD and clean status for every expanded inventory checkout before
-and after the run. Unlike a pure object inventory, execution requires those
-checkouts at the selected commits. The legacy child gitlinks remain outside
-the inventory expansion; they do not acquire execution checks here. Git calls
+It checks HEAD and clean status for every required-source inventory checkout
+before and after the run. Unlike a pure object inventory, execution requires
+those checkouts at the selected commits. For retained revisions with the fixed
+`legacy/sqware` gitlink, input schema 2 treats it as a historical reference:
+its committed URL/SHA remain in the snapshot, but its checkout and content are
+not read or verified. The current tree has no such gitlink, so generated
+`historical_references` and before/after historical observations are empty.
+Existing local source at `/legacy/sqware/` is ignored exactly. This keeps the
+snapshot deterministic whether that checkout is absent, uninitialized, dirty
+or present. The policy is explicit; it is not a Cargo/source-closure analysis.
+All other registered gitlinks retain the existing strict expansion requirement.
+
+For retained revisions, only that exact historical worktree path is excluded
+from the root clean check. Its staged gitlink changes still fail, as do tracked
+source/configuration changes, ordinary untracked files (including similarly named paths), and
+missing, dirty or mismatched required providers. Historical checkout presence
+is recorded before/after as `absent` or `present-unverified`, always with
+`content_verified: false`. Availability may change without changing required
+inputs; this is never evidence of the historical content's revision or license.
+Git calls
 disable replacement objects, lazy fetching and optional locks. There is no
 second Cargo dependency resolver or new graph check.
 
-`record.json` has `schema_version: 1`, `kind: execution-evidence`, and:
+New `record.json` files have `schema_version: 2`, `kind: execution-evidence`, and:
 
 | Field | Observed source |
 |---|---|
 | `input` | Commit/tree, supplied inventory SHA-256 and successful replay/binding status |
 | `producer` | SHA-256 of the recorder actually invoked, checked against committed bytes |
 | `source` | Before/after checked checkout commits; `verified-before-and-after` only when both checks succeed |
+| `historical` | Historical reference checkout presence before/after; `reference-only-not-verified` never claims content verification |
 | `configuration` | Input inventory hash (binding committed configs/locks), configured root toolchain records, selected environment values, profile and captured build-entry plan |
 | `tools` | Version-probe argv, resolved executable path, return code and stdout/stderr log fingerprints |
 | `execution` | `exited` means a process returned, including failures; actual argv/cwd, UTC start/end, elapsed seconds, process return code and log fingerprints; otherwise `not-run` |
@@ -92,7 +109,7 @@ Example state fields from a completed observation:
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "execution-evidence",
   "status": "observed",
   "is_release_manifest": false,
@@ -102,6 +119,9 @@ Example state fields from a completed observation:
 
 `observed` means the command returned zero and required recording/binding
 checks completed. `failed` preserves a nonzero command return code.
+The new recorder requires input schema 2 and does not reinterpret a schema-1
+snapshot. Retained input-1/record-1 groups remain checkable with their original
+full expanded-source observations, including the old historical checkout.
 `incomplete` means a prerequisite, output or source binding is missing, even
 when a process returned zero. Recorder CLI returns zero only for `observed`;
 otherwise it returns nonzero. Test case counts and assertion coverage are not

@@ -1,5 +1,9 @@
 # Product plan, image and Shell resource contracts
 
+This is the second checkpoint's historical record. The
+[third batch](test-migration-batch3.md) replaces its three remaining declaration
+comparisons and removes the legacy composition dev edge.
+
 Base: `03b805ad8ed25f9f0e59203e64985a985b477433`; old equivalence blob
 `2f0d5bc7a529775b3dbfd294b369a68e5ff6c93e`.
 This batch targets the comparisons that directly read old deployment, image and

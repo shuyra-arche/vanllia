@@ -13,7 +13,7 @@ from tests.support.paths import ROOT
 
 
 NU_DOUBLE = '''#!/usr/bin/env python3
-import json, os, pathlib, sys
+import json, os, pathlib, subprocess, sys
 mode = os.environ.get("EVIDENCE_FIXTURE_MODE", "")
 if "--version" in sys.argv:
     print("synthetic-nu")
@@ -46,6 +46,12 @@ if mode == "directory-artifact":
     kernel.unlink()
     kernel.mkdir()
 if mode == "mutate-source": (root / "tracked.txt").write_text("changed during command")
+if mode == "mutate-history":
+    history = root / "legacy/sqware"
+    history.mkdir(parents=True)
+    (history / "unverified.txt").write_text("not a build input")
+if mode == "mutate-history-index":
+    subprocess.run(["git", "update-index", "--cacheinfo", "160000," + "f" * 40 + ",legacy/sqware"], check=True)
 print(json.dumps({"scene": "product", "profile": profile,
                   "initrd": str(initrd), "kernel": str(kernel)}))
 '''
@@ -101,8 +107,10 @@ class EvidenceRecord(unittest.TestCase):
     def git(self, *args):
         return subprocess.check_output(["git", "-C", str(self.root), *args], text=True).strip()
 
-    def freeze(self):
+    def freeze(self, gitlinks=()):
         self.git("add", ".")
+        for path, commit in gitlinks:
+            self.git("update-index", "--add", "--cacheinfo", f"160000,{commit},{path}")
         self.git("commit", "--quiet", "-m", "Synthetic input snapshot")
         self.commit = self.git("rev-parse", "HEAD")
         result = subprocess.run([
@@ -120,6 +128,140 @@ class EvidenceRecord(unittest.TestCase):
 
     def record(self):
         return json.loads((self.output / "record.json").read_text())
+
+    def historical_reference(self):
+        # The gitlink deliberately names an object unavailable in this checkout.
+        self.historical_commit = "d" * 40
+        (self.root / ".gitmodules").write_text(
+            '[submodule "legacy/sqware"]\npath = legacy/sqware\n'
+            'url = https://github.com/anreonyr/sqware.git\n')
+        self.freeze([("legacy/sqware", self.historical_commit)])
+
+    def required_provider(self):
+        child = self.root / "components/provider"
+        child.mkdir(parents=True)
+        subprocess.run(["git", "init", "--quiet", str(child)], check=True)
+        (child / "Cargo.toml").write_text("[workspace]\n")
+        (child / "tracked.txt").write_text("provider source")
+        subprocess.run(["git", "-C", str(child), "add", "."], check=True)
+        subprocess.run(["git", "-C", str(child), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "Provider fixture"], check=True)
+        commit = subprocess.check_output(["git", "-C", str(child), "rev-parse", "HEAD"], text=True).strip()
+        with (self.root / ".gitmodules").open("a") as stream:
+            stream.write('[submodule "provider"]\npath = components/provider\nurl = https://example.invalid/provider.git\n')
+        self.freeze([("legacy/sqware", self.historical_commit), ("components/provider", commit)])
+        return child
+
+    def test_snapshot_is_deterministic_without_historical_checkout_or_objects(self):
+        self.historical_reference()
+        original = self.inputs.read_bytes()
+        snapshot = json.loads(original)
+        self.assertEqual(snapshot["schema_version"], 2)
+        self.assertEqual([item["path"] for item in snapshot["repositories"]], ["."])
+        reference = snapshot["historical_references"][0]
+        self.assertEqual(reference["commit"], self.historical_commit)
+        self.assertFalse(reference["checkout_required"])
+        self.assertEqual(reference["content_status"], "not-inventoried")
+        self.assertFalse((self.root / "legacy/sqware").exists())
+        historical = self.root / "legacy/sqware"
+        historical.mkdir(parents=True)
+        (historical / "not-a-checkout.txt").write_text("optional and unverified")
+        result = subprocess.run([sys.executable, "-B", str(ROOT / "docs/generate-composition-inputs.py"),
+            "--root", str(self.root), "--commit", self.commit], capture_output=True, check=True)
+        self.assertEqual(result.stdout, original)
+
+    def test_missing_history_is_recorded_explicitly_without_blocking_execution(self):
+        self.historical_reference()
+        self.assertEqual(self.invoke().returncode, 0)
+        record = self.record()
+        self.assertEqual(record["schema_version"], 2)
+        self.assertEqual(record["source"]["before"], [{"path": ".", "commit": self.commit, "clean": True}])
+        self.assertEqual(record["historical"]["status"], "reference-only-not-verified")
+        self.assertEqual(record["historical"]["before"], [{"path": "legacy/sqware",
+            "commit": self.historical_commit, "checkout": "absent", "content_verified": False}])
+        self.assertEqual(record["historical"]["before"], record["historical"]["after"])
+
+    def test_history_presence_changes_are_observations_not_changed_inputs(self):
+        self.historical_reference()
+        self.env["EVIDENCE_FIXTURE_MODE"] = "mutate-history"
+        self.assertEqual(self.invoke().returncode, 0)
+        record = self.record()
+        self.assertEqual(record["historical"]["before"][0]["checkout"], "absent")
+        self.assertEqual(record["historical"]["after"][0]["checkout"], "present-unverified")
+        self.assertFalse(record["historical"]["after"][0]["content_verified"])
+        self.assertEqual(record["input"]["inventory_sha256"], hashlib.sha256(self.inputs.read_bytes()).hexdigest())
+
+    def test_staged_historical_gitlink_change_still_prevents_execution(self):
+        self.historical_reference()
+        self.git("update-index", "--cacheinfo", "160000," + "e" * 40 + ",legacy/sqware")
+        self.assertEqual(self.invoke().returncode, 1)
+        self.assertEqual(self.record()["execution"]["status"], "not-run")
+
+    def test_historical_gitlink_change_during_command_breaks_source_binding(self):
+        self.historical_reference()
+        self.env["EVIDENCE_FIXTURE_MODE"] = "mutate-history-index"
+        self.assertEqual(self.invoke().returncode, 1)
+        record = self.record()
+        self.assertEqual(record["execution"]["returncode"], 0)
+        self.assertEqual(record["status"], "incomplete")
+        self.assertIn("post-run source check", " ".join(record["missing"]))
+
+    def test_history_exclusion_does_not_hide_real_untracked_or_config_changes(self):
+        self.historical_reference()
+        for relative in ("ordinary.rs", "legacy/sqware-not-history.txt", ".gitmodules"):
+            with self.subTest(path=relative):
+                path = self.root / relative
+                original = path.read_bytes() if path.exists() else None
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("changed input")
+                self.output = self.base / relative.replace("/", "-")
+                self.assertEqual(self.invoke().returncode, 1)
+                self.assertEqual(self.record()["execution"]["status"], "not-run")
+                if original is None:
+                    path.unlink()
+                else:
+                    path.write_bytes(original)
+
+    def test_missing_required_provider_still_prevents_snapshot_and_execution(self):
+        import shutil
+        self.historical_reference()
+        child = self.required_provider()
+        shutil.rmtree(child)
+        generated = subprocess.run([sys.executable, "-B", str(ROOT / "docs/generate-composition-inputs.py"),
+            "--root", str(self.root), "--commit", self.commit], capture_output=True, text=True)
+        self.assertNotEqual(generated.returncode, 0)
+        self.assertIn("components/provider", generated.stderr)
+        self.assertEqual(self.invoke().returncode, 1)
+        self.assertEqual(self.record()["execution"]["status"], "not-run")
+
+    def test_dirty_or_wrong_required_provider_is_not_optional_with_missing_history(self):
+        self.historical_reference()
+        child = self.required_provider()
+        (child / "tracked.txt").write_text("dirty provider")
+        self.assertEqual(self.invoke().returncode, 1)
+        self.assertEqual(self.record()["execution"]["status"], "not-run")
+        subprocess.run(["git", "-C", str(child), "add", "."], check=True)
+        subprocess.run(["git", "-C", str(child), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "Other provider commit"], check=True)
+        self.output = self.base / "wrong-provider"
+        self.assertEqual(self.invoke().returncode, 1)
+        self.assertEqual(self.record()["execution"]["status"], "not-run")
+
+    def test_new_recorder_does_not_reinterpret_schema_one_inputs(self):
+        snapshot = json.loads(self.inputs.read_text())
+        snapshot["schema_version"] = 1
+        self.inputs.write_text(json.dumps(snapshot))
+        self.assertEqual(self.invoke().returncode, 1)
+        self.assertEqual(self.record()["execution"]["status"], "not-run")
+        self.assertIn("requires input schema 2", " ".join(self.record()["missing"]))
+
+    def test_malformed_or_noninteger_input_schema_is_incomplete_not_a_process_crash(self):
+        snapshot = json.loads(self.inputs.read_text())
+        for label, value in (("array", []), ("float", {**snapshot, "schema_version": 2.0})):
+            with self.subTest(value=label):
+                self.inputs.write_text(json.dumps(value))
+                self.output = self.base / label
+                self.assertEqual(self.invoke().returncode, 1)
+                self.assertEqual(self.record()["status"], "incomplete")
+                self.assertEqual(self.record()["execution"]["status"], "not-run")
 
     def test_build_binds_input_tools_configuration_logs_and_discovered_artifacts(self):
         result = self.invoke("build", "--profile", "debug")

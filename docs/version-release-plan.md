@@ -1,7 +1,7 @@
 # Proposed versions, branch convergence and release gates
 
 Status: **local proposal, not an approved version or permission to publish**.
-Checked on 2026-11-05 against local candidate
+The design was originally checked on 2026-11-05 against local candidate
 `d3ac12fab06911fa8071837ed36f01eb313010fe`, tree
 `d71c5621936f947921e5b876bc357ef7ca947b7a`.
 This document and its read-only inventory helper follow that candidate; they
@@ -10,8 +10,15 @@ The SHA/tree above identify the **input** before these two files are added,
 not the tree containing this proposal. The generated inventory hash binds to
 that input commit. The exact subsequent proposal head/tree belongs in its
 external review/checkpoint record, avoiding a self-referential tree hash here.
-Vanllia merge approval has not been obtained. The prior merge rejection remains
-binding; changing the branch, PR target, merge method or tool cannot bypass it.
+The original checkpoint lacked merge approval. A later explicit confirmation
+authorized convergence through #6: merged main is
+`7e284f600b919d9e19fcdae6b96352e1c8a4ef79`, #4/#6 are merged and #5/#7/#8 are
+closed with their heads retained in main. Branches/history were preserved.
+That completed authorization does not authorize publishing this follow-up or
+selecting versions. The hashes, remote-state table and gate checkpoint values
+below retain their original historical context; current declaration dependency
+removal and firmware selection are recorded in
+[batch three](test-migration-batch3.md) and [firmware setup](firmware.md).
 
 ## Version responsibilities
 
@@ -154,8 +161,11 @@ release tag to repair an artifact. A repair gets a new version and evidence.
 committed objects at a required full SHA, follows
 initialized production-side recursive gitlinks and records their exact commits,
 trees, manifest/package metadata, lock hashes/counts and toolchain/config hashes.
-It records the legacy checkout at its frozen top level; its child gitlinks are
-listed but not expanded. This boundary is explicit and does not remove it.
+The current schema-2 helper records the legacy Git URL/SHA as an unexpanded
+historical reference without reading its checkout or objects. Required sources
+remain recursively expanded and unavailable required sources still fail. This
+classification is the committed inventory policy, not a new Cargo dependency
+resolver or proof that every registered provider is used by every action.
 
 ```sh
 candidate_sha=$(git rev-parse HEAD)
@@ -176,7 +186,7 @@ Ambiguous duplicate submodule paths are rejected rather than silently choosing
 one URL. An independently cloned source directory is usable if it contains the
 exact gitlink object; its current checkout HEAD is not the source authority.
 
-At this checkpoint the inventory expands 18 repository checkouts, including
+At the historical schema-1 checkpoint the inventory expanded 18 repository checkouts, including
 Vanllia and the legacy top level. It records 102 tracked locks across those
 trees, including test/integration locks; this is **not** 102 selected production
 builds. Only the root lock's Git package identities are expanded in JSON; the
@@ -189,11 +199,20 @@ packages can share a source, and a repository can supply several revisions.
 The 102 figure counts tracked files. None of these counts describes a selected
 production closure or a complete release manifest.
 
-Output has `kind: committed-input-inventory`, `schema_version: 1`, an explicit
+Current output has `kind: committed-input-inventory`, `schema_version: 2`, an explicit
 Vanllia source commit, and null Vanllia/component release versions. It leaves
 `release_approved: false`, `build_records: []`, `firmware_selection: null` and
 `runtime_evidence: []`. These are honest missing facts, not release defaults.
 `is_release_manifest` and `is_dependency_graph` are both explicitly false.
+`repositories` contains required-source records. `historical_references` is
+empty for the current tree, which no longer registers the old gitlink. For
+retained revisions containing that link, it names the committed legacy pin
+with `checkout_required: false` and `content_status: not-inventoried`.
+That metadata stays identical when the old checkout is missing, present or
+dirty. Optional presence observations for retained revisions belong
+to execution records, outside the committed-input hash. Retained schema-1
+records keep their prior interpretation; see [execution evidence](execution-evidence.md)
+and [group consistency](evidence-group.md) for matching-version checks.
 Save generated records outside the source commit (or as future authorized
 release attachments), avoiding a self-referential manifest commit hash.
 

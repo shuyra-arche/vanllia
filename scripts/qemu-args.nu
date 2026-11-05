@@ -58,16 +58,12 @@ export def chosen-initrd [elf?: path] {
   null
 }
 
-# Mandatory firmware: `SHUYRA_SBI` must be set and name a regular file.
-# No default, no fallback, no repository-relative path.
-# Documented upstream alternative; runtime equivalence unverified: OpenSBI v1.6
-# at commit bd613dd92113f683052acfb23d9dc8ba60029e0a, FW_JUMP, base 0x80200000,
-# built by the user. That is a hash provenance note, not a licence proof.
+# QEMU selects its bundled OpenSBI for unset/empty/`default` SHUYRA_SBI.
+# A custom path must be a regular file, resolved before any cwd change.
+# Missing QEMU firmware is QEMU's startup error; never fall back to an old binary.
 export def chosen-sbi [] {
   let raw = ($env.SHUYRA_SBI? | default "")
-  if ($raw | is-empty) {
-    error make {msg: "SHUYRA_SBI 未设置：请指向一份用户自备的固件（普通文件）"}
-  }
+  if ($raw | is-empty) or ($raw == "default") { return "default" }
   let selected = ($raw | path expand)
   if not ($selected | path exists) {
     error make {msg: $"SHUYRA_SBI 指向的固件不存在：($selected)"}

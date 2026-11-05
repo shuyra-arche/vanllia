@@ -1,6 +1,5 @@
 # vanllia M1 product composition
 
-Local integration candidate for #6, #7 and #8; not published or runtime accepted.
 It owns one product `Deployment`, the new `system` bootstrap and
 17 explicit `ImageBuild` coordinates. Runtime and host both consume
 `vanllia-composition`, so they cannot select different product scenes.
@@ -11,10 +10,17 @@ From a checkout of the reviewed revision, initialize the fixed provider tree and
 use the original toolchain:
 
 ```sh
-git submodule update --init --recursive
+git submodule update --init --recursive -- components/kernel components/system components/image-builder components/driver components/session components/pipe components/daemon components/shell
 rustup component add llvm-tools-preview --toolchain nightly-2026-09-04
 export PATH="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin:$PATH"
 ```
+
+This initializes the current provider trees. The frozen `legacy/sqware`
+gitlink is no longer registered, so unrestricted recursive initialization also
+fetches only current providers. An existing local checkout is preserved and
+ignored at that exact path; normal builds and schema-2 evidence do not require
+its content or Git objects. Missing or changed current providers still fail
+source verification. Retained schema-1 records keep their original meaning.
 
 From this directory (Linux x86_64 host):
 
@@ -57,14 +63,16 @@ unrelated `cargo-qtest` package:
 cargo install cargo-qemu-test --version 0.3.2 --locked --target x86_64-unknown-linux-gnu
 ```
 
-Before runtime use, select an explicit user-supplied `SHUYRA_SBI` firmware file
-and preserve its provenance/notice record; see [firmware setup](docs/firmware.md).
+QEMU uses its bundled OpenSBI through `-bios default`; `SHUYRA_SBI` may be unset,
+empty or `default`. A custom firmware path is validated before launch. Install
+QEMU's matching firmware data package; missing firmware is a startup error.
+See [firmware setup and provenance](docs/firmware.md).
 After runtime authorization, a Nushell session can consume the build record:
 
 ```nu
 let artifacts = (nu scripts/build.nu release | from json)
 $env.SHUYRA_INITRD = $artifacts.initrd
-$env.SHUYRA_SBI = ("/absolute/path/to/fw_jump.bin" | path expand)
+# Optional override: $env.SHUYRA_SBI = ("/absolute/path/to/fw_jump.bin" | path expand)
 $env.QEMU_SEMI = "1"
 nu scripts/runner.nu $artifacts.kernel
 # Separate acceptance run (starts QEMU and rebuilds the selected product image):
@@ -78,20 +86,15 @@ early. Host-only tests and the retained scenario inventory are documented in
 [acceptance/README.md](acceptance/README.md). No runtime result for this candidate
 is claimed.
 
-Remaining declaration comparisons against the PR55 legacy composition:
-
-```text
-cargo test --locked -p vanllia-image --target x86_64-unknown-linux-gnu --test equivalence
-```
-
-Three cases retain Daemon, Login/UART/RTC and Shell declaration fields, registry
-slots and ownership checks. Product plan, complete image coordinates, owner
-routes and typed Shell catalogue/resource bindings now have independent
-composition contracts. The [second migration map](docs/test-migration-batch2.md)
-records the successors and the exact remaining dependency boundary.
+Independent contracts now retain the Daemon, Login, UART, RTC and Shell
+declaration fields, registry slots and ownership checks. The
+[third migration map](docs/test-migration-batch3.md) records the assertion
+successors and removal of the last legacy composition dev dependency. Product
+plan, complete image coordinates, owner routes and typed Shell catalogue/resource
+bindings remain covered by their existing composition contracts.
 
 Product declaration and plan contracts live with composition and use frozen
-literal expectations. Run all current host contracts and declaration comparisons:
+literal expectations. Run the current host contracts:
 
 ```text
 cargo test --locked --offline -p vanllia-composition -p vanllia-image --tests --target x86_64-unknown-linux-gnu
@@ -106,16 +109,18 @@ The [first namespace policy test migration](docs/test-migration-batch1.md)
 preserves three old host cases and adds a check of the actual product registry.
 That first checkpoint retained all old comparisons; the subsequent migration
 retires only comparisons with mapped independent successors. The current
-combined Rust host gate has 17 cases.
+combined Rust host gate has 19 cases.
 
 ## Provider and legacy boundaries (disclosed)
 
 All 17 selected images have explicit product coordinates. Zero selected images
 use `legacy/sqware/programs/Cargo.toml`, and the production normal dependency
-graph has zero sqware edges. The old sqware tree remains in the frozen dev-only
-`legacy-composition` host fixture, historical checkout and pending guest-scene
-fixtures. Cargo may still resolve those dev dependencies. They are not selected
-production image inputs; this is not whole-repository independence.
+graph has zero sqware edges. The root locked graph, including host development
+dependencies, now has zero sqware packages. The old gitlink is removed from
+the current tree; its frozen SHA and migration records remain in history and
+documentation. Existing local source data is retained, and old tests/scenes
+are not migration prerequisites. See [the current scope](docs/current-migration-scope.md).
+This does not establish runtime acceptance or archive readiness.
 
 The `login` image and `PROGRAM` now come from the immutable Session provider
 `https://github.com/shuyra-arche/session.git` at full revision
@@ -139,9 +144,9 @@ UART declaration uses the canonical driver-uart package at full revision
 changed from `f07a0954f65472e9a16e878e52c5f1d34146bc64` to
 `d120e3ddf4b4a6c00685f32310897622d3440dd5` to align UART `298...`; its runtime
 source and declaration bytes are unchanged, with only provider intake/manifest
-identity updated. Account, Hub and Router pins remain unchanged, and the frozen
-dev-only legacy composition retains the old Login/UART/RTC declarations as
-source fixtures.
+identity updated. Account, Hub and Router pins remain unchanged. The new literal
+contracts retain the old Login/UART/RTC declaration expectations without loading
+the legacy composition crate.
 
 Shell now comes from `https://github.com/shuyra-arche/shell.git` at full revision
 `5d84650d37df7523d0ac59fc563e2fc7dc4025ba`. `shell-declaration` owns the
@@ -175,9 +180,9 @@ declaration at full revision `f14cca51af02061350b2d1aa9f00f95c6dc06e15`; the
 composition no longer carries a second direct `rtc-api` dependency at
 `621be2b9946827be3de4245e29aa74ceb0f8cbd0`. That crate owns pure protocol
 types/constants/failure codec only. The selected RTC server and image also
-build from the Driver provider. The dev-only `legacy-composition` used by the
-host equivalence test retains the old sqware `rtc-api`, `fixturetarget`,
-Driver/Session and Login/UART/RTC declarations. Published servers remain
+build from the Driver provider. The former dev-only legacy composition and its
+old sqware RTC API/fixturetarget and superseded Driver/Session/Terminal package
+identities have been removed from the root lock. Published servers remain
 `components/{driver,session}/units/...` and `components/pipe/server`. The new
 `system` image is `bootstrap/Cargo.toml`; it uses published `system-server` at
 `9001af65...` and `system-support` at `5a792ff2...`, and is never the legacy
@@ -200,13 +205,15 @@ Boot transport and Python acceptance checkers now reside in this repository's
 `scripts/` and the `acceptance/` runtime package. Host tests live separately in
 `tests/` and run with `python3 -B -m unittest discover -s tests -t .`. They do not
 read the old checkout. See [test ownership](docs/acceptance-ownership.md). Firmware
-is an explicit external input; the unverified old `SBI.bin` is not copied. The
+defaults to QEMU's bundled OpenSBI; the unverified old `SBI.bin` is not copied. The
 new qtest entry builds this repository's product initrd and new bootstrap.
 Non-product scene deployments and their guest fixture programs still need
 provider migration before they can be enabled here.
 
-M2 is not complete. Zero selected legacy image builds does not remove the frozen
-dev fixtures, historical aggregate/checkout or pending guest-scene dependencies.
+Current scope is the product code, build and required input verification.
+Wholesale migration of the old tests and 35 guest scenes has stopped; planned
+destructive changes will need tests for the resulting behavior. Existing tests,
+source and completed checkpoints remain available as evidence.
 Firmware provenance and new runtime evidence also remain open. TOML/UnitFile
 redesign is undecided. The old PR1
 single SMP8 evidence is prior-tree only; this slice has no QEMU and claims no
@@ -215,5 +222,5 @@ runtime acceptance.
 See the [entry migration boundary](docs/boot-entry-migration.md) for exact source
 heads and the remaining archive gates. This candidate does not establish
 whole-repository independence or runtime acceptance.
-The [remaining fixture and scene inventory](docs/legacy-migration-order.md)
-sets out the minimum migration order without carrying over the old test layout.
+The [historical fixture and scene inventory](docs/legacy-migration-order.md)
+records previous dependencies; it is not a migration checklist or acceptance gate.
