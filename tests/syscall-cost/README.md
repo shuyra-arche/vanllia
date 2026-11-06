@@ -48,14 +48,3 @@ deadline. Exact input receipts and `samples.json` are saved under
 under `.vanllia/runs/`. A failed native verdict fails the test and remains in the
 evidence. There is no speed threshold. Compare medians and ranges; this small
 QEMU workload cannot establish hardware or general application performance.
-
-The recorded event-log comparison uses Kernel `3aa0a155` versus `44e33a6e`, with
-the same Cargo lock SHA-256
-`a20561ccd029b98084d96f5b7bbe24eaf67ad2ba8fcd54ddc1274904c5da3653`.
-Both compiled with installed nightly-2026-10-09, default features, release and
-`riscv64gc-unknown-none-elf`, using `-Crelocation-model=static`,
-`-Cforce-frame-pointers=yes`, `-Ccode-model=medium`. Unlike the CLI's product
-Cargo overlay, these two direct Kernel builds use the unchanged pinned Env
-dependency; their ELF hashes are therefore recorded separately from the product
-acceptance Kernel. Full inputs, samples and summary are in
-[runtime-results.json](../../docs/runtime-results.json).

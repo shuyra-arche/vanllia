@@ -25,8 +25,6 @@ bytes under `.vanllia/runs/product-*` and records `input.json`, serial output,
 process evidence and `verdict.json`. The monitor is a failure cleanup mechanism;
 using it to force shutdown cannot satisfy the verdict.
 
-The current 11-Unit/17-image product passed at 1, 2 and 4 CPUs using QEMU 10.0.13
-and OpenSBI 1.6.
 This covers startup and terminal EOF cleanup. It does not exercise authenticated
 Shell creation or old scenarios. The separate ignored `cost` target measures
 [paired syscall cost](../syscall-cost/README.md); it is not part of this lifecycle test.

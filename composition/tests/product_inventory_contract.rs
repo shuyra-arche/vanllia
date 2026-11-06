@@ -5,7 +5,6 @@
 //! `94e114614bec53424ac55e640fc80cf19a3e7107` and the planning API observation
 //! at `17fd7ddbd18b3aef3a8d348cd32d8642e81b3c7f`. The expectation provenance
 //! is both the old product declaration and the current planning API.
-//! See `docs/product-contract-tests.md`.
 
 use env::ProgramKind;
 use vanllia_build::{image_inventory, startup_order};

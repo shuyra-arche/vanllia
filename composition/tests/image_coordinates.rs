@@ -1,7 +1,7 @@
 //! Frozen product Cargo coordinates and selected provider routes.
 //!
 //! Expectations come from frozen source plus the reviewed provider intakes,
-//! not from the current coordinate producer. See docs/test-migration-batch2.md.
+//! not from the current coordinate producer.
 
 use unit::ImageBuild;
 use vanllia_composition::{IMAGE_BUILDS, image_builds, units};
