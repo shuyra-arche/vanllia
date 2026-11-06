@@ -19,8 +19,8 @@ SHUYRA_FIRMWARE_SHA256=<sha256-of-the-selected-firmware> \
 cargo test --locked --test toolchain -- --ignored --nocapture
 ```
 
-`SHUYRA_QEMU` can select a `qemu-system-riscv64` executable. Each scenario has a
-20-second timeout and must exit QEMU successfully, emit exactly one matching
+`SHUYRA_QEMU` can select a `qemu-system-riscv64` executable. Each scenario runs on both one and two harts, with a
+20-second timeout per run and must exit QEMU successfully, emit exactly one matching
 Kernel exit record, and reach Kernel's all-tasks-exited shutdown. A printed
 application marker alone does not pass. The expected records are:
 
@@ -30,6 +30,11 @@ application marker alone does not pass. The expected records are:
 | `std-exit` | `23` | `toolchain: std process exit` |
 | `std-panic` | `0xffffff01` | `toolchain: std abort` |
 | `std-oom` | `0xffffff01` | `toolchain: std abort` |
+| `std-threads` | `0` | `toolchain: std main returned` |
+| `std-thread-exit` | `23` | `toolchain: std process exit` (task 2) |
+| `std-thread-panic` | `0xffffff01` | `toolchain: std abort` (task 2) |
+| `std-tls-main` | `0xffffff01` | `toolchain: std abort` |
+| `std-thread-fault` | `0xffffff01` | `toolchain: std abort` (joining task 1) |
 
 Toolchain owns the programs and their assertions. Vanllia checks their artifact
 hashes against the build receipt, encodes capsules and observes actual Kernel
@@ -40,3 +45,10 @@ The Toolchain build receipt is left unchanged; execution evidence is separate.
 
 This narrows the verification gap in #19. It does not close that issue's
 assembled-System artifact handoff or deployment acceptance.
+
+The thread fixture covers TLS isolation and destructor ordering, cross-task heap
+ownership, join/scoped/detached workers, synchronization and timeouts. Process-exit
+probes require all tasks to halt, including a live detached worker on main return
+and the initial task on worker exit/panic. An illegal-instruction worker checks
+that join aborts when Kernel ends a task before Rust cleanup. These are 18 QEMU
+runs in one opt-in test, not host emulation of the Kernel boundary.
