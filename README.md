@@ -1,14 +1,17 @@
 # Vanllia
 
 Vanllia assembles Shuyra's operating system from pinned provider repositories.
-The independent `vanllia` CLI discovers provider-owned Unit declarations, builds
+The root `vanllia` CLI discovers provider-owned Unit declarations, builds
 their Cargo binaries and packages them for System. Clusters organize source and
 build work; Units describe runtime policy.
 
 ## Source map
 
 - `vanllia.toml`, `vanllia.lock`, `.gitmodules`: product defaults and source selection.
-- `components/`: pinned Kernel, System, build CLI and service repositories.
+- `src/`: Vanllia CLI; [CLI guide](docs/cli.md).
+- `crates/build/`: `vanllia-build` library, its tests and workflow examples.
+- `tests/cli/`: CLI integration tests.
+- `components/`: pinned Kernel, System and service repositories.
 - `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
 - `tests/syscall-cost/`: optional paired syscall benchmark.
 - `acceptance/`, `composition/`, Python tests and evidence scripts: retained older
@@ -25,7 +28,7 @@ runs with another nightly are not evidence that this pin works.
 
 ```sh
 git submodule update --init --recursive
-cargo install --path components/image-builder/cli --locked --target x86_64-unknown-linux-gnu
+cargo install --path . --locked --target x86_64-unknown-linux-gnu
 vanllia fetch
 vanllia check
 vanllia plan
@@ -64,7 +67,21 @@ vanllia workspace --reset-source system
 
 Local choices live in ignored `.vanllia/overrides.toml`. Use `vanllia fetch --update`
 only when intentionally refreshing source locks. CLI configuration and test
-semantics are documented in the selected `components/image-builder/cli/README.md`.
+semantics are documented in [the CLI guide](docs/cli.md).
+
+The root Cargo workspace builds host tools. Guest providers remain independent
+workspaces; the CLI supplies their explicit RV64 target. `.cargo/config.toml`
+retains RV64 rustflags without making RV64 the default for host commands.
+
+```sh
+cargo test --workspace --locked --target x86_64-unknown-linux-gnu
+cargo clippy --workspace --all-targets --locked --target x86_64-unknown-linux-gnu -- -D warnings
+```
+
+The library retains its [workflow caller contract](docs/workflow-contract.md)
+and [source attribution](PROVENANCE.md). Its examples are historical library
+fixtures, not product defaults. See [migration notes](docs/migration.md) for
+the source mapping and remaining legacy-test audit.
 
 The retained Python tests include legacy entry checks whose Nu scripts have been
 removed. Their complete discovery is not currently a passing product gate. The

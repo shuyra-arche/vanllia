@@ -23,9 +23,6 @@ path = "components/system"
 [sources.kernel]
 path = "components/kernel"
 
-[sources.image-builder]
-path = "components/image-builder"
-
 [sources.driver]
 path = "components/driver"
 

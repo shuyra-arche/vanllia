@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-04",
+  "host_target": "x86_64-unknown-linux-gnu",
+  "target": "riscv64gc-unknown-none-elf",
+  "library": "../..",
+  "sources": [
+    {
+      "name": "pipe",
+      "git": "https://github.com/shuyra-arche/pipe.git",
+      "rev": "4fce76372beb6c5ab8567232516f156b3d1032eb",
+      "patches": ["host.patch"]
+    },
+    {
+      "name": "kernel",
+      "git": "https://github.com/shuyra-arche/kernel.git",
+      "rev": "3aa0a155f825fbf377fc8d04009472ca67cbbf8c"
+    }
+  ],
+  "workspaces": [
+    {
+      "source": "pipe", "manifest": "Cargo.toml",
+      "packages": {
+        "pipe-api": {"source": "pipe", "path": "api"},
+        "pipe-client": {"source": "pipe", "path": "client"},
+        "pipe-declaration": {"source": "pipe", "path": "declaration"},
+        "pipe-server": {"source": "pipe", "path": "server"}
+      }
+    },
+    {
+      "source": "pipe", "manifest": "tests/Cargo.toml",
+      "packages": {
+        "pipe-api": {"source": "pipe", "path": "api"},
+        "pipe-declaration": {"source": "pipe", "path": "declaration"}
+      }
+    },
+    {
+      "source": "pipe", "manifest": "integration/Cargo.toml",
+      "packages": {
+        "pipe-api": {"source": "pipe", "path": "api"},
+        "pipe-client": {"source": "pipe", "path": "client"},
+        "pipe-declaration": {"source": "pipe", "path": "declaration"}
+      }
+    },
+    {"source": "kernel", "manifest": "Cargo.toml", "packages": {}}
+  ],
+  "host": {
+    "source": "pipe", "manifest": "integration/Cargo.toml",
+    "package": "pipe-integration-host", "bin": "pipe-integration-host",
+    "dependency_manifest": "integration/host/Cargo.toml"
+  },
+  "kernel": {
+    "source": "kernel", "manifest": "Cargo.toml", "package": "kernel",
+    "bin": "shuyra", "profile": "release", "features": ["semihosting"]
+  },
+  "firmware": {
+    "url": "https://raw.githubusercontent.com/anreonyr/sqware/f82ee2a9751b09563ca0f21577c212ab4470c8e4/SBI.bin",
+    "sha256": "c53d58aa9ab17f95fa1af159f0bf05fad5c5622ebc0f1084463435fa6e5752b6",
+    "bytes": 277880
+  },
+  "deployments": {
+    "pipe-independent": {
+      "host_args": [],
+      "runner": ["python3", "{tool}/examples/pipe/run.py", "{sources}/kernel", "{sources}/pipe", "{initrd}", "{firmware}", "{harts}"],
+      "harts": [4, 8], "timeout_seconds": 180
+    }
+  },
+  "clusters": {"pipe-unit": {"members": ["pipe"], "scenarios": ["pipe-integration"]}},
+  "units": {"pipe": {"source": "pipe", "manifest": "Cargo.toml", "tests": ["pipe-host"]}},
+  "tests": {
+    "pipe-host": {"kind": "host", "source": "pipe", "manifest": "tests/Cargo.toml", "args": [], "timeout_seconds": 120},
+    "pipe-integration": {"kind": "scenario", "deployment": "pipe-independent"}
+  }
+}

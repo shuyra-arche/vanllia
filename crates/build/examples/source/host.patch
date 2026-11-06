@@ -1,0 +1,92 @@
+diff --git a/scripts/qtest.nu b/scripts/qtest.nu
+index 65af8383..ab8c37b5 100644
+--- a/scripts/qtest.nu
++++ b/scripts/qtest.nu
+@@ -366,7 +366,7 @@ def --wrapped main [--package: string, --scene: string = "", --profile: string,
+     }
+     $env.QTEST_SOURCE_ROOT = ($repo | into string)
+     $env.QTEST_RUN_CWD = ($repo | into string)
+-    ^bash -c 'cd "$QTEST_RUN_CWD" && nohup python3 "$FEED_HELPER" "$FEED_PORTFILE" "$FEED_CAP" "$FEED_TEXT" "$FEED_AFTER" "$FEED_SCRIPT" >"$FEED_ERR" 2>&1 & echo $! > "$FEED_PID"'
++    ^bash -c 'cd "$QTEST_RUN_CWD" && exec nohup python3 "$FEED_HELPER" "$FEED_PORTFILE" "$FEED_CAP" "$FEED_TEXT" "$FEED_AFTER" "$FEED_SCRIPT" >"$FEED_ERR" 2>&1 & echo $! > "$FEED_PID"'
+     # 端口由帮手 bind(0) 后报出来（有界等；它没起来就当场说清楚，不要等到十例都超时）。
+     let got = (^bash -c 'for i in $(seq 1 50); do if [ -s "$FEED_PORTFILE" ]; then cat "$FEED_PORTFILE"; exit 0; fi; sleep 0.1; done; exit 1' | complete)
+     if ($got.exit_code != 0) {
+diff --git a/tools/shuyra-image/src/main.rs b/tools/shuyra-image/src/main.rs
+index 2bb567e8..3d6dbd6d 100644
+--- a/tools/shuyra-image/src/main.rs
++++ b/tools/shuyra-image/src/main.rs
+@@ -7,3 +7,5 @@ use unit::{Deployment, ImageBuild};
++mod managed;
++
+ fn profile(value: &str) -> (&str, &'static str) {
+     match value {
+         "debug" => ("debug", "dev"),
+@@ -15,4 +17,11 @@ fn main() {
+ fn main() {
++    if let Some(result) = managed::run(&std::env::args().skip(1).collect::<Vec<_>>()) {
++        match result {
++            Ok(path) => println!("ok  {}", path.display()),
++            Err(error) => { eprintln!("image: {error}"); std::process::exit(1); }
++        }
++        return;
++    }
+     let mut args = std::env::args().skip(1);
+     let scenario = args.next().unwrap_or_else(|| "product".to_string());
+     let profile_arg = args.next().unwrap_or_else(|| "release".to_string());
+@@ -46,12 +55,13 @@ fn main() {
+         eprintln!("image: 构建映射为空");
+         std::process::exit(1);
+     };
+-    let work = root.join("target/image").join(label);
+-    let output = root
++    let work = std::env::var_os("VANLLIA_WORK").map(std::path::PathBuf::from)
++        .unwrap_or_else(|| root.join("target/image").join(label));
++    let output = std::env::var_os("VANLLIA_OUTPUT").map(std::path::PathBuf::from).unwrap_or_else(|| root
+         .join("target")
+         .join(target)
+         .join(label)
+-        .join("initrd.img");
++        .join("initrd.img"));
+     match image::build_with(
+         &root,
+         &work,
+diff --git a/tools/shuyra-image/src/managed.rs b/tools/shuyra-image/src/managed.rs
+new file mode 100644
+index 00000000..125a74e9
+--- /dev/null
++++ b/tools/shuyra-image/src/managed.rs
+@@ -0,0 +1,34 @@
++//! The existing Integration CLI's explicit-root interface for Vanllia.
++use std::collections::BTreeMap;
++use std::path::PathBuf;
++
++pub fn run(args: &[String]) -> Option<Result<PathBuf, String>> {
++    let command = args.first()?.as_str();
++    if command != "check" && command != "build" { return None; }
++    Some((|| {
++        let mut options = BTreeMap::new();
++        let mut values = args[1..].iter();
++        while let Some(key) = values.next() {
++            if !["--root", "--work", "--out", "--deployment"].contains(&key.as_str()) {
++                return Err(format!("unknown argument {key}"));
++            }
++            let value = values.next().ok_or_else(|| format!("{key} needs a value"))?;
++            options.insert(key.as_str(), value.as_str());
++        }
++        let root = PathBuf::from(*options.get("--root").ok_or("--root required")?);
++        let scenario = options.get("--deployment").copied().unwrap_or("product");
++        let deployment = unit::Deployment::find(composition::DEPLOYMENTS, scenario)
++            .ok_or_else(|| format!("unknown deployment {scenario}"))?;
++        let (declarations, builds) = image::collect(&[image::Provider {
++            root: &root, declarations: composition::PROGRAMS, builds: composition::IMAGE_BUILDS,
++        }], "riscv64gc-unknown-none-elf")?;
++        if command == "check" {
++            println!("images: {:?}", image::image_inventory(&declarations, deployment, &builds)?);
++            println!("startup: {:?}", image::startup_order(&declarations, deployment)?);
++            return Ok(root);
++        }
++        let work = PathBuf::from(*options.get("--work").ok_or("--work required")?);
++        let output = PathBuf::from(*options.get("--out").ok_or("--out required")?);
++        image::build_with(&root, &work, &output, &declarations, deployment, &builds)
++    })())
++}

@@ -1,5 +1,2 @@
-[build]
-target = "riscv64gc-unknown-none-elf"
-
 [target.riscv64gc-unknown-none-elf]
 rustflags = ["-Crelocation-model=static", "-Cforce-frame-pointers=yes", "-Ccode-model=medium"]
