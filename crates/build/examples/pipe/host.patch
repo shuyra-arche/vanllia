@@ -1,0 +1,36 @@
+diff --git a/integration/host/src/main.rs b/integration/host/src/main.rs
+--- a/integration/host/src/main.rs
++++ b/integration/host/src/main.rs
+@@ -90,9 +90,14 @@ fn run() -> Result<(), String> {
+     let options = parse()?;
+     check_root(&options.root)?;
++    let (declarations, builds) = vanllia_build::collect(&[vanllia_build::Provider {
++        root: &options.root,
++        declarations: DECLARATIONS,
++        builds: BUILDS,
++    }], "riscv64gc-unknown-none-elf")?;
+     match options.command.as_str() {
+         "check" => {
+-            let images = image_builder::image_inventory(DECLARATIONS, &DEPLOYMENT, BUILDS)?;
+-            let order = image_builder::startup_order(DECLARATIONS, &DEPLOYMENT)?;
++            let images = vanllia_build::image_inventory(&declarations, &DEPLOYMENT, &builds)?;
++            let order = vanllia_build::startup_order(&declarations, &DEPLOYMENT)?;
+             println!("deployment: {}", DEPLOYMENT.name);
+             println!("entry: {}", DEPLOYMENT.entry);
+             println!("startup: {}", order.join(" -> "));
+@@ -106,12 +111,12 @@ fn run() -> Result<(), String> {
+         "build" => {
+             let work = options.work.ok_or("--work is required for build")?;
+             let out = options.out.ok_or("--out is required for build")?;
+-            let capsule = image_builder::build_with(
++            let capsule = vanllia_build::build_with(
+                 &options.root,
+                 &work,
+                 &out,
+-                DECLARATIONS,
++                &declarations,
+                 &DEPLOYMENT,
+-                BUILDS,
++                &builds,
+             )?;
+             println!("capsule: {}", capsule.display());

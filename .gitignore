@@ -1,4 +1,4 @@
-/target/
+**/target/
 /.vanllia/
 __pycache__/
 *.pyc

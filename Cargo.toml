@@ -1,0 +1,54 @@
+[package]
+name = "vanllia"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+autotests = false
+
+[dependencies]
+libtest-mimic = "0.8"
+ctrlc = { version = "3", features = ["termination"] }
+vanllia-build = { path = "crates/build" }
+initrd = { package = "env-initrd", git = "https://github.com/shuyra-arche/env.git", rev = "ee9357070996e2e559095904ff137a289a4ca156" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+toml_edit = { version = "0.23", features = ["serde"] }
+unit-contract = { package = "unit", git = "https://github.com/shuyra-arche/unit.git", rev = "ad50b803c3bd5cd2ef90010d80badf23551e88d5" }
+
+[dev-dependencies]
+env = { git = "https://github.com/shuyra-arche/env.git", rev = "d3000253cd5d13d466e91fafd4dbb27a5ec5aaae" }
+
+[workspace]
+members = ["crates/build"]
+exclude = ["components/*", "tests/product-lifecycle", "tests/syscall-cost", "crates/build/tests/fixtures/link-workspace"]
+resolver = "3"
+
+[[test]]
+name = "build"
+path = "tests/cli/build.rs"
+
+[[test]]
+name = "discovery"
+path = "tests/cli/discovery.rs"
+
+[[test]]
+name = "overlay"
+path = "tests/cli/overlay.rs"
+
+[[test]]
+name = "planner"
+path = "tests/cli/planner.rs"
+
+[[test]]
+name = "preparation"
+path = "tests/cli/preparation.rs"
+
+[[test]]
+name = "verdict"
+path = "tests/cli/verdict.rs"
+
+[[test]]
+name = "workspace"
+path = "tests/cli/workspace.rs"

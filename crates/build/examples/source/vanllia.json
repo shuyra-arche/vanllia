@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-04",
+  "host_target": "x86_64-unknown-linux-gnu",
+  "target": "riscv64gc-unknown-none-elf",
+  "library": "../..",
+  "sources": [{
+    "name": "source", "git": "https://github.com/anreonyr/sqware.git",
+    "rev": "f82ee2a9751b09563ca0f21577c212ab4470c8e4",
+    "patches": ["host.patch"], "submodules": ["components/kernel", "components/system"]
+  }],
+  "workspaces": [
+    {"source": "source", "manifest": "Cargo.toml", "packages": {}},
+    {"source": "source", "manifest": "tools/shuyra-image/Cargo.toml", "packages": {}},
+    {"source": "source", "manifest": "components/kernel/Cargo.toml", "packages": {}},
+    {"source": "source", "manifest": "components/system/Cargo.toml", "packages": {}}
+  ],
+  "host": {
+    "source": "source", "manifest": "tools/shuyra-image/Cargo.toml",
+    "package": "shuyra-image", "bin": "shuyra-image",
+    "dependency_manifest": "tools/shuyra-image/Cargo.toml", "dependency_alias": "image"
+  },
+  "kernel": {
+    "source": "source", "manifest": "components/kernel/Cargo.toml", "package": "kernel",
+    "bin": "shuyra", "profile": "release", "features": ["semihosting"]
+  },
+  "firmware": {
+    "url": "https://raw.githubusercontent.com/anreonyr/sqware/f82ee2a9751b09563ca0f21577c212ab4470c8e4/SBI.bin",
+    "sha256": "c53d58aa9ab17f95fa1af159f0bf05fad5c5622ebc0f1084463435fa6e5752b6",
+    "bytes": 277880
+  },
+  "deployments": {
+    "product": {
+      "host_args": ["--deployment", "product"],
+      "runner": ["python3", "{tool}/examples/source/run.py", "{sources}/source", "{initrd}", "{firmware}", "{harts}"],
+      "harts": [4, 8], "timeout_seconds": 240
+    }
+  },
+  "tests": {
+    "source-composition": {"kind": "host", "source": "source", "manifest": "tools/shuyra-image/Cargo.toml", "args": [], "timeout_seconds": 120},
+    "product": {"kind": "scenario", "deployment": "product"}
+  }
+}

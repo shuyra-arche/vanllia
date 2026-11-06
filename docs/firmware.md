@@ -16,9 +16,9 @@ Use `sha256sum` and `wc -c` to identify your file. Record its source revision,
 build configuration, toolchain and notices with any distributed artifact. The
 Kernel SBI wrapper is an ABI library, not a firmware image.
 
-No OpenSBI binary is distributed here. The optional
-[OpenSBI configuration](../firmware/opensbi/README.md) is not selected by default.
-Its source pin is `riscv-software-src/opensbi` at
+No OpenSBI binary or build configuration is distributed here. The removed
+optional configuration remains available in Git history.
+Its historical source pin was `riscv-software-src/opensbi` at
 `bd613dd92113f683052acfb23d9dc8ba60029e0a` (v1.6). Runtime compatibility must be
 checked against the selected Kernel load ranges and platform.
 
@@ -30,8 +30,8 @@ plus their marked headers. Selected ATCSMU and HTIF files carry BSD-3-Clause
 notices. Do not label that complete generic output BSD-2-Clause only. Preserve
 the exact source, build configuration, `COPYING.BSD`, `ThirdPartyNotices.md` and
 all applicable source-file notices when assessing distribution. The optional
-configuration excludes two platform implementations; its detailed notice scope
-is recorded with that configuration and is not a blanket firmware license grant.
+configuration excluded two platform implementations; its detailed notice scope
+is recorded with that configuration in Git history and is not a blanket firmware license grant.
 
 The former `sqware` firmware at source commit
 `94e114614bec53424ac55e640fc80cf19a3e7107` was not copied: its introducing history
