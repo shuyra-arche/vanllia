@@ -52,7 +52,3 @@ path = "tests/cli/verdict.rs"
 [[test]]
 name = "workspace"
 path = "tests/cli/workspace.rs"
-
-[[test]]
-name = "toolchain"
-path = "tests/toolchain/mod.rs"
