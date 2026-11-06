@@ -28,22 +28,23 @@ target. Kernel, System and service repositories remain independent workspaces.
 The optional `firmware/` build recipe is removed. Identified external firmware
 inputs, hash/byte verification and QEMU support remain; see [firmware inputs](firmware.md).
 
-## Legacy test audit still open
+## Retired legacy facilities
 
-This migration preserves all historical Python tests, assertion fingerprints,
-coverage baselines and `acceptance/source-files.json`. None are retired merely
-to reduce the language percentage. The following ownership audit remains needed
-before broader deletion:
+The legacy Python test suite, its fixtures/helpers and assertion/coverage
+baselines, `acceptance/`, `composition/`, legacy evidence scripts and composition
+input generator are removed. This is an explicit retirement of that coverage;
+it does not claim equivalent coverage from the current Rust tests. The removed
+files remain available in Git history at `4e030986c2cf47d7bdb88ec37576323b75d8540a`.
+The original source/blob attribution is preserved unchanged in
+[`provenance/legacy-source-files.json`](provenance/legacy-source-files.json);
+its path entries describe the retired files.
 
-- `acceptance/{oracles,evidence,transport,drivers}` and their self-contained tests:
-  preserve their evidence and process-lifecycle contracts.
-- `tests/boot` and release checks: identify assertions tied only to removed Nu
-  entry points separately from cancellation, reaping, timeouts and evidence checks.
-- `composition/tests`: assess coordinates, namespace, deployment, inventory and
-  Unit contracts individually against the current implementation.
-- `docs/generate-composition-inputs.py`, `acceptance/scenes.nu`,
-  `acceptance/verdicts.nu`, `scripts/check-evidence.py` and
-  `scripts/record-evidence.py`: retain pending caller and semantic review.
+Current CLI/build-library tests, product lifecycle gates and the syscall-cost
+benchmark remain. The imported build-library examples (including their Python
+runner adapters and fixed external source recipes) remain as library fixtures.
+They do not depend on the removed in-repository acceptance machinery.
 
-The full historical Python suite is not a passing product gate. Record its
-failures separately from the current Rust CLI/library and product lifecycle tests.
+The root `rust-toolchain.toml` is removed. Developers select their own compatible
+nightly and install the required target/components explicitly. The fixed
+toolchain in historical library example recipes belongs to those examples and
+does not set the repository's default toolchain.

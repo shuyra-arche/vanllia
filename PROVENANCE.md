@@ -15,4 +15,6 @@ The CLI, build library, tests, examples and workflow contract were imported from
 at `82f81b121a9c8f0590ceceb51c77fa0369355217`. That repository retains the
 intermediate history. The CLI now lives in `src/` and `tests/cli/`; the library,
 its tests and examples live in `crates/build/`. This consolidation adds no license
-grant. Existing `acceptance/source-files.json` attribution remains unchanged.
+grant. Attribution for the removed legacy facilities is retained verbatim at
+[`docs/provenance/legacy-source-files.json`](docs/provenance/legacy-source-files.json).
+Its paths describe the historical layout, not currently shipped files.

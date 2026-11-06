@@ -14,8 +14,8 @@ vanllia build --root /path/to/product
 ```
 
 Use a nightly Cargo with `resolver.lockfile-path`, the RV64 target and LLVM
-tools (`llvm-objcopy` on PATH). `rust-toolchain.toml` pins nightly-2026-09-04; a clean
-run under that pin is still needed before claiming it as a verified environment. Cargo provides compilation, dependency resolution
+tools (`llvm-objcopy` on PATH). Select a compatible nightly explicitly; the
+repository does not set a toolchain override. Cargo provides compilation, dependency resolution
 and caching. The former `vanllia-build` executable has been retired.
 
 ## Product configuration

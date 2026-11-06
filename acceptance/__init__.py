@@ -1,1 +1,0 @@
-"""Vanllia acceptance runtime package."""

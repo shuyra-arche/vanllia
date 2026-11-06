@@ -14,17 +14,17 @@ build work; Units describe runtime policy.
 - `components/`: pinned Kernel, System and service repositories.
 - `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
 - `tests/syscall-cost/`: optional paired syscall benchmark.
-- `acceptance/`, `composition/`, Python tests and evidence scripts: retained older
-  test machinery; these do not define the current CLI's product or test catalog.
 
 ## Build and run
 
 Use a Linux host with Git, Rustup/Cargo, the RV64 target, `rust-src` and LLVM's
 `llvm-objcopy` on PATH. QEMU system RISC-V and a separately supplied, identified
-OpenSBI image are needed for execution. `rust-toolchain.toml` pins
-`nightly-2026-09-04`; the CLI also declares a minimum Rust version in its manifest.
-The pinned environment still needs a fresh full-product verification; earlier
-runs with another nightly are not evidence that this pin works.
+OpenSBI image are needed for execution. Select a compatible nightly explicitly
+with Rustup; this repository does not impose a `rust-toolchain.toml` override.
+The CLI declares its minimum Rust version in its manifest. Guest builds require
+nightly Cargo's `resolver.lockfile-path` support. Install `rust-src`, the RV64
+target and LLVM tools for the toolchain you select, and verify the full product
+with that toolchain before relying on its artifacts.
 
 ```sh
 git submodule update --init --recursive
@@ -81,13 +81,7 @@ cargo clippy --workspace --all-targets --locked --target x86_64-unknown-linux-gn
 The library retains its [workflow caller contract](docs/workflow-contract.md)
 and [source attribution](PROVENANCE.md). Its examples are historical library
 fixtures, not product defaults. See [migration notes](docs/migration.md) for
-the source mapping and remaining legacy-test audit.
-
-The retained Python tests include legacy entry checks whose Nu scripts have been
-removed. Their complete discovery is not currently a passing product gate. The
-self-contained oracle and transport tests can still be run independently; see
-[acceptance ownership](acceptance/README.md). Do not suppress failures to make the
-legacy suite appear current. Firmware, hardware and SMP acceptance remain
-separate from host tests.
+the source mapping and retired legacy facilities. Firmware, hardware and SMP
+acceptance remain separate from host tests.
 
 [Contributing and organization maintenance rules](CONTRIBUTING.md).
