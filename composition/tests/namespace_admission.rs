@@ -3,7 +3,6 @@
 //! The first three cases preserve the frozen publication-admission assertions
 //! from sqware 94e114614bec53424ac55e640fc80cf19a3e7107. They consume the
 //! selected public Unit/System APIs, with no legacy source or fixture imports.
-//! See docs/test-migration-batch1.md for assertion and dependency mapping.
 
 extern crate alloc;
 

@@ -1,7 +1,8 @@
 # Optional OpenSBI configuration candidate
 
 This is a build/configuration proposal, not a selected runtime firmware.
-`SHUYRA_SBI` stays mandatory and no boot command or default changes.
+The current CLI requires an explicit `[boot.firmware]` input; this configuration
+is not automatically selected by a boot command.
 
 `no-andes-renesas_defconfig` starts from official OpenSBI v1.6 generic
 `platform/generic/configs/defconfig` at
@@ -16,7 +17,7 @@ QEMU-only firmware. Other platform overrides, HTIF, serial and generic FDT
 drivers are retained where their dependencies allow them. Andes/Renesas support
 is intentionally removed and has not been tested on any machine.
 
-## Build recipe and evidence
+## Build recipe
 
 Use a fresh source/output directory for each build. From the Vanllia root:
 
@@ -55,21 +56,6 @@ default build. `BUILD_INFO=n` keeps timestamp/compiler banners off, and the
 version string is explicitly fixed. The cross compiler and its libraries must
 already be available; an extracted toolchain also needs its library directory
 on `LD_LIBRARY_PATH` as recorded in the earlier build evidence.
-
-On 2026-11-05, two independent source/output directories on the same Linux
-x86_64 host used GCC Debian 14.2.0-19, binutils 2.44 and Make 4.4.1. Both fresh
-builds succeeded with identical resolved configuration, raw firmware and ELF:
-
-| Input or artifact | SHA-256 |
-|---|---|
-| Input defconfig | `67bc1700bc9a55ec230a38d666bdf4f5dce8bf9fbefa90de7a5d3a42246c9b43` |
-| Resolved `.config` | `f3965e9cdc9925225a5c7f5ba7ee12ec3331a68e2dff8abb7d4847fefd32a7bb` |
-| 272,808-byte `fw_jump.bin` | `fa4e79f13465a25a25bb5d7deb966fee7037a8d865728082a091175627305fe4` |
-| `fw_jump.elf` | `d3a8d982658a9796499b653b401528d0bb3396a3c83df8e30e01e921914e5a1e` |
-
-This demonstrates repeatable bytes for those two fixed-toolchain builds, not
-cross-toolchain, cross-host or runtime reproducibility. The prior unmodified
-default-generic build has a different hash and remains separate evidence.
 
 ## Resolved changes and license facts
 

@@ -1,9 +1,27 @@
 # Vanllia
 
-Vanllia combines Shuyra providers through the independent `vanllia` CLI. The
-root owns `vanllia.toml`, source pins and product defaults. Provider repositories
-own their Unit declarations and Cargo bins. Clusters organize repositories;
-Units describe runtime policy. No central Unit/image table is required.
+Vanllia assembles Shuyra's operating system from pinned provider repositories.
+The independent `vanllia` CLI discovers provider-owned Unit declarations, builds
+their Cargo binaries and packages them for System. Clusters organize source and
+build work; Units describe runtime policy.
+
+## Source map
+
+- `vanllia.toml`, `vanllia.lock`, `.gitmodules`: product defaults and source selection.
+- `components/`: pinned Kernel, System, build CLI and service repositories.
+- `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
+- `tests/syscall-cost/`: optional paired syscall benchmark.
+- `acceptance/`, `composition/`, Python tests and evidence scripts: retained older
+  test machinery; these do not define the current CLI's product or test catalog.
+
+## Build and run
+
+Use a Linux host with Git, Rustup/Cargo, the RV64 target, `rust-src` and LLVM's
+`llvm-objcopy` on PATH. QEMU system RISC-V and a separately supplied, identified
+OpenSBI image are needed for execution. `rust-toolchain.toml` pins
+`nightly-2026-09-04`; the CLI also declares a minimum Rust version in its manifest.
+The pinned environment still needs a fresh full-product verification; earlier
+runs with another nightly are not evidence that this pin works.
 
 ```sh
 git submodule update --init --recursive
@@ -14,22 +32,9 @@ vanllia plan
 vanllia build
 ```
 
-Use the toolchain supported by the selected CLI and LLVM `llvm-objcopy` on PATH.
-Validation uses nightly-2026-10-09; historical provider toolchain files are
-unchanged. Cargo supplies dependency resolution and compilation inside provider
-workspaces. The root has no Cargo product adapter, bootstrap or composition crate.
-
-The default roots are Login and Daemon. Necessary Units and Shell's native Cargo
-image resources are discovered from provider TOML. The host builds and packages
-all selected Unit templates in initrd. System is the always-included core boot
-Unit; Operator/Identity bootstrap are its internal threads. Shell is requested
-and can be instantiated at runtime. Packaging does not imply startup creation.
-
-Driver also includes optional PCI, IOMMU and VirtIO block providers. Select
-`virtio-blk` for their minimal resident closure, or use the provider's
-`test.virtio-blk-discovery` Unit with the opt-in host QEMU smoke. See
-[driver intake validation](docs/driver-intake-validation.md) for the exact
-source pins, hardware inputs, native verdict and remaining I/O limits.
+The default selection is Login and Daemon. System is always included. Selected
+Units and their resources are packaged; requested Units such as Shell need not
+start at boot. Repeated `--unit` options select a smaller dependency closure:
 
 ```sh
 vanllia plan --unit test.pipe-roundtrip
@@ -37,10 +42,19 @@ vanllia build --unit test.pipe-roundtrip
 vanllia test -- --list
 ```
 
-The new Pipe case is written in Rust and uses native exit and resource retirement
-receipts. Kernel event logging is removed. Old scenarios and their tests are not
-migrated; retained composition test sources and historical docs are archival
-evidence rather than current product entry points.
+Before executing an artifact, configure `[boot.firmware]` with `path` (or HTTPS
+`url`), `sha256` and `bytes`, then rebuild. See [firmware inputs](docs/firmware.md).
+
+```sh
+vanllia run --artifact /absolute/path/to/.vanllia/artifacts/BUILD
+vanllia test -- pipe.roundtrip
+```
+
+Artifacts and native receipts live under `.vanllia/`. A successful build alone
+is not a runtime verdict. [Product lifecycle tests](tests/product-lifecycle/README.md)
+document the additional explicit QEMU gates and their limits.
+
+## Development and checks
 
 ```sh
 vanllia workspace --source system=/work/system
@@ -48,34 +62,15 @@ vanllia workspace --manifest /work/system/server/Cargo.toml
 vanllia workspace --reset-source system
 ```
 
-Local choices live in ignored `.vanllia/overrides.toml`; the editor configuration
-and build use the same Cargo overlay. The CLI prepares missing packages and
-locks real commits; refresh intentionally with `vanllia fetch --update`.
+Local choices live in ignored `.vanllia/overrides.toml`. Use `vanllia fetch --update`
+only when intentionally refreshing source locks. CLI configuration and test
+semantics are documented in the selected `components/image-builder/cli/README.md`.
 
-The pinned SDK uses Kernel's API as the ABI definition and Kernel's Client for
-calls and client state. Env, Wire and Mold preserve their existing facade paths;
-Execution adapts the existing startup code to that Client. The product selects
-these published sources together, including IOMMU's API-only hold dependency.
-See [SDK consumer validation](docs/sdk-consumer-validation.md) for exact pins,
-the real Cargo graphs and the remaining legacy startup constraints.
+The retained Python tests include legacy entry checks whose Nu scripts have been
+removed. Their complete discovery is not currently a passing product gate. The
+self-contained oracle and transport tests can still be run independently; see
+[acceptance ownership](acceptance/README.md). Do not suppress failures to make the
+legacy suite appear current. Firmware, hardware and SMP acceptance remain
+separate from host tests.
 
-Build receipts identify exact initrd/kernel bytes, debug images, Cargo locks,
-toolchain and source hashes under `.vanllia/artifacts/`. To run a saved artifact,
-configure a specific firmware input first, then rebuild the artifact to include
-it. Add `[boot.firmware]` with the installed OpenSBI `path`, `sha256` and `bytes`.
-Obtain the digest and length with `sha256sum` and `wc -c`. The CLI checks this
-input; it does not redistribute a firmware binary or silently choose another.
-
-```sh
-vanllia run --artifact /absolute/path/to/.vanllia/artifacts/BUILD
-vanllia test -- pipe.roundtrip
-```
-
-These last two commands execute managed QEMU with headless serial evidence.
-The current SDK pins passed the default release build, the five-image
-`virtio-blk` closure build and single-core Pipe QEMU with native exit and reclaim
-checks. [SDK consumer validation](docs/sdk-consumer-validation.md) records those
-fresh artifacts. Earlier 1/2/4-core product and Pipe runs and the bounded syscall
-benchmark remain in [dynamic build validation](docs/dynamic-build-validation.md)
-with their own older pins. Earlier `cargo image`, Nushell build/runner entries
-and static Deployment files are retired.
+[Contributing and organization maintenance rules](CONTRIBUTING.md).
