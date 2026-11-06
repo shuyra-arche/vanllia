@@ -1,9 +1,9 @@
 # Retained workflow library contract
 
 `vanllia_build::workflow::execute(config_path, state, action)` is the JSON
-workflow library interface in `src/workflow.rs`. It is separate from the TOML
-product interface of the current `vanllia` CLI. `src/workflow/config.rs` defines
-the accepted schema and rejects unknown fields; `examples/` contains fixtures.
+workflow library interface in `crates/build/src/workflow.rs`. It is separate from the TOML
+product interface of the current `vanllia` CLI. `crates/build/src/workflow/config.rs` defines
+the accepted schema and rejects unknown fields; `crates/build/examples/` contains fixtures.
 Callers select the configuration's fixed `RUSTUP_TOOLCHAIN` before execution.
 
 ## Inputs and local overrides
