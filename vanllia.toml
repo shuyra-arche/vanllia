@@ -47,12 +47,20 @@ rev = "ad50b803c3bd5cd2ef90010d80badf23551e88d5"
 
 [sources.env]
 git = "https://github.com/shuyra-arche/env.git"
-rev = "ee9357070996e2e559095904ff137a289a4ca156"
+rev = "f54f9a1ab3f0df3631fb80ff2bf5d0cfaecbe927"
 
 [sources.wire]
 git = "https://github.com/shuyra-arche/wire.git"
-rev = "08293d2de463901f69ac66b62e9cd3a6ab5629c3"
+rev = "4b7619fda4bbd202e9a5c952872a84c2145c681e"
 
 [sources.mold]
 git = "https://github.com/shuyra-arche/mold.git"
-rev = "8e8b1c2bdf188cf01494a3a93398cc77cd12b3e6"
+rev = "1addd302789e6a1c0dea6a7adf27e975a05d5ada"
+
+[sources.execution]
+git = "https://github.com/shuyra-arche/execution.git"
+rev = "ea49192e5df8bf744e083ced23ff0908b5bab3a3"
+
+[sources.iommu]
+git = "https://github.com/shuyra-arche/driver-iommu.git"
+rev = "ba78aa607f2d7cfd03381cfec9eea1ad2cc4c825"
