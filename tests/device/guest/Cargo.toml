@@ -14,8 +14,8 @@ path = "main.rs"
 test = false
 bench = false
 [dependencies]
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "35e31efb49b69deba5f901d1be41e915f5a4e7a8" }
-kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "35e31efb49b69deba5f901d1be41e915f5a4e7a8" }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "93db75f6dd364ce02d498e91e2af9625b3be8c24" }
+kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "93db75f6dd364ce02d498e91e2af9625b3be8c24" }
 [profile.dev]
 panic = "abort"
 [profile.release]

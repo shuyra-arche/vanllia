@@ -137,6 +137,8 @@ fn protected_device_lifecycle_crosses_real_units() {
         for marker in [
             "PASS Pend readers",
             "PASS Clone copied Cells",
+            "PASS Clone mapped delivery retry, read-only, zero tail and independent lifetime",
+            "PASS Clone cross-Unit mapped payload retained until receiver exit",
             "PASS sign",
             "PASS unit membership does not grant peer control",
             "PASS Pend cross-Unit writer returns after child cleanup",
@@ -144,6 +146,14 @@ fn protected_device_lifecycle_crosses_real_units() {
             assert!(
                 serial.contains(marker),
                 "{mode}: missing {marker}: {serial}"
+            );
+        }
+        if mode == "crash" {
+            assert!(serial.contains("driver: writing read-only Clone payload must fault"));
+            assert!(
+                serial.lines().any(
+                    |line| line.starts_with("user fault killed:") && line.contains("cause=15 ")
+                )
             );
         }
         if matches!(mode, "clean" | "readonly") {

@@ -125,7 +125,23 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
     let shared_data = allocation(4096);
     let shared_root =
         share_view::unseal(shared_data, kernel_api::model::modifiable::Modifiable::Yes).unwrap();
-    let args = [id, pulse.get(), shared_root.get()];
+    let clone_queue = kernel_client::call::clone_view::unseal(
+        kernel_api::model::identity::Mark::NONE,
+        kernel_api::model::clone_view::CloneLimits {
+            max_len: 64,
+            max_messages: 1,
+            max_bytes: 64,
+        },
+    )
+    .unwrap();
+    let message = [0x73u8; 64];
+    kernel_client::call::clone_view::push(
+        clone_queue,
+        VirtAddr::new(message.as_ptr() as usize),
+        message.len(),
+    )
+    .unwrap();
+    let args = [id, pulse.get(), shared_root.get(), clone_queue.get()];
     let task = unit::spawn(
         team,
         driver as *const () as usize,
@@ -138,6 +154,13 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
         shared_root,
         task,
         kernel_api::model::modifiable::Modifiable::Yes,
+        kernel_api::model::identity::Mark::NONE,
+    )
+    .unwrap();
+    pend::accord(
+        clone_queue,
+        task,
+        kernel_api::model::modifiable::Modifiable::No,
         kernel_api::model::identity::Mark::NONE,
     )
     .unwrap();
@@ -163,6 +186,15 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
     );
     sign::close(returned).unwrap();
     sign::release(returned).unwrap();
+    // This Sign reports the shared writer's return, not completion of all child
+    // cleanup. Revocation can still contend with the child's other Pend returns.
+    until(
+        || match pend::release(clone_queue, kernel_api::model::pend::ReleaseMode::Revoke) {
+            Ok(()) => true,
+            Err(error) if error.source == kernel_api::abi::call::pend::PendFail::Busy => false,
+            Err(error) => panic!("Clone queue release: {error:?}"),
+        },
+    );
     let result = unit::join(UnitTarget::Task(task), Wait::AtMost(10000), false).unwrap();
     let JoinReply::Reaped(exit) = result else {
         panic!("child result missing");
@@ -241,22 +273,52 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
     room::reap(0, VirtAddr::new(0), 0)
 }
 extern "C" fn driver(args: *const usize, count: usize) -> ! {
-    assert_eq!(count, 3);
+    assert_eq!(count, 4);
     let foreign_pend =
         kernel_api::model::identity::PendId::from_bytes(&unsafe { *args.add(2) }.to_le_bytes())
             .unwrap();
     assert!(share_view::open(foreign_pend).is_err());
-    let mut info = [0usize; 8];
+    let foreign_queue =
+        kernel_api::model::identity::PendId::from_bytes(&unsafe { *args.add(3) }.to_le_bytes())
+            .unwrap();
+    assert!(kernel_client::call::clone_view::pull(foreign_queue, 64).is_err());
+    let mut info = [[0usize; 8]; 2];
     assert_eq!(
         pend::collect(
             kernel_api::model::identity::PendId::NONE,
             VirtAddr::new(info.as_mut_ptr() as usize),
-            1
+            2
         )
         .unwrap(),
-        1
+        2
     );
-    let incoming = kernel_api::model::identity::PendId::from_bytes(&info[0].to_le_bytes()).unwrap();
+    let records = info.map(|words| kernel_api::model::pend::PendInfo::from_words(words).unwrap());
+    let incoming = records
+        .iter()
+        .find(|p| p.kind == kernel_api::model::view::ViewKind::Share)
+        .unwrap()
+        .token;
+    let queue = records
+        .iter()
+        .find(|p| p.kind == kernel_api::model::view::ViewKind::Clone)
+        .unwrap()
+        .token;
+    let payload = kernel_client::call::clone_view::pull(queue, 64).unwrap();
+    assert_eq!(payload.len, 64);
+    assert_ne!(payload.sender, unit::self_id());
+    let (copied, size) = share_view::open(payload.token).unwrap();
+    assert_eq!(size, 4096);
+    for i in 0..size {
+        assert_eq!(
+            unsafe { ((copied.get() + i) as *const u8).read_volatile() },
+            if i < 64 { 0x73 } else { 0 }
+        );
+    }
+    // Leave this independent payload Pend and its mapping live on every exit path.
+    let _ = writeln!(
+        Serial,
+        "PASS Clone cross-Unit mapped payload retained until receiver exit"
+    );
     let (address, _) = share_view::open(incoming).unwrap();
     unsafe {
         (address.get() as *mut usize).write_volatile(0xABCD);
@@ -391,7 +453,11 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
     device::write(id, 0x98, 8, 3).unwrap();
     if cfg!(feature = "crash") {
         memory::release(source).unwrap();
-        unsafe { core::arch::asm!("unimp", options(noreturn)) };
+        let _ = writeln!(Serial, "driver: writing read-only Clone payload must fault");
+        unsafe {
+            (copied.get() as *mut u8).write_volatile(0x99);
+        }
+        panic!("Clone payload write was permitted");
     }
     until(|| device::read(id, 0x98, 4).unwrap().0 & 1 == 0);
     let _ = writeln!(Serial, "driver: second DMA complete");
@@ -556,58 +622,85 @@ fn pend_contracts() {
 }
 fn clone_contracts() {
     use kernel_api::model::{
-        clone_view::{CloneLimits, Oversize, PullOutcome},
+        clone_view::CloneLimits,
         identity::Mark,
-        pend::ReleaseMode,
+        modifiable::Modifiable::{No, Yes},
+        pend::{PendRange, ReleaseMode},
     };
     use kernel_client::call::clone_view;
     let send = allocation(8192);
-    let receive = allocation(8192);
     let (send_map, send_at) =
         attach(send, 2, TeamId::new(0), Placement::lowest(4096).unwrap(), 6).unwrap();
-    let (receive_map, receive_at) = attach(
-        receive,
-        2,
-        TeamId::new(0),
-        Placement::lowest(4096).unwrap(),
-        6,
-    )
-    .unwrap();
-    let view = clone_view::unseal(
-        Mark::NONE,
-        CloneLimits {
-            max_len: 5000,
-            max_messages: 2,
-            max_bytes: 10000,
-        },
-    )
-    .unwrap();
-    unsafe {
-        core::ptr::write_bytes(send_at.get() as *mut u8, 0x5A, 5000);
-    }
-    unsafe {
-        core::ptr::write_bytes(receive_at.get() as *mut u8, 0, 5000);
-    }
-    clone_view::push(view, send_at, 5000).unwrap();
-    unsafe {
-        core::ptr::write_bytes(send_at.get() as *mut u8, 0xA5, 5000);
-    }
-    let outcome = clone_view::pull(view, receive_at, 5000, Oversize::Keep).unwrap();
-    assert!(matches!(outcome, PullOutcome::Received { len: 5000, .. }));
-    for index in 0..5000 {
-        assert_eq!(
-            unsafe { ((receive_at.get() + index) as *const u8).read_volatile() },
-            0x5A
+    // Repeat independent roots to exercise map/revoke/reclaim, including page tails.
+    for _ in 0..16 {
+        let queue = clone_view::unseal(
+            Mark::NONE,
+            CloneLimits {
+                max_len: 5000,
+                max_messages: 2,
+                max_bytes: 10000,
+            },
+        )
+        .unwrap();
+        unsafe {
+            core::ptr::write_bytes(send_at.get() as *mut u8, 0x5A, 5000);
+        }
+        clone_view::push(queue, send_at, 5000).unwrap();
+        unsafe {
+            core::ptr::write_bytes(send_at.get() as *mut u8, 0xA5, 5000);
+        }
+        assert!(clone_view::pull(queue, 4999).is_err());
+        let (len, sender, depth) = clone_view::peek(queue).unwrap();
+        assert_eq!((len, sender, depth), (5000, unit::self_id(), 1));
+        let outcome = clone_view::pull(queue, 5000).unwrap();
+        assert_eq!((outcome.len, outcome.sender), (5000, unit::self_id()));
+        assert!(clone_view::pull(queue, 5000).is_err());
+        assert!(pend::narrow(outcome.token, Yes).is_err());
+        assert!(pend::derive(outcome.token, Yes, Mark::NONE, PendRange::Inherit).is_err());
+        let reference = memory::acquire(
+            AcquireSource::Source {
+                token: outcome.token,
+                offset: 0,
+                count: 2,
+            },
+            kernel_api::model::unit::ControlId::NONE,
+        )
+        .unwrap();
+        assert!(
+            attach(
+                reference,
+                2,
+                TeamId::new(0),
+                Placement::lowest(4096).unwrap(),
+                6
+            )
+            .is_none()
         );
+        memory::release(reference).unwrap();
+        let reader = pend::derive(outcome.token, No, Mark::NONE, PendRange::Inherit).unwrap();
+        clone_view::seal(queue).unwrap();
+        pend::release(queue, ReleaseMode::Revoke).unwrap();
+        let (address, size) = share_view::open(outcome.token).unwrap();
+        assert_eq!(size, 8192);
+        for index in 0..size {
+            assert_eq!(
+                unsafe { ((address.get() + index) as *const u8).read_volatile() },
+                if index < outcome.len { 0x5A } else { 0 }
+            );
+        }
+        share_view::open(reader).unwrap();
+        pend::release(outcome.token, ReleaseMode::Revoke).unwrap();
+        assert!(share_view::open(reader).is_err());
     }
-    pend::release(view, ReleaseMode::Revoke).unwrap();
     detach(send_map);
-    detach(receive_map);
     memory::release(send).unwrap();
-    memory::release(receive).unwrap();
     let _ = writeln!(
         Serial,
         "PASS Clone copied Cells remain independent of sender"
+    );
+    let _ = writeln!(
+        Serial,
+        "PASS Clone mapped delivery retry, read-only, zero tail and independent lifetime"
     );
 }
 
