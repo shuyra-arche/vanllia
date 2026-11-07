@@ -1,0 +1,22 @@
+[package]
+name = "vanllia-device-guest"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[features]
+crash = []
+readonly = []
+activation_exit = []
+[workspace]
+[[bin]]
+name = "device-guest"
+path = "main.rs"
+test = false
+bench = false
+[dependencies]
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "e6fe2f762a1bae358f16671bd895b3d1297b8312" }
+kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "e6fe2f762a1bae358f16671bd895b3d1297b8312" }
+[profile.dev]
+panic = "abort"
+[profile.release]
+panic = "abort"
