@@ -5,12 +5,12 @@ use kernel_api::model::{
     identity::{TeamId, VirtAddr},
     memory::{
         AcquireSource, Allocation, FlatReference, MappingControl, MappingId, MappingSelection,
-        Placement, ReferenceRange,
+        MappingState, MappingTarget, Placement, ReferenceRange,
     },
     unit::{ExitCause, JoinReply, ProgramKind, UnitTarget},
     wait::Wait,
 };
-use kernel_client::call::{chrono, debug, device, memory, pend, room, share_view, sign, unit};
+use kernel_client::call::{chrono, debug, memory, pend, room, share_view, sign, unit};
 
 core::arch::global_asm!(
     ".section .text.entry",
@@ -52,7 +52,7 @@ fn attach(
     let place = placement.encode();
     memory::attach(
         VirtAddr::new(range.as_ptr() as usize),
-        team,
+        MappingTarget::Cpu(team),
         VirtAddr::new(place.as_ptr() as usize),
         access,
         MappingControl::Caller,
@@ -60,7 +60,12 @@ fn attach(
     .ok()
 }
 fn detach(view: MappingId) {
-    memory::detach(TeamId::new(0), view, MappingSelection::Whole).unwrap();
+    memory::detach(
+        MappingTarget::Cpu(TeamId::new(0)),
+        view,
+        MappingSelection::Whole,
+    )
+    .unwrap();
 }
 fn until(mut ready: impl FnMut() -> bool) {
     let deadline = chrono::clock() + 5_000_000_000;
@@ -70,15 +75,31 @@ fn until(mut ready: impl FnMut() -> bool) {
     }
 }
 #[unsafe(no_mangle)]
-extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
+extern "C" fn manager(boot_args: *const usize, count: usize) -> ! {
     let _ = writeln!(Serial, "device-manager started");
     sign_contracts();
     pend_contracts();
     clone_contracts();
     unit_control_contracts();
-    let (id, identity) = device::scan(0).unwrap();
-    assert!(id != 0);
-    assert_eq!(identity, 0x11e81234);
+    assert_eq!(count, kernel_api::boot::args::LEN);
+    let args = unsafe { core::slice::from_raw_parts(boot_args, count) };
+    let bytes = unsafe {
+        core::slice::from_raw_parts(
+            args[kernel_api::boot::args::LEDGER] as *const u8,
+            args[kernel_api::boot::args::LEDGER_LEN],
+        )
+    };
+    let ledger = kernel_api::boot::ledger::Entries::new(bytes).unwrap();
+    let bar_root = kernel_api::model::identity::PendId::from_bytes(
+        &ledger
+            .find(kernel_api::boot::ledger::Name::Page(
+                kernel_api::boot::ledger::Page::Region(0x40000000),
+            ))
+            .unwrap()
+            .handle()
+            .to_le_bytes(),
+    )
+    .unwrap();
     let team = unit::build(ProgramKind::User, unit::self_id()).unwrap();
     let start = core::ptr::addr_of!(__image_start) as usize;
     let end = core::ptr::addr_of!(__image_end) as usize;
@@ -111,16 +132,6 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
         10,
     )
     .unwrap();
-    device::claim(id, team).unwrap();
-    assert!(
-        device::read(id, 0, 4).is_err(),
-        "manager cannot impersonate driver"
-    );
-    assert!(device::status(id).is_err());
-    assert!(device::claim(id, TeamId::new(0)).is_err());
-    let events = sign::create().unwrap();
-    let source = kernel_api::model::sign::SignSource::DeviceRetired { device: id };
-    sign::route(events, source).unwrap();
     let pulse = sign::create().unwrap();
     let shared_data = allocation(4096);
     let shared_root =
@@ -141,7 +152,12 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
         message.len(),
     )
     .unwrap();
-    let args = [id, pulse.get(), shared_root.get(), clone_queue.get()];
+    let args = [
+        bar_root.get(),
+        pulse.get(),
+        shared_root.get(),
+        clone_queue.get(),
+    ];
     let task = unit::spawn(
         team,
         driver as *const () as usize,
@@ -164,6 +180,14 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
         kernel_api::model::identity::Mark::NONE,
     )
     .unwrap();
+    pend::accord(
+        bar_root,
+        task,
+        kernel_api::model::modifiable::Modifiable::Yes,
+        kernel_api::model::identity::Mark::new(0xED),
+    )
+    .unwrap();
+    assert!(share_view::open(bar_root).is_err());
     assert!(share_view::open(shared_root).is_err());
     let returned = sign::create().unwrap();
     let returned_source = kernel_api::model::sign::SignSource::Inspect {
@@ -241,6 +265,20 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
         unsafe { (restored.unwrap().0.get() as *const usize).read_volatile() },
         0xABCD
     );
+    let io_mapping = MappingId::from_bytes(
+        &unsafe {
+            ((restored.unwrap().0.get() + core::mem::size_of::<usize>()) as *const usize)
+                .read_volatile()
+        }
+        .to_le_bytes(),
+    )
+    .unwrap();
+    let events = sign::create().unwrap();
+    let source = kernel_api::model::sign::SignSource::MappingRetired {
+        token: bar_root,
+        mapping: io_mapping,
+    };
+    sign::route(events, source).unwrap();
     pend::release(shared_root, kernel_api::model::pend::ReleaseMode::Revoke).unwrap();
     memory::release(shared_data).unwrap();
     let _ = writeln!(
@@ -259,8 +297,12 @@ extern "C" fn manager(_args: *const usize, _count: usize) -> ! {
         event,
         kernel_api::abi::reply::SignReply::Source { source, fail: None }
     );
-    assert_eq!(device::observe(id).unwrap(), 4);
-    assert!(device::read(id, 0, 4).is_err());
+    assert_eq!(
+        memory::inspect(MappingTarget::Io(bar_root), io_mapping)
+            .unwrap()
+            .state,
+        MappingState::Settled
+    );
     sign::close(pulse).unwrap();
     sign::release(pulse).unwrap();
     unit::oust(team).unwrap();
@@ -282,20 +324,20 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
         kernel_api::model::identity::PendId::from_bytes(&unsafe { *args.add(3) }.to_le_bytes())
             .unwrap();
     assert!(kernel_client::call::clone_view::pull(foreign_queue, 64).is_err());
-    let mut info = [[0usize; 8]; 2];
+    let mut info = [[0usize; 8]; 3];
     assert_eq!(
         pend::collect(
             kernel_api::model::identity::PendId::NONE,
             VirtAddr::new(info.as_mut_ptr() as usize),
-            2
+            3
         )
         .unwrap(),
-        2
+        3
     );
     let records = info.map(|words| kernel_api::model::pend::PendInfo::from_words(words).unwrap());
     let incoming = records
         .iter()
-        .find(|p| p.kind == kernel_api::model::view::ViewKind::Share)
+        .find(|p| p.kind == kernel_api::model::view::ViewKind::Share && p.mark.get() != 0xED)
         .unwrap()
         .token;
     let queue = records
@@ -319,13 +361,19 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
         Serial,
         "PASS Clone cross-Unit mapped payload retained until receiver exit"
     );
-    let (address, _) = share_view::open(incoming).unwrap();
+    let bar_token = records.iter().find(|p| p.mark.get() == 0xED).unwrap().token;
+    let foreign_bar =
+        kernel_api::model::identity::PendId::from_bytes(&unsafe { *args }.to_le_bytes()).unwrap();
+    assert!(share_view::open(foreign_bar).is_err());
+    let (bar, bar_len) = share_view::open(bar_token).unwrap();
+    assert_eq!(bar_len, 1 << 20);
+    let id = bar.get();
+    let (shared_address, _) = share_view::open(incoming).unwrap();
     unsafe {
-        (address.get() as *mut usize).write_volatile(0xABCD);
+        (shared_address.get() as *mut usize).write_volatile(0xABCD);
     }
     // Exit cleanup must return this live mapping, including crash paths.
 
-    let id = unsafe { *args };
     let foreign = kernel_api::model::sign::SignId::new(unsafe { *args.add(1) });
     assert!(sign::listen(foreign, Wait::POLL).is_err());
     let (raw, rights) = sign::next(0).unwrap();
@@ -344,14 +392,11 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
     Serial
         .write_str("PASS sign boundary=parent-child numeric-handle=not-authority\n")
         .unwrap();
-    assert!(device::scan(0).is_err(), "driver has no manager authority");
-    assert_eq!(device::inspect(id, 0).unwrap(), 0x11e81234);
-    for offset in [4, 0x10, 0x34, 0x40, 0x100] {
-        assert!(device::inspect(id, offset).is_err());
-    }
-    assert_eq!(device::read(id, 0, 4).unwrap().0 & 0xffff, 0xed);
-    assert!(device::read(id, 1, 4).is_err());
-    assert!(device::read(id, 1 << 20, 4).is_err());
+    assert_eq!(bar_read(id, 0, 4) & 0xffff, 0xed);
+    let _ = writeln!(
+        Serial,
+        "PASS MMIO uses Pend mapping without device syscalls"
+    );
     let source = allocation(4096);
     let (mapping, address) = attach(
         source,
@@ -366,7 +411,7 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
         (address.get() as *mut u8).write_bytes(0x5a, 64);
     };
     assert!(
-        device::publish(id, source, 0x400000, true).is_err(),
+        project(bar_token, source, 0x400000, true).is_err(),
         "CPU alias must prevent DMA"
     );
     detach(mapping);
@@ -386,8 +431,11 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
         kernel_api::model::unit::ControlId::NONE,
     )
     .unwrap();
-    // A failed publication must return the device reborrow to its parent Pend.
-    assert!(device::publish(id, dma_source, 3, true).is_err());
+    assert!(project(foreign_bar, dma_source, 0x400000, true).is_err());
+    assert!(project(payload.token, dma_source, 0x400000, true).is_err());
+    assert!(project(dma, dma_source, 0x400000, true).is_err()); // RAM is not a route.
+    // Failed authority/placement checks must return the reborrow unchanged.
+    assert!(project(bar_token, dma_source, 1usize << 38, true).is_err());
     share_view::open(dma).unwrap();
     share_view::shut(dma).unwrap();
     let cpu_reader = if cfg!(feature = "readonly") {
@@ -396,7 +444,12 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
     } else {
         None
     };
-    device::publish(id, dma_source, 0x400000, !cfg!(feature = "readonly")).unwrap();
+    let io_mapping = project(bar_token, dma_source, 0x400000, !cfg!(feature = "readonly")).unwrap();
+    unsafe {
+        ((shared_address.get() + core::mem::size_of::<usize>()) as *mut usize)
+            .write_volatile(io_mapping.get());
+    }
+
     assert!(
         attach(
             source,
@@ -418,15 +471,29 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
         memory::release(source).unwrap();
         unsafe { core::arch::asm!("unimp", options(noreturn)) };
     }
-    until(|| device::status(id).unwrap() == 2);
+    until(|| {
+        memory::inspect(MappingTarget::Io(bar_token), io_mapping)
+            .unwrap()
+            .state
+            == MappingState::Active
+    });
+    assert!(pend::derive(bar_token, No, Mark::NONE, PendRange::Inherit).is_err());
+    assert!(pend::narrow(bar_token, No).is_err());
+    let _ = writeln!(
+        Serial,
+        "PASS active projection retains MMIO routing authority"
+    );
     let _ = writeln!(Serial, "driver: DMA published");
     let faults = sign::create().unwrap();
-    let fault_source = kernel_api::model::sign::SignSource::DeviceFault { device: id };
+    let fault_source = kernel_api::model::sign::SignSource::MappingFault {
+        token: bar_token,
+        mapping: io_mapping,
+    };
     sign::route(faults, fault_source).unwrap();
-    device::write(id, 0x80, 8, 0x500000).unwrap();
-    device::write(id, 0x88, 8, 0x40000).unwrap();
-    device::write(id, 0x90, 8, 64).unwrap();
-    device::write(id, 0x98, 8, 1).unwrap();
+    bar_write(id, 0x80, 8, 0x500000);
+    bar_write(id, 0x88, 8, 0x40000);
+    bar_write(id, 0x90, 8, 64);
+    bar_write(id, 0x98, 8, 1);
     let fault = sign::listen(faults, Wait::AtMost(5000)).unwrap();
     assert_eq!(
         fault,
@@ -435,22 +502,29 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
             fail: None
         }
     );
-    let (cause, iova) = device::fault(id).unwrap();
+    let info = memory::inspect(MappingTarget::Io(bar_token), io_mapping).unwrap();
+    let (cause, iova) = (info.fault_cause, info.fault_address);
     assert!(cause != 0);
     assert_eq!(iova, 0x500000);
-    assert_eq!(device::status(id).unwrap(), 2, "FQ is not retirement");
-    until(|| device::read(id, 0x98, 4).unwrap().0 & 1 == 0);
+    assert_eq!(
+        memory::inspect(MappingTarget::Io(bar_token), io_mapping)
+            .unwrap()
+            .state,
+        MappingState::Active,
+        "FQ is not retirement"
+    );
+    until(|| bar_read(id, 0x98, 4) & 1 == 0);
     let _ = writeln!(Serial, "driver: hardware fault routed");
-    device::write(id, 0x80, 8, 0x400000).unwrap();
-    device::write(id, 0x88, 8, 0x40000).unwrap();
-    device::write(id, 0x90, 8, 64).unwrap();
-    device::write(id, 0x98, 8, 1).unwrap();
-    until(|| device::read(id, 0x98, 4).unwrap().0 & 1 == 0);
+    bar_write(id, 0x80, 8, 0x400000);
+    bar_write(id, 0x88, 8, 0x40000);
+    bar_write(id, 0x90, 8, 64);
+    bar_write(id, 0x98, 8, 1);
+    until(|| bar_read(id, 0x98, 4) & 1 == 0);
     let _ = writeln!(Serial, "driver: first DMA complete");
-    device::write(id, 0x80, 8, 0x40000).unwrap();
-    device::write(id, 0x88, 8, 0x400080).unwrap();
-    device::write(id, 0x90, 8, 64).unwrap();
-    device::write(id, 0x98, 8, 3).unwrap();
+    bar_write(id, 0x80, 8, 0x40000);
+    bar_write(id, 0x88, 8, 0x400080);
+    bar_write(id, 0x90, 8, 64);
+    bar_write(id, 0x98, 8, 3);
     if cfg!(feature = "crash") {
         memory::release(source).unwrap();
         let _ = writeln!(Serial, "driver: writing read-only Clone payload must fault");
@@ -459,13 +533,41 @@ extern "C" fn driver(args: *const usize, count: usize) -> ! {
         }
         panic!("Clone payload write was permitted");
     }
-    until(|| device::read(id, 0x98, 4).unwrap().0 & 1 == 0);
+    until(|| bar_read(id, 0x98, 4) & 1 == 0);
     let _ = writeln!(Serial, "driver: second DMA complete");
-    assert!(
-        pend::release(dma, ReleaseMode::Revoke).is_err(),
-        "published DMA must retain its Pend responsibility"
-    );
-    until(|| device::status(id).unwrap() == 4);
+    if cfg!(feature = "route_revoke") {
+        // Revoking routing authority must retire the data borrow too, even while
+        // the Task and data Pend are otherwise still live.
+        assert!(pend::release(bar_token, ReleaseMode::Revoke).is_err());
+        assert!(share_view::open(bar_token).is_err());
+        until(|| share_view::open(dma).is_ok());
+        share_view::shut(dma).unwrap();
+        let _ = writeln!(
+            Serial,
+            "PASS MMIO Pend revocation retires external projection"
+        );
+    } else {
+        if cfg!(feature = "readonly") {
+            memory::detach(
+                MappingTarget::Io(bar_token),
+                io_mapping,
+                MappingSelection::Whole,
+            )
+            .unwrap();
+            let _ = writeln!(Serial, "PASS Memory Detach closes external mapping");
+        } else {
+            assert!(
+                pend::release(dma, ReleaseMode::Revoke).is_err(),
+                "published DMA must retain its Pend responsibility"
+            );
+        }
+        until(|| {
+            memory::inspect(MappingTarget::Io(bar_token), io_mapping)
+                .unwrap()
+                .state
+                == MappingState::Settled
+        });
+    }
     until(|| pend::release(dma, ReleaseMode::Revoke).is_ok());
     memory::release(dma_source).unwrap();
     let _ = writeln!(Serial, "PASS Pend revocation drives Kernel DMA retirement");
@@ -748,4 +850,52 @@ extern "C" fn control_probe(args: *const usize, count: usize) -> ! {
     assert!(unit::join(UnitTarget::Task(sibling), Wait::POLL, false).is_err());
     assert!(unit::read_result(sibling).is_err());
     unit::return_(7)
+}
+
+fn project(
+    token: kernel_api::model::identity::PendId,
+    reference: FlatReference,
+    iova: usize,
+    modifiable: bool,
+) -> Result<MappingId, ()> {
+    let range = ReferenceRange::new(reference, 0, 1).ok_or(())?.encode();
+    let placement = Placement::exact(VirtAddr::new(iova), 4096)
+        .ok_or(())?
+        .encode();
+    memory::attach(
+        VirtAddr::new(range.as_ptr() as usize),
+        MappingTarget::Io(token),
+        VirtAddr::new(placement.as_ptr() as usize),
+        if modifiable { 6 } else { 2 },
+        MappingControl::Caller,
+    )
+    .map(|(id, _)| id)
+    .map_err(|_| ())
+}
+fn bar_read(base: usize, offset: usize, width: usize) -> u64 {
+    unsafe {
+        core::arch::asm!("fence iorw, iorw");
+    }
+    let value = unsafe {
+        match width {
+            4 => ((base + offset) as *const u32).read_volatile() as u64,
+            8 => ((base + offset) as *const u64).read_volatile(),
+            _ => panic!("width"),
+        }
+    };
+    unsafe {
+        core::arch::asm!("fence iorw, iorw");
+    }
+    value
+}
+fn bar_write(base: usize, offset: usize, width: usize, value: u64) {
+    unsafe {
+        core::arch::asm!("fence iorw, iorw");
+        match width {
+            4 => ((base + offset) as *mut u32).write_volatile(value as u32),
+            8 => ((base + offset) as *mut u64).write_volatile(value),
+            _ => panic!("width"),
+        };
+        core::arch::asm!("fence iorw, iorw");
+    }
 }

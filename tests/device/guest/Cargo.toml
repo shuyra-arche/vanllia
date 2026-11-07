@@ -7,6 +7,7 @@ publish = false
 crash = []
 readonly = []
 activation_exit = []
+route_revoke = []
 [workspace]
 [[bin]]
 name = "device-guest"
@@ -14,8 +15,8 @@ path = "main.rs"
 test = false
 bench = false
 [dependencies]
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "93db75f6dd364ce02d498e91e2af9625b3be8c24" }
-kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "93db75f6dd364ce02d498e91e2af9625b3be8c24" }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "5e6ea8ff5f48f5ce17c88d98cbedcc7a0ffe3a9e" }
+kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "5e6ea8ff5f48f5ce17c88d98cbedcc7a0ffe3a9e" }
 [profile.dev]
 panic = "abort"
 [profile.release]

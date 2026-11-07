@@ -28,7 +28,13 @@ fn protected_device_lifecycle_crosses_real_units() {
     std::fs::write(evidence.join("firmware.bin"), &firmware_bytes).unwrap();
     let version = Command::new(&qemu).arg("--version").output().unwrap();
     assert!(version.status.success());
-    for mode in ["clean", "crash", "readonly", "activation_exit"] {
+    for mode in [
+        "clean",
+        "crash",
+        "readonly",
+        "activation_exit",
+        "route_revoke",
+    ] {
         let mut build = Command::new("cargo");
         build
             .args([
@@ -136,6 +142,7 @@ fn protected_device_lifecycle_crosses_real_units() {
         );
         for marker in [
             "PASS Pend readers",
+            "PASS MMIO uses Pend mapping without device syscalls",
             "PASS Clone copied Cells",
             "PASS Clone mapped delivery retry, read-only, zero tail and independent lifetime",
             "PASS Clone cross-Unit mapped payload retained until receiver exit",
@@ -156,10 +163,17 @@ fn protected_device_lifecycle_crosses_real_units() {
                 )
             );
         }
-        if matches!(mode, "clean" | "readonly") {
+        if mode == "route_revoke" {
+            assert!(serial.contains("PASS MMIO Pend revocation retires external projection"));
+        }
+        if mode == "readonly" {
+            assert!(serial.contains("PASS Memory Detach closes external mapping"));
+        }
+        if matches!(mode, "clean" | "readonly" | "route_revoke") {
             assert!(serial.contains("PASS Pend revocation drives Kernel DMA retirement"));
         }
         if mode != "activation_exit" {
+            assert!(serial.contains("PASS active projection retains MMIO routing authority"));
             let count: usize = serial
                 .lines()
                 .find_map(|line| line.strip_prefix("iommu-irqs: "))
