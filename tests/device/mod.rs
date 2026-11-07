@@ -134,6 +134,21 @@ fn protected_device_lifecycle_crosses_real_units() {
             !serial.contains("FAIL") && !serial.contains("panicked"),
             "{mode}: {serial}"
         );
+        for marker in [
+            "PASS Pend readers",
+            "PASS Clone copied Cells",
+            "PASS sign",
+            "PASS unit membership does not grant peer control",
+            "PASS Pend cross-Unit writer returns after child cleanup",
+        ] {
+            assert!(
+                serial.contains(marker),
+                "{mode}: missing {marker}: {serial}"
+            );
+        }
+        if matches!(mode, "clean" | "readonly") {
+            assert!(serial.contains("PASS Pend revocation drives Kernel DMA retirement"));
+        }
         if mode != "activation_exit" {
             let count: usize = serial
                 .lines()
