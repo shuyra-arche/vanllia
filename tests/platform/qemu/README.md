@@ -2,7 +2,8 @@
 
 This standalone boot image supplies the trusted QEMU virt / EDU preparation and
 platform ordering proof for Kernel's Cell I/O acceptance tests. PCI configuration
-belongs here; the Kernel dependency provides translation, invalidation, queue
+belongs here; the production `platform/riscv` package supplies firmware parsing and
+ordinary boot assembly. The Kernel dependency provides translation, invalidation, queue
 shutdown and Page retention. It is separate from Vanllia's product selection.
 
 `Cargo.toml` pins both Kernel and its API to the same provider commit. The Kernel
@@ -14,7 +15,7 @@ metadata. The image does not include private files from a neighboring checkout.
 The supported setup is coherent QEMU virt with `iommu-sys=on`, immutable bus-zero
 routing and one EDU at `1.0`. Preparation checks firmware routing, the identity
 window and endpoint identity before configuring its BAR. Kernel subsequently
-validates the route and resource authority before exporting a Pend. Bus Master
+validates normalized controller/source identities and resource authority before exporting a Pend. Bus Master
 is enabled while DDTP is Off and stays enabled through retirement.
 
 The unsafe `Quiescence` provider runs only after Kernel has revoked translation,

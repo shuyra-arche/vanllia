@@ -7,7 +7,7 @@ autotests = false
 
 [features]
 default = ["image"]
-image = []
+image = ["platform-riscv/image"]
 
 [workspace]
 
@@ -23,11 +23,12 @@ name = "pci"
 path = "tests/pci/mod.rs"
 
 [dependencies]
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "f52d8c3f97c2dcefb8092ae03a631e3613e88a4a" }
+platform-riscv = { path = "../../../platform/riscv", default-features = false }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "accaea49d3fbf0f68a820aff227ae7d6e4887acb" }
 fdt = { version = "0.1.5", default-features = false }
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
-kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "f52d8c3f97c2dcefb8092ae03a631e3613e88a4a" }
+kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "accaea49d3fbf0f68a820aff227ae7d6e4887acb" }
 
 [profile.dev]
 panic = "abort"

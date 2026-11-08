@@ -23,6 +23,9 @@ path = "components/system"
 [sources.kernel]
 path = "components/kernel"
 
+[sources.platform]
+path = "platform/riscv"
+
 [sources.driver]
 path = "components/driver"
 

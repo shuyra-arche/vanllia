@@ -14,10 +14,16 @@ const BAR: usize = 0x4000_0000;
 const EDU: u32 = 0x11e8_1234;
 
 #[unsafe(no_mangle)]
-extern "C" fn main(_hartid: usize, dtp: usize) -> ! {
+extern "C" fn main(hartid: usize, dtp: usize) -> ! {
     // SAFETY: this image is paired with coherent QEMU virt, one emulated EDU,
     // immutable routing, and no passthrough/hotplug/ATS/PRI/bypass.
-    let initialized = unsafe { boot::init_with_external(dtp, prepare) };
+    let initialized = unsafe { platform_riscv::boot::init(hartid, dtp) }.and_then(|_| {
+        let route = prepare(dtp, boot::map_mmio).map_err(|source| boot::BootError::Resources {
+            operation: boot::ResourceOperation::Devices,
+            source,
+        })?;
+        unsafe { boot::bind_external(route) }
+    });
     match initialized.and_then(|_| boot::start()) {
         Ok(()) => boot::run(),
         Err(error) => boot::fail(error),
@@ -35,16 +41,12 @@ fn prepare(dtp: usize, map: MapMmio) -> Result<ExternalRoute, PendFail> {
     }) {
         return Err(PendFail::Denied);
     }
-    let controller = tree
-        .all_nodes()
-        .find(|node| {
-            node.compatible()
-                .is_some_and(|c| c.all().any(|s| s == "riscv,iommu"))
-        })
-        .and_then(|node| node.reg().and_then(|mut r| r.next()))
-        .ok_or(PendFail::Denied)?
-        .starting_address
-        .addr();
+    let route = platform_riscv::topology::Topology::discover(&tree)
+        .map_err(|_| PendFail::Denied)?
+        .resolve(HOST, REQUESTER)
+        .map_err(|_| PendFail::Denied)?;
+    let controller = route.controller();
+    let requester = route.device();
     let (start, end) = pci::window::bar_window(&tree, HOST)?;
     let config = unsafe { map(HOST + usize::from(REQUESTER) * 4096, 4096)? };
     let mut endpoint =
@@ -67,13 +69,14 @@ fn prepare(dtp: usize, map: MapMmio) -> Result<ExternalRoute, PendFail> {
     // Provider owns config and proof for the entire one-shot controller lifetime.
     let proof = Box::try_new(Proof {
         controller,
+        requester,
         config: unsafe { pci::Ecam::new(config) },
         pending: 2,
     })
     .map_err(|_| PendFail::OutOfMemory)?;
     Ok(ExternalRoute {
-        host: HOST,
-        requester: REQUESTER,
+        controller,
+        requester,
         base,
         size,
         proof,
@@ -82,6 +85,7 @@ fn prepare(dtp: usize, map: MapMmio) -> Result<ExternalRoute, PendFail> {
 
 struct Proof {
     controller: usize,
+    requester: u32,
     config: pci::Ecam,
     pending: usize,
 }
@@ -92,7 +96,7 @@ struct Proof {
 // only the fixed emulated topology above, not arbitrary physical PCI devices.
 unsafe impl Quiescence for Proof {
     fn poll(&mut self, ticket: Retirement) -> Result<Option<Retirement>, HardwareError> {
-        if ticket.controller() != self.controller || ticket.requester() != u32::from(REQUESTER) {
+        if ticket.controller() != self.controller || ticket.requester() != self.requester {
             return Err(HardwareError::Fault);
         }
         // Exercise bounded Pending after hardware teardown in the actual Kernel.
