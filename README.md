@@ -13,6 +13,7 @@ build work; Units describe runtime policy.
 - `tests/cli/`: CLI integration tests.
 - `components/`: pinned Kernel, System and service repositories.
 - `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
+- `tests/platform/qemu/`: [trusted QEMU boot image](tests/platform/qemu/README.md) for Kernel IOMMU acceptance.
 - `tests/syscall-cost/`: optional paired syscall benchmark.
 
 ## Build and run
