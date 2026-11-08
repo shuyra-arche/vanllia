@@ -22,7 +22,7 @@ env = { git = "https://github.com/shuyra-arche/env.git", rev = "d3000253cd5d13d4
 
 [workspace]
 members = ["crates/build"]
-exclude = ["components/*", "tests/product-lifecycle", "tests/syscall-cost", "crates/build/tests/fixtures/link-workspace"]
+exclude = ["platform/riscv", "tests/platform/qemu", "tests/platform/hardware", "components/*", "tests/product-lifecycle", "tests/syscall-cost", "crates/build/tests/fixtures/link-workspace"]
 resolver = "3"
 
 [[test]]

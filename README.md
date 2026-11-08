@@ -86,3 +86,8 @@ the source mapping and retired legacy facilities. Firmware, hardware and SMP
 acceptance remain separate from host tests.
 
 [Contributing and organization maintenance rules](CONTRIBUTING.md).
+
+The normal `shuyra` image is built from [`platform/riscv`](platform/riscv/README.md).
+Kernel supplies a library and normalized boot contracts; board firmware decoding,
+load address and controller wiring belong to this integration package. The EDU
+image under `tests/platform/qemu` reuses the production boot path.

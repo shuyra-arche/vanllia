@@ -88,12 +88,11 @@ dependencies = [
 [[package]]
 name = "kernel"
 version = "0.0.1"
-source = "git+https://github.com/shuyra-arche/kernel.git?rev=f52d8c3f97c2dcefb8092ae03a631e3613e88a4a#f52d8c3f97c2dcefb8092ae03a631e3613e88a4a"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=accaea49d3fbf0f68a820aff227ae7d6e4887acb#accaea49d3fbf0f68a820aff227ae7d6e4887acb"
 dependencies = [
  "bitflags",
  "erra",
  "fack",
- "fdt",
  "hashbrown",
  "kernel-api",
  "log",
@@ -105,7 +104,7 @@ dependencies = [
 [[package]]
 name = "kernel-api"
 version = "0.0.1"
-source = "git+https://github.com/shuyra-arche/kernel.git?rev=f52d8c3f97c2dcefb8092ae03a631e3613e88a4a#f52d8c3f97c2dcefb8092ae03a631e3613e88a4a"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=accaea49d3fbf0f68a820aff227ae7d6e4887acb#accaea49d3fbf0f68a820aff227ae7d6e4887acb"
 dependencies = [
  "bitflags",
  "erra",
@@ -115,7 +114,7 @@ dependencies = [
 [[package]]
 name = "kernel-api-macros"
 version = "0.0.1"
-source = "git+https://github.com/shuyra-arche/kernel.git?rev=f52d8c3f97c2dcefb8092ae03a631e3613e88a4a#f52d8c3f97c2dcefb8092ae03a631e3613e88a4a"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=accaea49d3fbf0f68a820aff227ae7d6e4887acb#accaea49d3fbf0f68a820aff227ae7d6e4887acb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -129,6 +128,7 @@ dependencies = [
  "fdt",
  "kernel",
  "kernel-api",
+ "platform-riscv",
 ]
 
 [[package]]
@@ -142,6 +142,17 @@ name = "pastey"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
+
+[[package]]
+name = "platform-riscv"
+version = "0.0.1"
+dependencies = [
+ "fack",
+ "fdt",
+ "kernel",
+ "kernel-api",
+ "spin",
+]
 
 [[package]]
 name = "proc-macro2"
@@ -200,7 +211,7 @@ checksum = "f9d441c3b2ebf55cebf796bfdc265d67fa09db17b7bb6bd4be75c509e1e8fec3"
 [[package]]
 name = "sbi"
 version = "0.0.1"
-source = "git+https://github.com/shuyra-arche/kernel.git?rev=f52d8c3f97c2dcefb8092ae03a631e3613e88a4a#f52d8c3f97c2dcefb8092ae03a631e3613e88a4a"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=accaea49d3fbf0f68a820aff227ae7d6e4887acb#accaea49d3fbf0f68a820aff227ae7d6e4887acb"
 dependencies = [
  "erra",
  "fack",
@@ -235,6 +246,12 @@ dependencies = [
  "quote",
  "syn 3.0.9",
 ]
+
+[[package]]
+name = "spin"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "023a211cb3138dbc438680b32560ad89f699977624c9f8dbb95a47d5b4c07dd3"
 
 [[package]]
 name = "syn"
