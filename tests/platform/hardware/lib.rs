@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(target_arch = "riscv64", no_std)]
 //! Exclusive coherent QEMU machine fixture, never a production Kernel dependency.
 #[cfg(target_arch = "riscv64")]
 mod edu;
@@ -88,3 +88,6 @@ pub unsafe fn discover(dtb: usize) -> Environment {
         scenario,
     }
 }
+
+#[cfg(not(target_arch = "riscv64"))]
+pub mod host;
