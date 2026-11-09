@@ -71,14 +71,16 @@ fn prepare(dtp: usize, map: MapMmio) -> Result<ExternalRoute, PendFail> {
         controller,
         requester,
         config: unsafe { pci::Ecam::new(config) },
-        pending: 2,
+        bar: unsafe { map(base, size)? },
+        pending: 0,
+        ticket: None,
     })
     .map_err(|_| PendFail::OutOfMemory)?;
+    unsafe { boot::grant_mmio(kernel_api::boot::platform::Region::new(base, size)) }
+        .map_err(|_| PendFail::Denied)?;
     Ok(ExternalRoute {
         controller,
         requester,
-        base,
-        size,
         proof,
     })
 }
@@ -87,19 +89,36 @@ struct Proof {
     controller: usize,
     requester: u32,
     config: pci::Ecam,
+    bar: usize,
     pending: usize,
+    ticket: Option<Retirement>,
 }
 
-// SAFETY: QEMU EDU's pci_dma callbacks are synchronous within device execution.
-// The config read orders older callbacks; the Kernel has already made DDTP Off
-// and stopped queues, and later delayed callbacks remain denied. This covers
-// only the fixed emulated topology above, not arbitrary physical PCI devices.
+// SAFETY: fixed coherent QEMU EDU only. The invalid leaf (Range) or DDTP Off
+// (Binding) and PR/PW fence are already established by Kernel. QEMU's EDU
+// dma_timer runs its complete pci_dma callback before clearing DMA_RUN. Reading
+// the command register and then config is ordered through device execution;
+// a still scheduled timer retains the proof instead of being mistaken for an
+// already completed callback. Reassignment requires old driver's MMIO authority
+// removed by the trusted manager; config remains exclusively with this provider.
+// No hotplug, bypass, ATS/PRI, asynchronous passthrough or real-device claim.
 unsafe impl Quiescence for Proof {
-    fn poll(&mut self, ticket: Retirement) -> Result<Option<Retirement>, HardwareError> {
+    fn prove(&mut self, ticket: Retirement) -> Result<Option<Retirement>, HardwareError> {
         if ticket.controller() != self.controller || ticket.requester() != self.requester {
             return Err(HardwareError::Fault);
         }
-        // Exercise bounded Pending after hardware teardown in the actual Kernel.
+        if self.ticket != Some(ticket) {
+            self.ticket = Some(ticket);
+            self.pending = 2;
+        }
+        // A delayed callback must finish while its old address is still denied.
+        unsafe {
+            core::arch::asm!("fence iorw, iorw", options(nostack));
+        }
+        let command = unsafe { ((self.bar + 0x98) as *const u64).read_volatile() };
+        if command & 1 != 0 {
+            return Ok(None);
+        }
         if self.pending != 0 {
             self.pending -= 1;
             return Ok(None);

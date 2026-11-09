@@ -18,12 +18,22 @@ window and endpoint identity before configuring its BAR. Kernel subsequently
 validates normalized controller/source identities and resource authority before exporting a Pend. Bus Master
 is enabled while DDTP is Off and stays enabled through retirement.
 
-The unsafe `Quiescence` provider runs only after Kernel has revoked translation,
-finished invalidation/fences, held DDTP Off and stopped its queues. It returns
-Pending twice, then performs a configuration read to order QEMU's synchronous
-device callbacks. Late callbacks still encounter IOMMU denial. The provider
-checks the requested controller and requester, and returns the exact opaque
-retirement token; the Kernel rejects an old or mismatched receipt.
+The unsafe `Quiescence::prove` provider accepts separate Range and Binding
+retirements. For Range, Kernel has invalidated the affected leaf and completed
+PR/PW fences while other leaves and queues remain live. For Binding, DDTP is Off
+and queues have stopped. The provider retains Pending while EDU DMA_RUN says a
+queued timer callback has not completed, then performs an ordered configuration
+read and returns the exact token after two bounded Pending observations.
+A newly supplied token restarts that proof; a previous token cannot settle a new
+publication. The trusted manager must remove the old driver's MMIO authority
+before reassigning the requester; the provider exclusively retains configuration
+control. This platform condition is separate from software generations.
+
+The image registers MMIO with `grant_mmio` and controller/requester/proof with
+`bind_external` independently. Ledger v5 gives U-mode tests separate Share and
+Port Pends. The tests create their own External Nests, publish two Memos, retract
+one independently, replace and republish a Page, retain fault/completion events,
+revoke a Port with DMA pending, exit a driver and safely rebind a fresh Nest.
 
 This reasoning applies only to the emulated topology above. Physical devices,
 passthrough, hotplug, bypass, ATS/PRI and noncoherent configurations need their own
