@@ -63,7 +63,7 @@ fn all_banks_and_reservations_constrain_both_heaps() {
     assert_eq!(m.bootstrap(), Region::new(RAM + 0x22000, 0xe000));
     assert!(!m.contains_identity(Region::new(RAM + 0x10000, 4096)));
     assert_eq!(m.initrd(), Some(Region::new(RAM + 0xc000, 0x2000)));
-    assert_eq!(m.dtb(), Region::new(DTB, 4096));
+    assert_eq!(m.metadata(), Region::new(DTB, 4096));
 }
 
 #[test]

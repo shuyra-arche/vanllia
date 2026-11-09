@@ -5,7 +5,7 @@ use super::{
 };
 use fdt::node::FdtNode;
 
-pub use kernel_api::boot::platform::Paging;
+pub use kernel_api::boot::platform::riscv::Paging;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Capability {

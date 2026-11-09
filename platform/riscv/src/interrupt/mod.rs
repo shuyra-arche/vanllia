@@ -4,7 +4,7 @@ use crate::{
     tree::{self, Error, Identities, mmio, property, scalar},
 };
 use alloc::vec::Vec;
-use kernel_api::boot::platform::HartId;
+use kernel_api::boot::platform::riscv::HartId;
 
 pub struct Plan {
     pub base: usize,
