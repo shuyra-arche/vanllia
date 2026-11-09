@@ -10,8 +10,17 @@ The current external-translation backend is admitted only for coherent QEMU virt
 one platform IOMMU and immutable routing. Unknown/disabled controllers, bypass,
 ATS/PRI, noncoherent hardware and ambiguous topology fail admission. A real board
 needs a verified coherence, ownership and completion contract before using it.
-The source compatibility boundary is Kernel's normalized `Platform`, `Devices`,
-`ExternalRoute` and `Quiescence` contracts; the syscall ABI is separate.
+The source compatibility boundary is Kernel's explicit
+`kernel_api::boot::platform::riscv::{Platform, devices::Devices}` input plus
+`ExternalRoute` and `Quiescence`; the syscall ABI is separate. `Memory` and
+`Resources` remain common physical admission contracts. `Devices.resources`
+contains the MMIO ownership facts; CPU/Sv/Sstc/SBI and PLIC facts stay in RV64.
+`Memory::metadata()` is opaque in the common API and interpreted as DTB here.
+
+This migration requires the matching Kernel source pin in both this package and
+`tests/platform/qemu`, including their lockfiles. Merge the Kernel provider PR
+first, then the linked Vanllia consumer PR. No syscall/Capsule/Ledger version
+changes, second-ISA boot support or new firmware parsing are introduced.
 
 `src/memory`, `harts` and `tree` decode bounded firmware facts; `resources`,
 `topology` and `interrupt` resolve protected ownership and wiring. `boot` freezes

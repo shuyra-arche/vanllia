@@ -24,11 +24,11 @@ path = "tests/pci/mod.rs"
 
 [dependencies]
 platform-riscv = { path = "../../../platform/riscv", default-features = false }
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "0c7417aa87e3c708dc14955e993096f69f7efe3c" }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "f6c1e9b5dc076fcea1be01417702774be8343dcd" }
 fdt = { version = "0.1.5", default-features = false }
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
-kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "0c7417aa87e3c708dc14955e993096f69f7efe3c" }
+kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "f6c1e9b5dc076fcea1be01417702774be8343dcd" }
 
 [profile.dev]
 panic = "abort"

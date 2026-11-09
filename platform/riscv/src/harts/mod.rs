@@ -4,7 +4,7 @@ mod property;
 
 use capability::Capability;
 pub use capability::Paging;
-use kernel_api::boot::platform::{FirmwareId, HartId};
+use kernel_api::boot::platform::riscv::{FirmwareId, HartId};
 use property::{enabled, number, property, string};
 
 // Keep early facts and debug-build moves within the 64 KiB ROOT stack.
@@ -134,9 +134,11 @@ impl HartInfo {
 
     pub fn normalize(
         &self,
-    ) -> Result<kernel_api::boot::platform::Harts, kernel_api::boot::platform::hart::HartError>
-    {
-        use kernel_api::boot::platform::{Cpu, Harts};
+    ) -> Result<
+        kernel_api::boot::platform::riscv::Harts,
+        kernel_api::boot::platform::riscv::hart::HartError,
+    > {
+        use kernel_api::boot::platform::riscv::{Cpu, Harts};
         let cpus = core::array::from_fn::<_, 256, _>(|i| {
             let slot = HartId::new(i);
             Cpu {

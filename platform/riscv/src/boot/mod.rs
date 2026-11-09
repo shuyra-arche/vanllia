@@ -1,6 +1,9 @@
 //! Trusted firmware entry. Early parsing is bounded and allocation-free.
 use kernel::entry::boot::{self, BootError};
-use kernel_api::boot::platform::{ClockAccess, FirmwareId, HartId, Harts, Memory, Platform};
+use kernel_api::boot::platform::{
+    Memory,
+    riscv::{ClockAccess, FirmwareId, HartId, Harts, Platform},
+};
 use spin::Once;
 static MEMORY: Once<Memory> = Once::new();
 static HARTS: Once<crate::harts::HartInfo> = Once::new();
@@ -19,7 +22,7 @@ fn memory(dtp: usize) -> Result<&'static Memory, BootError> {
 /// This image is paired with the board's trusted hardware/coherence contract.
 pub unsafe fn init(hart: usize, dtp: usize) -> Result<(), BootError> {
     let memory = memory(dtp)?;
-    let bytes = unsafe { core::slice::from_raw_parts(dtp as *const u8, memory.dtb().size) };
+    let bytes = unsafe { core::slice::from_raw_parts(dtp as *const u8, memory.metadata().size) };
     let fdt = fdt::Fdt::new(bytes).map_err(|_| BootError::Description("invalid FDT"))?;
     let harts = HARTS.try_call_once(|| {
         crate::harts::HartInfo::parse(&fdt, FirmwareId::new(hart))

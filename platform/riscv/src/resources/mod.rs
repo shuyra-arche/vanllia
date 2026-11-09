@@ -174,7 +174,7 @@ impl Devices {
         tree: &fdt::Fdt,
         memory: &kernel_api::boot::platform::Memory,
         harts: &crate::harts::HartInfo,
-        boot: kernel_api::boot::platform::HartId,
+        boot: kernel_api::boot::platform::riscv::HartId,
     ) -> Result<Self, PendFail> {
         let ram = memory.envelope();
         let plan = Plan::discover(tree, ram.base, ram.size)?;
@@ -223,12 +223,14 @@ impl Devices {
         result.description().validate(memory)?;
         Ok(result)
     }
-    pub fn description(&self) -> kernel_api::boot::platform::devices::Devices<'_> {
-        use kernel_api::boot::platform::devices::{Devices, Plic};
+    pub fn description(&self) -> kernel_api::boot::platform::riscv::devices::Devices<'_> {
+        use kernel_api::boot::platform::riscv::devices::{Devices, Plic};
         Devices {
-            authorities: &self.authorities,
-            protected: &self.protected,
-            external: &self.external,
+            resources: kernel_api::boot::platform::Resources {
+                authorities: &self.authorities,
+                protected: &self.protected,
+                external: &self.external,
+            },
             controllers: &self.controllers,
             interrupt: self.interrupt.as_ref().map(|p| Plic {
                 base: p.base,
