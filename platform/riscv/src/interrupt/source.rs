@@ -7,7 +7,7 @@ pub(super) fn discover(
     parent: u32,
     limit: usize,
     reserved: &[u32],
-) -> Result<Vec<u32>, Error> {
+) -> Result<Vec<(u32, usize)>, Error> {
     let mut sources = Vec::new();
     for node in fdt.all_nodes() {
         if !tree::enabled(fdt, node)? {
@@ -88,17 +88,18 @@ pub(super) fn discover(
                 lines.push(tree::word(word)?);
             }
         }
+        let region = tree::mmio::single(fdt, node)?;
         for line in lines {
             if line == 0
                 || line as usize > limit
                 || reserved.contains(&line)
-                || sources.contains(&line)
+                || sources.iter().any(|(prior, _)| *prior == line)
                 || sources.len() == 64
             {
                 return Err(Error::Description);
             }
             sources.try_reserve(1).map_err(|_| Error::OutOfMemory)?;
-            sources.push(line);
+            sources.push((line, region.base));
         }
     }
     Ok(sources)

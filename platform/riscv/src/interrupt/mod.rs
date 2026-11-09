@@ -8,7 +8,7 @@ use kernel_api::boot::platform::riscv::HartId;
 
 mod source;
 pub struct Plan {
-    pub drivers: Vec<u32>,
+    pub drivers: Vec<(u32, usize)>,
     pub base: usize,
     pub size: usize,
     pub sources: usize,

@@ -56,9 +56,9 @@ pub unsafe fn init(hart: usize, dtp: usize) -> Result<(), BootError> {
     unsafe {
         boot::configure(devices.description())?;
     }
-    for (controller, source) in devices.driver_interrupts() {
+    for (controller, source, region) in devices.driver_interrupts() {
         unsafe {
-            boot::grant_interrupt(controller, source)?;
+            boot::grant_interrupt(controller, source, region)?;
         }
     }
     Ok(())

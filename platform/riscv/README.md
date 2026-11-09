@@ -118,10 +118,12 @@ firmware routing restrictions remain explicit backend constraints; PCI BAR
 placement belongs to the external image.
 
 
-Hardware interrupt admission now normalizes exclusive QEMU virt level-high UART,
-virtio-mmio and RTC sources into controller/source ledger names (Kernel ABI 6).
-The PLIC is configured once for both these driver sources and reserved IOMMU
-queues. Invalid, shared, reserved, unknown-controller and MSI/cascade source
-requests fail before publication. CPU-local CLINT/ACLINT interrupts remain
-firmware mechanisms. Driver binding/acknowledgement is provided by Kernel Sign
-Claim/Yield/Rearm; the platform does not expose PLIC MMIO to userspace.
+Hardware interrupt admission normalizes exclusive QEMU virt level-high UART,
+virtio-mmio and RTC sources into `(controller, source, MMIO region)` facts. The
+Kernel publishes each device's `(Share View, Sign)` pair in Ledger v7. The PLIC
+is configured once for driver sources and reserved IOMMU queues. Invalid, shared,
+reserved, unknown-controller and MSI/cascade sources fail before publication.
+CPU-local CLINT/ACLINT interrupts remain firmware mechanisms. Drivers use existing
+Sign Listen/Consume and Pend delegation/revocation; syscall ABI v5 is unchanged.
+The platform does not expose PLIC MMIO to userspace. The trusted Rust
+`grant_interrupt` now takes the matching region as its third argument.

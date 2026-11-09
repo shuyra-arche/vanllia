@@ -243,10 +243,12 @@ impl Devices {
         result.description().validate(memory)?;
         Ok(result)
     }
-    pub fn driver_interrupts(&self) -> impl Iterator<Item = (usize, u32)> + '_ {
-        self.interrupt
-            .iter()
-            .flat_map(|plan| plan.drivers.iter().map(move |source| (plan.base, *source)))
+    pub fn driver_interrupts(&self) -> impl Iterator<Item = (usize, u32, usize)> + '_ {
+        self.interrupt.iter().flat_map(|plan| {
+            plan.drivers
+                .iter()
+                .map(move |(source, region)| (plan.base, *source, *region))
+        })
     }
     pub fn description(&self) -> kernel_api::boot::platform::riscv::devices::Devices<'_> {
         use kernel_api::boot::platform::riscv::devices::{Devices, Plic};
