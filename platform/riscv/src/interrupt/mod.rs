@@ -6,7 +6,9 @@ use crate::{
 use alloc::vec::Vec;
 use kernel_api::boot::platform::riscv::HartId;
 
+mod source;
 pub struct Plan {
+    pub drivers: Vec<u32>,
     pub base: usize,
     pub size: usize,
     pub sources: usize,
@@ -34,7 +36,10 @@ impl Plan {
             })
         });
         let plic = controllers.next().ok_or(Error::Description)?;
-        if controllers.next().is_some() || scalar(plic, "#interrupt-cells")? != Some(1) {
+        if controllers.next().is_some()
+            || scalar(plic, "#interrupt-cells")? != Some(1)
+            || property(plic, "interrupt-controller")? != Some(&[])
+        {
             return Err(Error::Description);
         }
         if !tree::enabled(tree, plic)? {
@@ -102,41 +107,48 @@ impl Plan {
                 }
             }
         }
-        let mut selected_iommu = None;
-        for node in tree.all_nodes().filter(|n| {
-            n.compatible()
-                .is_some_and(|c| c.all().any(|c| c == "riscv,iommu"))
-        }) {
-            if mmio::single(tree, node)?.base == controller
-                && selected_iommu.replace(node).is_some()
+        let words = if controller == 0 {
+            [0; 4]
+        } else {
+            let mut selected_iommu = None;
+            for node in tree.all_nodes().filter(|n| {
+                n.compatible()
+                    .is_some_and(|c| c.all().any(|c| c == "riscv,iommu"))
+            }) {
+                if mmio::single(tree, node)?.base == controller
+                    && selected_iommu.replace(node).is_some()
+                {
+                    return Err(Error::Description);
+                }
+            }
+            let iommu = selected_iommu.ok_or(Error::Description)?;
+            if !tree::enabled(tree, iommu)? || scalar(iommu, "interrupt-parent")? != Some(phandle) {
+                return Err(Error::Description);
+            }
+            let spec = property(iommu, "interrupts")?.ok_or(Error::Description)?;
+            // QEMU 10 virt emits (IRQ, edge-rising=1) pairs for this device even
+            // though its PLIC declares one interrupt cell. Accept only this known
+            // encoding or the standard four one-cell specifiers; never guess stride.
+            let stride = match spec.len() {
+                16 => 4,
+                32 if spec.chunks_exact(8).all(|v| v[4..] == [0, 0, 0, 1]) => 8,
+                _ => return Err(Error::Description),
+            };
+            let words: [u32; 4] = core::array::from_fn(|i| {
+                u32::from_be_bytes(spec[i * stride..i * stride + 4].try_into().unwrap())
+            });
+            if words
+                .iter()
+                .enumerate()
+                .any(|(i, irq)| *irq == 0 || *irq as usize > sources || words[..i].contains(irq))
             {
                 return Err(Error::Description);
             }
-        }
-        let iommu = selected_iommu.ok_or(Error::Description)?;
-        if !tree::enabled(tree, iommu)? || scalar(iommu, "interrupt-parent")? != Some(phandle) {
-            return Err(Error::Description);
-        }
-        let spec = property(iommu, "interrupts")?.ok_or(Error::Description)?;
-        // QEMU 10 virt emits (IRQ, edge-rising=1) pairs for this device even
-        // though its PLIC declares one interrupt cell. Accept only this known
-        // encoding or the standard four one-cell specifiers; never guess stride.
-        let stride = match spec.len() {
-            16 => 4,
-            32 if spec.chunks_exact(8).all(|v| v[4..] == [0, 0, 0, 1]) => 8,
-            _ => return Err(Error::Description),
+            words
         };
-        let words: [u32; 4] = core::array::from_fn(|i| {
-            u32::from_be_bytes(spec[i * stride..i * stride + 4].try_into().unwrap())
-        });
-        if words
-            .iter()
-            .enumerate()
-            .any(|(i, irq)| *irq == 0 || *irq as usize > sources || words[..i].contains(irq))
-        {
-            return Err(Error::Description);
-        }
+        let drivers = source::discover(tree, phandle, sources, &words)?;
         Ok(Self {
+            drivers,
             base,
             size,
             sources,

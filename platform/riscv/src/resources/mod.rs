@@ -206,6 +206,26 @@ impl Devices {
                 regions[0].base,
             )?);
         }
+        if interrupt.is_none()
+            && tree.all_nodes().any(|n| {
+                n.compatible().is_some_and(|c| {
+                    c.all()
+                        .any(|s| matches!(s, "riscv,plic0" | "sifive,plic-1.0.0"))
+                })
+            })
+        {
+            interrupt = Some(crate::interrupt::Plan::discover(tree, harts, boot, 0)?);
+        }
+        if interrupt.as_ref().is_some_and(|p| !p.drivers.is_empty())
+            && !tree.all_nodes().next().is_some_and(|n| {
+                n.compatible().is_some_and(|c| {
+                    c.all()
+                        .any(|s| matches!(s, "riscv-virtio" | "riscv-virtio,qemu"))
+                })
+            })
+        {
+            return Err(PendFail::Denied);
+        }
         let copy = |regions: &[Region]| -> Result<Vec<crate::Region>, PendFail> {
             let mut out = Vec::new();
             out.try_reserve_exact(regions.len())
@@ -222,6 +242,11 @@ impl Devices {
         };
         result.description().validate(memory)?;
         Ok(result)
+    }
+    pub fn driver_interrupts(&self) -> impl Iterator<Item = (usize, u32)> + '_ {
+        self.interrupt
+            .iter()
+            .flat_map(|plan| plan.drivers.iter().map(move |source| (plan.base, *source)))
     }
     pub fn description(&self) -> kernel_api::boot::platform::riscv::devices::Devices<'_> {
         use kernel_api::boot::platform::riscv::devices::{Devices, Plic};
