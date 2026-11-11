@@ -592,20 +592,18 @@ checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
 [[package]]
 name = "unit"
 version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/unit.git?rev=90396f0fda376e0693fb1b9553aa21864d241057#90396f0fda376e0693fb1b9553aa21864d241057"
+source = "git+https://github.com/shuyra-arche/unit.git?rev=782cf1ca27195723e372f181391025ff68fccc2d#782cf1ca27195723e372f181391025ff68fccc2d"
 dependencies = [
- "env",
- "system-api",
+ "postcard",
+ "serde",
 ]
 
 [[package]]
 name = "unit"
 version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/unit.git?rev=ad50b803c3bd5cd2ef90010d80badf23551e88d5#ad50b803c3bd5cd2ef90010d80badf23551e88d5"
+source = "git+https://github.com/shuyra-arche/unit.git?rev=90396f0fda376e0693fb1b9553aa21864d241057#90396f0fda376e0693fb1b9553aa21864d241057"
 dependencies = [
  "env",
- "postcard",
- "serde",
  "system-api",
 ]
 
@@ -627,7 +625,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "toml_edit",
- "unit 0.1.0 (git+https://github.com/shuyra-arche/unit.git?rev=ad50b803c3bd5cd2ef90010d80badf23551e88d5)",
+ "unit 0.1.0 (git+https://github.com/shuyra-arche/unit.git?rev=782cf1ca27195723e372f181391025ff68fccc2d)",
  "vanllia-build",
 ]
 
