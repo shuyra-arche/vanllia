@@ -15,7 +15,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 toml_edit = { version = "0.23", features = ["serde"] }
-unit-contract = { package = "unit", git = "https://github.com/shuyra-arche/unit.git", rev = "ad50b803c3bd5cd2ef90010d80badf23551e88d5" }
+unit-contract = { package = "unit", git = "https://github.com/shuyra-arche/unit.git", rev = "782cf1ca27195723e372f181391025ff68fccc2d", default-features = false }
 
 [dev-dependencies]
 env = { git = "https://github.com/shuyra-arche/env.git", rev = "d3000253cd5d13d466e91fafd4dbb27a5ec5aaae" }
