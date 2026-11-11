@@ -1,7 +1,9 @@
 use std::path::{Path, PathBuf};
 
+use unit::{
+    ControlConfig, Deployment, Identity, LoaderConfig, OperatorConfig, SupplyConfig, UnitFile,
+};
 use vanllia_build::{ImageBuild, build_with, executables};
-use unit::{ControlConfig, Deployment, Identity, LoaderConfig, OperatorConfig, SupplyConfig, UnitFile};
 
 fn fixture() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -101,7 +103,9 @@ fn release_with_debug_assertions_and_dependency_feature_request() {
 }
 
 fn has(haystack: &[u8], needle: &[u8]) -> bool {
-    haystack.windows(needle.len()).any(|window| window == needle)
+    haystack
+        .windows(needle.len())
+        .any(|window| window == needle)
 }
 
 #[test]
@@ -173,7 +177,14 @@ fn build_with_packs_each_feature_variant_from_its_own_artifact() {
     let work = Path::new(env!("CARGO_TARGET_TMPDIR")).join("image-pack-variant");
     let output = Path::new(env!("CARGO_TARGET_TMPDIR")).join("variant-initrd.img");
     let builds = [
-        build("first-image", "link-first", "first", "first/Cargo.toml", &[], "dev"),
+        build(
+            "first-image",
+            "link-first",
+            "first",
+            "first/Cargo.toml",
+            &[],
+            "dev",
+        ),
         build(
             "variant-plain",
             "link-second",

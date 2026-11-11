@@ -91,3 +91,12 @@ The normal `shuyra` image is built from [`platform/riscv`](platform/riscv/README
 Kernel supplies a library and normalized boot contracts; board firmware decoding,
 load address and controller wiring belong to this integration package. The EDU
 image under `tests/platform/qemu` reuses the production boot path.
+
+The CLI consumes the kernel-independent VNI1 bundle from Unit at
+`a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
+The build library writes capsule v2 for Kernel ABI 9 at
+`23dec6b30e1ec08f42d3701e2613acd8c562c459`; the Kernel parser validates generated
+capsules and retained artifacts before execution. Older ABI capsules require a
+rebuild even when receipt hashes match. The historical build-library declaration
+workflow still carries legacy dependencies and is not evidence of a clean
+assembled System dependency graph.

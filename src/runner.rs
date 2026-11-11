@@ -42,6 +42,11 @@ pub fn validate(receipt: &Receipt) -> Result<(), Error> {
     {
         checked(receipt, artifact)?;
     }
+    let path = checked(receipt, &receipt.initrd)?;
+    let bytes = std::fs::read(&path).map_err(|e| error::io(&path, e))?;
+    let archive = unit_contract::bundle::Archive::parse(&bytes)
+        .map_err(|why| Error::Workflow(format!("invalid Unit bundle: {why:?}")))?;
+    vanllia_build::validate_boot_capsule(archive.capsule()).map_err(Error::Workflow)?;
     Ok(())
 }
 
