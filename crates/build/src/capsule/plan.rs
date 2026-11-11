@@ -1,5 +1,5 @@
 use elf::{ElfBytes, endian::LittleEndian, file::Class};
-use env::ledger::capsule::PAGE;
+use kernel_api::boot::capsule::PAGE;
 
 use super::error::Error;
 use super::region::Region;

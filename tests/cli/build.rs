@@ -1,8 +1,8 @@
-use initrd::ledger::bundle::Archive;
 use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
+use unit_contract::bundle::Archive;
 use vanllia::{
     Selection,
     build::{self, Options},
@@ -116,6 +116,7 @@ fn real_cargo_build_packages_owned_records_and_shared_images_without_a_deploymen
     let archive = Archive::parse(&bytes).unwrap();
     assert_eq!(archive.system().id, "system");
     assert_eq!(archive.image().name, "system-bin");
+    vanllia_build::validate_boot_capsule(archive.capsule()).unwrap();
     assert_eq!(archive.units().len(), 3);
     assert!(
         archive.find("machine/inventory").is_none(),
@@ -179,4 +180,24 @@ fn failed_rebuild_keeps_the_previously_published_artifacts_unchanged() {
             .count(),
         1
     );
+}
+
+#[test]
+fn hash_consistent_artifact_with_an_obsolete_kernel_capsule_cannot_be_run() {
+    let fixture = product();
+    let mut receipt =
+        build::build(&fixture.0, &Selection::Default, &Options { offline: true }).unwrap();
+    let path = receipt.directory.join(&receipt.initrd.path);
+    let mut bytes = std::fs::read(&path).unwrap();
+    let offset = u32::from_le_bytes(bytes[..4].try_into().unwrap()) as usize;
+    bytes[offset + 11] = 8;
+    std::fs::write(&path, bytes).unwrap();
+    receipt.initrd.sha256 = hash(&path);
+    std::fs::write(
+        receipt.directory.join("receipt.json"),
+        serde_json::to_vec_pretty(&receipt).unwrap(),
+    )
+    .unwrap();
+    assert!(matches!(vanllia::runner::load(&receipt.directory),
+        Err(vanllia::Error::Workflow(why)) if why.contains("Kernel contract")));
 }

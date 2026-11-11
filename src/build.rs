@@ -13,12 +13,12 @@ pub use receipt::Receipt;
 use crate::{
     Catalog, Deployment, Error, Selection, config, discovery, error, overlay, preparation,
 };
-use initrd::ledger::bundle::{self, File, Kind, Unit};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
+use unit_contract::bundle::{self, File, Kind, Unit};
 use vanllia_build::workflow::process;
 
 static NEXT: AtomicU64 = AtomicU64::new(0);

@@ -21,6 +21,14 @@ pub use provider::{Provider, collect};
 pub use publication::Lease;
 pub use unit::ImageBuild;
 
+/// Validate an opaque bundle boot payload against this composition's Kernel ABI.
+/// This is also checked for retained artifacts before execution.
+pub fn validate_boot_capsule(bytes: &[u8]) -> Result<(), String> {
+    kernel_api::boot::capsule::Capsule::parse(bytes)
+        .map(|_| ())
+        .ok_or_else(|| "boot capsule does not match the current Kernel contract".into())
+}
+
 /// Encode the immutable boot image consumed by the kernel's initrd preamble.
 pub fn boot_capsule(elf: &[u8]) -> Result<Vec<u8>, String> {
     capsule::encode(elf).map_err(|why| format!("invalid System executable: {why:?}"))
@@ -285,7 +293,7 @@ pub fn build_with(
         .map_err(|error| format!("bootstrap {entry}: {error:?}"))?;
     let offset = blob
         .len()
-        .checked_next_multiple_of(env::ledger::capsule::PAGE)
+        .checked_next_multiple_of(kernel_api::boot::capsule::PAGE)
         .ok_or_else(|| "initrd: capsule offset overflow".to_string())?;
     let total = offset
         .checked_add(capsule.len())

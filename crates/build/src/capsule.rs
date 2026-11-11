@@ -2,7 +2,7 @@ mod error;
 mod plan;
 mod region;
 
-use env::ledger::capsule::{HEADER, MAGIC, PAGE, RECORD};
+use kernel_api::boot::capsule::{Capsule, HEADER, MAGIC, PAGE, RECORD, VERSION};
 
 use error::Error;
 
@@ -19,8 +19,9 @@ pub(crate) fn encode(bytes: &[u8]) -> Result<Vec<u8>, Error> {
     out.try_reserve_exact(length).map_err(|_| Error::Memory)?;
     out.resize(length, 0);
     out[..8].copy_from_slice(&MAGIC);
-    out[8..10].copy_from_slice(&1u16.to_le_bytes());
+    out[8..10].copy_from_slice(&VERSION.to_le_bytes());
     out[10] = 12;
+    out[11] = kernel_api::abi::VERSION as u8;
     out[12..16].copy_from_slice(
         &u32::try_from(plan.regions.len())
             .map_err(|_| Error::Range)?
@@ -51,5 +52,6 @@ pub(crate) fn encode(bytes: &[u8]) -> Result<Vec<u8>, Error> {
         }
         payload += region.data_size;
     }
+    Capsule::parse(&out).ok_or(Error::Format)?;
     Ok(out)
 }

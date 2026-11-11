@@ -10,12 +10,11 @@ autotests = false
 libtest-mimic = "0.8"
 ctrlc = { version = "3", features = ["termination"] }
 vanllia-build = { path = "crates/build" }
-initrd = { package = "env-initrd", git = "https://github.com/shuyra-arche/env.git", rev = "ee9357070996e2e559095904ff137a289a4ca156" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 toml_edit = { version = "0.23", features = ["serde"] }
-unit-contract = { package = "unit", git = "https://github.com/shuyra-arche/unit.git", rev = "782cf1ca27195723e372f181391025ff68fccc2d", default-features = false }
+unit-contract = { package = "unit", git = "https://github.com/shuyra-arche/unit.git", rev = "a0e8138275dc277f7d202fedb74cf9fa88aee368", default-features = false }
 
 [dev-dependencies]
 env = { git = "https://github.com/shuyra-arche/env.git", rev = "d3000253cd5d13d466e91fafd4dbb27a5ec5aaae" }

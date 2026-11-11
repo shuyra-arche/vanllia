@@ -80,9 +80,8 @@ pub(crate) fn build_group(
     if !group.default_features {
         args.push("--no-default-features".to_string());
     }
-    let output = crate::workflow::process::capture(Command::new(&cargo)
-        .args(&args)
-        .current_dir(root))?;
+    let output =
+        crate::workflow::process::capture(Command::new(&cargo).args(&args).current_dir(root))?;
 
     let mut found = Vec::new();
     for line in String::from_utf8_lossy(&output).lines() {
@@ -150,15 +149,30 @@ pub(crate) fn build_group(
         let bytes = std::fs::read(&executable).map_err(|e| e.to_string())?;
         let parsed = elf::ElfBytes::<elf::endian::AnyEndian>::minimal_parse(&bytes)
             .map_err(|e| format!("{image}: invalid ELF: {e}"))?;
-        let machine = if group.target.starts_with("riscv64") { Some(243) }
-            else if group.target.starts_with("x86_64") { Some(62) }
-            else if group.target.starts_with("aarch64") { Some(183) } else { None };
+        let machine = if group.target.starts_with("riscv64") {
+            Some(243)
+        } else if group.target.starts_with("x86_64") {
+            Some(62)
+        } else if group.target.starts_with("aarch64") {
+            Some(183)
+        } else {
+            None
+        };
         if machine.is_some_and(|want| parsed.ehdr.e_machine != want) {
-            return Err(format!("{image}: ELF machine does not match {}", group.target));
+            return Err(format!(
+                "{image}: ELF machine does not match {}",
+                group.target
+            ));
         }
         let digest = crate::publication::digest(&bytes);
-        let path = work.join("artifacts").join(&digest).join(group.builds.iter()
-            .find(|build| build.image == image).unwrap().bin);
+        let path = work.join("artifacts").join(&digest).join(
+            group
+                .builds
+                .iter()
+                .find(|build| build.image == image)
+                .unwrap()
+                .bin,
+        );
         crate::publication::write(&path, &bytes)?;
         evidence.push(serde_json::json!({
             "image": image, "package_id": expected, "manifest": manifest,
@@ -168,6 +182,9 @@ pub(crate) fn build_group(
         }));
         frozen.push((image, path));
     }
-    crate::publication::write(&work.join("artifacts.json"), &serde_json::to_vec_pretty(&evidence).unwrap())?;
+    crate::publication::write(
+        &work.join("artifacts.json"),
+        &serde_json::to_vec_pretty(&evidence).unwrap(),
+    )?;
     Ok(frozen)
 }
