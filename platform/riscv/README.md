@@ -17,10 +17,11 @@ The source compatibility boundary is Kernel's explicit
 contains the MMIO ownership facts; CPU/Sv/Sstc/SBI and PLIC facts stay in RV64.
 `Memory::metadata()` is opaque in the common API and interpreted as DTB here.
 
-This migration requires the matching Kernel source pin in both this package and
+This platform requires the matching Kernel source pin in both this package and
 `tests/platform/qemu`, including their lockfiles. Merge the Kernel provider PR
-first, then the linked Vanllia consumer PR. No syscall/Capsule/Ledger version
-changes, second-ISA boot support or new firmware parsing are introduced.
+first, then the linked Vanllia consumer PR. The syscall ABI remains v5; device
+dispatch uses Ledger v7 pairs as described below. No second-ISA boot support
+is introduced.
 
 `src/memory`, `harts` and `tree` decode bounded firmware facts; `resources`,
 `topology` and `interrupt` resolve protected ownership and wiring. `boot` freezes
@@ -117,3 +118,13 @@ cannot become the selected route. Existing QEMU IRQ-pair compatibility and the
 firmware routing restrictions remain explicit backend constraints; PCI BAR
 placement belongs to the external image.
 
+
+Hardware interrupt admission normalizes exclusive QEMU virt level-high UART,
+virtio-mmio and RTC sources into `(controller, source, MMIO region)` facts. The
+Kernel publishes each device's `(Share View, Sign)` pair in Ledger v7. The PLIC
+is configured once for driver sources and reserved IOMMU queues. Invalid, shared,
+reserved, unknown-controller and MSI/cascade sources fail before publication.
+CPU-local CLINT/ACLINT interrupts remain firmware mechanisms. Drivers use existing
+Sign Listen/Consume and Pend delegation/revocation; syscall ABI v5 is unchanged.
+The platform does not expose PLIC MMIO to userspace. The trusted Rust
+`grant_interrupt` now takes the matching region as its third argument.

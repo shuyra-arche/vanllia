@@ -29,6 +29,7 @@ fn cpus() -> Node {
 fn plic(key: &'static str, contexts: &[u32], size: u64) -> Node {
     Node::new("plic")
         .compatible("riscv,plic0")
+        .property("interrupt-controller", [])
         .property(key, words(&[1]))
         .property("#interrupt-cells", words(&[1]))
         .property("riscv,ndev", words(&[95]))
@@ -229,6 +230,72 @@ fn selected_iommu_must_have_unique_valid_register_and_irq_properties() {
             .child(cpus().child(cpu(0, local("phandle", 2))))
             .child(plic("phandle", &[2, 11, 2, 9], 0x600000))
             .child(controller)
+            .encode();
+        assert!(discover(&bytes).is_err());
+    }
+}
+
+fn uart(line: u32) -> Node {
+    Node::new("uart@10000000")
+        .compatible("ns16550a")
+        .reg(0x10000000, 0x100)
+        .property("interrupt-parent", words(&[1]))
+        .property("interrupts", words(&[line]))
+}
+#[test]
+fn exclusive_driver_sources_coexist_with_reserved_queues() {
+    let bytes = tree(&[36, 37, 38, 39], &[2, 11, 2, 9], 0x600000)
+        .child(uart(10))
+        .encode();
+    let plan = discover(&bytes).unwrap();
+    assert_eq!(plan.drivers, [(10, 0x10000000)]);
+    assert_eq!(plan.queues, [36, 37, 39]);
+    let bytes = root()
+        .child(cpus().child(cpu(0, local("phandle", 2))))
+        .child(plic("phandle", &[2, 11, 2, 9], 0x600000))
+        .child(
+            Node::new("uart")
+                .compatible("ns16550a")
+                .reg(0x10000000, 0x100)
+                .property("interrupts-extended", words(&[1, 10])),
+        )
+        .child(uart(11).property("status", b"disabled\0"))
+        .encode();
+    let fdt = fdt::Fdt::new(&bytes).unwrap();
+    let harts = HartInfo::parse(&fdt, FirmwareId::new(0)).unwrap();
+    let plan = Plan::discover(&fdt, &harts, HartId::new(0), 0).unwrap();
+    assert_eq!(plan.drivers, [(10, 0x10000000)]);
+    assert_eq!(plan.queues, [0; 3]);
+}
+#[test]
+fn shared_reserved_malformed_and_unsupported_sources_fail_admission() {
+    for node in [
+        uart(0),
+        uart(96),
+        uart(36),
+        uart(38),
+        Node::new("bus").child(uart(10)).child(uart(10)),
+        Node::new("unknown")
+            .compatible("unknown,device")
+            .property("interrupt-parent", words(&[1]))
+            .property("interrupts", words(&[10])),
+        uart(10).property("msi-parent", words(&[1])),
+        uart(10).property("interrupts-extended", words(&[1, 10])),
+        Node::new("uart")
+            .compatible("ns16550a")
+            .property("interrupts-extended", words(&[1, 10])),
+        Node::new("uart")
+            .compatible("ns16550a")
+            .property("interrupts-extended", words(&[2, 10])),
+        Node::new("uart")
+            .compatible("ns16550a")
+            .property("interrupts-extended", words(&[1])),
+        Node::new("bus")
+            .property("interrupt-map", [])
+            .child(uart(10)),
+    ] {
+        let bytes = tree(&[36, 37, 38, 39], &[2, 11, 2, 9], 0x600000)
+            .child(node)
             .encode();
         assert!(discover(&bytes).is_err());
     }
