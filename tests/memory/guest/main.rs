@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+mod acceptance;
 mod fault;
 mod ipc;
 mod support;
@@ -57,6 +58,7 @@ extern "C" fn run(at: usize, count: usize) -> ! {
         "PASS native-memory abi=11 ledger=11 occupy=1 publish=1 retract=1 vacate=1"
     );
     fault::run();
+    acceptance::run();
     ipc::run();
     swap::run();
     virtqueue::run();

@@ -3,7 +3,7 @@
 This standalone workspace composes one ABI 11 image from the pinned Kernel API,
 Client and Server. It exercises real Tasks and Teams through the public ABI,
 including a PCI virtio-blk split Virtqueue behind the RISC-V IOMMU. Production
-images keep their default ABI 10 selection. No test imports private Server code.
+images and the Capsule packager also select ABI 11. No test imports private Server code.
 
 Run from the repository root with nightly Rust, the RV64 bare-metal target,
 QEMU 10.0.x and OpenSBI with DBCN:
@@ -44,6 +44,42 @@ Host timeouts bound the whole image; guest deadlines bound polling and joins.
   responsibility; reset/drain does, while the CPU mapping remains usable.
   An invalid reply destination tests recovery from the Task's result journal;
   completed retirement replay must not execute twice.
+
+## Reservation and authority acceptance (§14.8)
+
+The guest's `acceptance` modules execute the eight remaining compound checks:
+two Reservations delegated to different Task ledgers; partial resource controls;
+fixed coordinates after Narrow; a real waiting fault followed by Release and
+same-address Reserve; INSPECT-only and FAULT-only grants; foreign Nest control
+without a local translation; Flat→Share→Memo read-only and distribution ceilings;
+source/target revocation and Insert/Publish versus Narrow; replacement requiring
+INSERT+REMOVE while adjacent Memos and physical holdings remain unchanged;
+maintenance overlap, revoked sources, service death and competing real ancestor
+takeovers with exactly one new epoch.
+
+The Unit construction test for Kernel #159 runs from the S-mode boot Task and
+submits retired/forged privilege bytes, checking that no child Team appears.
+A separate Task without Build cannot create a User Team. The two-Team loaders
+exercise User Nest adoption, consumed ATTACH/DELETE rights, real Tasks and exit.
+Kernel/boot Supervisor initialization still executes; public Team descriptors
+have no privilege selector.
+
+The Virtqueue lifecycle matrix separately executes child Revoke, Return,
+Reservation Release and whole External Nest Delete. Each first retains DMA
+responsibility with the queue enabled, keeps an unrelated CPU mapping usable,
+then blocks the Page and refuses Vacate until reset/drain. A retained Draining
+Block is explicitly resumed with its original credential before Vacate/Allow.
+The runner requires every acceptance marker and clean final controller shutdown.
+
+`python3 tests/memory/versions.py` checks the API/Client/Server and Capsule/platform
+provider revision, native feature, five lockfiles and Kernel submodule together.
+The packager's host tests validate generated and rejected Capsule headers.
+
+Narrow may return Busy while a real delegated child exists; the test confirms
+that no narrowing occurred, revokes that child, and retries. It does not treat
+Busy as evidence that the rights were already reduced. Pend owner observations
+are not PageOwner: unchanged Page IDs/holdings and the provider's owner invariant
+are separate evidence, and the ABI still offers no implicit owner adoption.
 
 ## Trusted platform scope
 

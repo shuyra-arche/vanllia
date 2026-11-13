@@ -149,6 +149,14 @@ pub fn reserve(token: PendId) -> (MemoPosition, VirtAddr) {
     reserve_at(token, Placement::lowest(4096).unwrap(), 6)
 }
 pub fn reserve_at(token: PendId, placement: Placement, access: u64) -> (MemoPosition, VirtAddr) {
+    reserve_pages(token, placement, access, 1)
+}
+pub fn reserve_pages(
+    token: PendId,
+    placement: Placement,
+    access: u64,
+    count: usize,
+) -> (MemoPosition, VirtAddr) {
     let Target::Nest(nest) = pend_info(token).target else {
         panic!("Nest")
     };
@@ -167,7 +175,7 @@ pub fn reserve_at(token: PendId, placement: Placement, access: u64) -> (MemoPosi
         expected: s.version,
         reservation: ReserveRequest {
             placement,
-            count: PageCount::new(1).unwrap(),
+            count: PageCount::new(count).unwrap(),
             level: CellLevel::new(0).unwrap(),
             access,
         },

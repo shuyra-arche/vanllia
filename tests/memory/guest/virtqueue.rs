@@ -272,4 +272,254 @@ pub fn run() {
         Console,
         "PERF native-virtqueue requests=64 elapsed_ns={elapsed} publish_during_io=0 retract_during_io=0"
     );
+    release(device);
+    lifecycle(external);
+}
+
+fn release(memo: MemoPosition) {
+    let Snapshot::Reservation(s) = inspect(Query::Reservation {
+        token: memo.token(),
+        nest: memo.nest(),
+        reservation: memo.reservation(),
+    }) else {
+        panic!("Reservation")
+    };
+    mutate(Action::Release {
+        token: memo.token(),
+        nest: memo.nest(),
+        reservation: memo.reservation(),
+        expected: s.version,
+    });
+}
+#[derive(Clone, Copy, Debug)]
+enum Close {
+    Revoke,
+    Return,
+    Release,
+    Delete,
+}
+fn lifecycle(external: kernel_api::model::identity::PendId) {
+    use kernel_api::{
+        address::VirtAddr,
+        model::{flat::*, identity::Mark, unit::*},
+    };
+    use kernel_client::call::pend;
+    for mode in [Close::Revoke, Close::Return, Close::Release, Close::Delete] {
+        let slot = create(1);
+        mutate(Action::Occupy {
+            slot,
+            expected: slot_status(slot).version,
+        });
+        let (cpu, address) = reserve(space());
+        insert(cpu, slot);
+        publish(cpu);
+        let (device, _) = reserve_at(
+            external,
+            Placement::exact(VirtAddr::new(IO), 4096).unwrap(),
+            6,
+        );
+        insert(device, slot);
+        let bytes = AccordRequest {
+            src: device.token(),
+            target: AccordTarget::Caller,
+            limits: pend_info(device.token()).limits,
+            mark: Mark::NONE,
+        }
+        .to_bytes();
+        let branch = pend::accord(VirtAddr::new(bytes.as_ptr() as usize)).unwrap();
+        let local = MemoPosition::new(branch, device.nest(), device.reservation(), 0).unwrap();
+        let Response::Reply(r) = call(Action::Publish {
+            memo: local,
+            expected: memo_status(device).generation,
+            maintenance: None,
+        }) else {
+            panic!("Publish")
+        };
+        assert!(matches!(
+            r.outcome(),
+            Outcome::Pending(_) | Outcome::Committed(_)
+        ));
+        let deadline = room::clock() + 3_000_000_000;
+        while memo_status(device).phase != MemoPhase::Published {
+            assert!(room::clock() < deadline);
+            room::yield_();
+        }
+        start();
+        submit(address.get(), 1, Operation::Write, 77);
+        match mode {
+            Close::Revoke => {
+                let UnitTarget::Task(task) = task_info(UnitQuery::Caller).target else {
+                    panic!("Task")
+                };
+                let _ = pend::revoke(task, branch);
+            }
+            Close::Return => {
+                let _ = pend::return_(branch);
+            }
+            Close::Release => {
+                let Snapshot::Reservation(s) = inspect(Query::Reservation {
+                    token: device.token(),
+                    nest: device.nest(),
+                    reservation: device.reservation(),
+                }) else {
+                    panic!("Reservation")
+                };
+                let Response::Reply(r) = call(Action::Release {
+                    token: device.token(),
+                    nest: device.nest(),
+                    reservation: device.reservation(),
+                    expected: s.version,
+                }) else {
+                    panic!("Release")
+                };
+                assert!(
+                    matches!(
+                        r.outcome(),
+                        Outcome::Pending(_)
+                            | Outcome::Failed {
+                                failure: Failure::Busy,
+                                retained: Some(_)
+                            }
+                    ),
+                    "{mode:?}: {:?}",
+                    r.outcome()
+                );
+            }
+            Close::Delete => {
+                let Snapshot::Nest(s) = inspect(Query::Nest {
+                    token: external,
+                    nest: device.nest(),
+                }) else {
+                    panic!("Nest")
+                };
+                let Response::Reply(r) = call(Action::DeleteNest {
+                    token: external,
+                    nest: device.nest(),
+                    expected: s.version,
+                }) else {
+                    panic!("Delete")
+                };
+                assert!(
+                    matches!(
+                        r.outcome(),
+                        Outcome::Pending(_)
+                            | Outcome::Failed {
+                                failure: Failure::Busy,
+                                retained: Some(_)
+                            }
+                    ),
+                    "{mode:?}: {:?}",
+                    r.outcome()
+                );
+            }
+        }
+        assert_eq!(
+            slot_status(slot).obligations,
+            2,
+            "{mode:?}: authority loss must retain CPU and DMA responsibility"
+        );
+        w32(address.get() + 0x700, 0x1234);
+        assert_eq!(r32(address.get() + 0x700), 0x1234);
+        // Blocking retires CPU access but cannot release the still-enabled DMA.
+        let Response::Reply(r) = call(Action::Block {
+            start: slot,
+            count: 1,
+            recover: None,
+        }) else {
+            panic!("Block")
+        };
+        let (Outcome::Pending(Value::Maintenance { block, .. })
+        | Outcome::Failed {
+            failure: Failure::Busy,
+            retained: Some(Value::Maintenance { block, .. }),
+        }) = r.outcome()
+        else {
+            panic!("{mode:?}: {:?}", r.outcome())
+        };
+        let maintenance = Maintenance {
+            token: slot.token(),
+            block,
+        };
+        assert_eq!(slot_status(slot).obligations, 1);
+        let Response::Reply(r) = call(Action::Vacate {
+            slot,
+            expected: slot_status(slot).version,
+            maintenance,
+        }) else {
+            panic!("Vacate")
+        };
+        assert!(matches!(r.outcome(), Outcome::Rejected(Failure::Busy)));
+        reset();
+        let deadline = room::clock() + 3_000_000_000;
+        loop {
+            let Response::Reply(r) = call(Action::Block {
+                start: slot,
+                count: 1,
+                recover: Some(block),
+            }) else {
+                panic!("Block")
+            };
+            if matches!(
+                r.outcome(),
+                Outcome::Committed(Value::Maintenance {
+                    phase: BlockPhase::Held,
+                    ..
+                })
+            ) {
+                break;
+            }
+            assert!(room::clock() < deadline, "{mode:?}: drain stalled");
+            room::yield_();
+        }
+        assert_eq!(slot_status(slot).obligations, 0);
+        mutate(Action::Vacate {
+            slot,
+            expected: slot_status(slot).version,
+            maintenance,
+        });
+        mutate(Action::Allow { maintenance });
+        if !matches!(mode, Close::Delete) {
+            release(device);
+        } else {
+            let Snapshot::Nest(s) = inspect(Query::Nest {
+                token: external,
+                nest: device.nest(),
+            }) else {
+                panic!("Nest")
+            };
+            let deadline = room::clock() + 3_000_000_000;
+            loop {
+                let Response::Reply(r) = call(Action::DeleteNest {
+                    token: external,
+                    nest: device.nest(),
+                    expected: s.version,
+                }) else {
+                    panic!("Delete")
+                };
+                if matches!(r.outcome(), Outcome::Committed(_)) {
+                    break;
+                }
+                assert!(
+                    matches!(
+                        r.outcome(),
+                        Outcome::Failed {
+                            failure: Failure::Busy,
+                            ..
+                        }
+                    ),
+                    "{:?}",
+                    r.outcome()
+                );
+                assert!(
+                    room::clock() < deadline,
+                    "Delete did not settle after reset"
+                );
+                room::yield_();
+            }
+        }
+        let _ = writeln!(
+            Console,
+            "PASS acceptance-lifecycle mode={mode:?} authority-closed=1 cpu-independent=1 dma-retained=1 maintenance-pending=1 reset-settled=1"
+        );
+    }
 }
