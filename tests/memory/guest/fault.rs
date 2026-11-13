@@ -68,8 +68,14 @@ pub fn event(memo: MemoPosition, epoch: FaultEpoch, wait: Wait) -> FaultEvent {
     };
     event
 }
+#[derive(Clone, Copy)]
+enum Scenario {
+    Recover,
+    RouteLoss,
+    Timeout,
+}
 pub fn run() {
-    for mode in 0..3 {
+    for mode in [Scenario::Recover, Scenario::RouteLoss, Scenario::Timeout] {
         let slot = create(1);
         let (memo, address) = reserve(space());
         insert(memo, slot);
@@ -78,7 +84,7 @@ pub fn run() {
             memo,
             Some(FaultRoute {
                 sign: signal,
-                timeout_ns: if mode == 2 {
+                timeout_ns: if matches!(mode, Scenario::Timeout) {
                     100_000_000
                 } else {
                     2_000_000_000
@@ -97,7 +103,7 @@ pub fn run() {
             "event reads must not consume"
         );
         match mode {
-            0 => {
+            Scenario::Recover => {
                 mutate(Action::Occupy {
                     slot,
                     expected: slot_status(slot).version,
@@ -111,14 +117,14 @@ pub fn run() {
                 assert_eq!(join(task).result, Some(42));
                 retract(memo);
             }
-            1 => {
+            Scenario::RouteLoss => {
                 configure(memo, None);
                 assert_eq!(
                     join(task).exit,
                     Some((ExitCause::Fault, Failure::HandlerGone as i64 as u64))
                 );
             }
-            _ => {
+            Scenario::Timeout => {
                 assert_eq!(
                     join(task).exit,
                     Some((ExitCause::Fault, Failure::TimedOut as i64 as u64))

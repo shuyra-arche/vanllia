@@ -12,39 +12,52 @@ use kernel_api::{
 };
 use kernel_client::call::{room, unit};
 use kernel_client::memory::Response;
-static REQUEST: AtomicUsize = AtomicUsize::new(0);
-static ACK: AtomicUsize = AtomicUsize::new(0);
+#[derive(Clone, Copy)]
+#[repr(usize)]
+enum Command {
+    Idle = 0,
+    Save = 1,
+    Restore = 2,
+    Stop = 3,
+}
+static REQUEST: AtomicUsize = AtomicUsize::new(Command::Idle as usize);
+static ACK: AtomicUsize = AtomicUsize::new(Command::Idle as usize);
 static BUFFER: AtomicUsize = AtomicUsize::new(0);
 static APPLICATION: AtomicUsize = AtomicUsize::new(0);
 const CONTENT: u64 = 0x917435aca7b83e22;
 extern "C" fn storage() -> ! {
     let mut backing = [0u64; 512];
-    for operation in 1..=3 {
+    for operation in [Command::Save, Command::Restore, Command::Stop] {
         let end = room::clock() + 5_000_000_000;
-        while REQUEST.load(Ordering::Acquire) != operation {
+        while REQUEST.load(Ordering::Acquire) != operation as usize {
             assert!(room::clock() < end);
             room::yield_();
         }
         let address = BUFFER.load(Ordering::Relaxed);
-        if operation == 1 {
-            for (i, value) in backing.iter_mut().enumerate() {
-                *value = unsafe { ((address + i * 8) as *const u64).read_volatile() };
-                assert_eq!(*value, CONTENT ^ (i as u64));
+        match operation {
+            Command::Save => {
+                for (i, value) in backing.iter_mut().enumerate() {
+                    *value = unsafe { ((address + i * 8) as *const u64).read_volatile() };
+                    assert_eq!(*value, CONTENT ^ (i as u64));
+                }
             }
-        } else if operation == 2 {
-            for (i, value) in backing.iter().enumerate() {
-                unsafe { ((address + i * 8) as *mut u64).write_volatile(*value) };
+            Command::Restore => {
+                for (i, value) in backing.iter().enumerate() {
+                    unsafe { ((address + i * 8) as *mut u64).write_volatile(*value) };
+                }
             }
+            Command::Stop => {}
+            Command::Idle => unreachable!("storage worker has no idle operation"),
         }
-        ACK.store(operation, Ordering::Release);
+        ACK.store(operation as usize, Ordering::Release);
     }
     unit::exit(74, 0, VirtAddr::new(0), 0, ExitScope::Task)
 }
-fn storage_request(operation: usize, address: VirtAddr) {
+fn storage_request(operation: Command, address: VirtAddr) {
     BUFFER.store(address.get(), Ordering::Relaxed);
-    REQUEST.store(operation, Ordering::Release);
+    REQUEST.store(operation as usize, Ordering::Release);
     let end = room::clock() + 5_000_000_000;
-    while ACK.load(Ordering::Acquire) != operation {
+    while ACK.load(Ordering::Acquire) != operation as usize {
         assert!(room::clock() < end);
         room::yield_();
     }
@@ -82,7 +95,7 @@ pub fn run() {
         expected: memo_status(service).generation,
         maintenance: Some(maintenance),
     });
-    storage_request(1, service_va);
+    storage_request(Command::Save, service_va);
     // Maintenance access is a real responsibility: release must refuse until retired.
     let Response::Reply(reply) = call(Action::Vacate {
         slot,
@@ -120,7 +133,7 @@ pub fn run() {
     let (scratch, scratch_va) = reserve(space());
     insert(scratch, staging);
     publish(scratch);
-    storage_request(2, scratch_va);
+    storage_request(Command::Restore, scratch_va);
     retract(scratch);
     let maintenance = block(slot);
     mutate(Action::Push {
@@ -137,7 +150,7 @@ pub fn run() {
     );
     publish(app);
     assert_eq!(join(reader).result, Some(42));
-    storage_request(3, VirtAddr::new(0));
+    storage_request(Command::Stop, VirtAddr::new(0));
     assert_eq!(join(worker).result, Some(74));
     let _ = writeln!(
         Console,

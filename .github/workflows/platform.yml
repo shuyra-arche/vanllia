@@ -17,6 +17,8 @@ jobs:
       - name: Install toolchain
         run: rustup toolchain install nightly --profile minimal --component rustfmt --target riscv64gc-unknown-none-elf
       - name: Check formatting and portable admission
+        env:
+          RUSTFLAGS: "-Dwarnings"
         run: |
           cargo fmt --manifest-path platform/riscv/Cargo.toml -- --check
           cargo fmt --manifest-path tests/platform/qemu/Cargo.toml -- --check

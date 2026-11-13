@@ -75,16 +75,21 @@ machine is available for this task; hardware validation is recorded as not run.
 The integration does not establish production-wide ABI migration or a complete
 Swap service. Kernel's `api/memory-m6.md` records provider changes and host checks.
 
-A local pinned run with provider `0fb8f9bd0ae5e4a351eb18d53062b5577312ab3e`,
+A local pinned run with provider `916add1f502680ac7a6a177b82ee29c9be9617de`,
 QEMU 10.0.13 and OpenSBI 1.9 recorded the following (single samples, milliseconds):
 
 | Workload | Debug | Release |
 | --- | ---: | ---: |
-| IPC, 64 messages retaining mappings | 124.2423 | 13.0006 |
-| IPC, 64 messages with sender remapping | 2166.4377 | 75.5906 |
-| Virtqueue, 64 block requests retaining mappings | 56.9465 | 10.2309 |
+| IPC, 64 messages retaining mappings | 127.9421 | 13.0720 |
+| IPC, 64 messages with sender remapping | 2144.2791 | 76.6999 |
+| Virtqueue, 64 block requests retaining mappings | 49.7819 | 9.2631 |
 
 Both profiles passed every scenario. The pinned platform's existing portable
 admission tests also passed (55 platform + 3 PCI cases). The Native memory CI
 repeats the pinned composition and uploads its own timings and complete inputs;
 those values may differ from this local run.
+
+Scenario selection, storage commands and block operations use explicit enums.
+The provider reduces completion events to results before the journal write.
+Host and RV64 CI checks reject Rust warnings with `-Dwarnings`; the verified
+local runs emitted no warnings.

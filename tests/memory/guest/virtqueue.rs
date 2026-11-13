@@ -91,14 +91,20 @@ fn descriptor(base: usize, index: usize, offset: usize, len: u32, flags: u16, ne
     w16(at + 12, flags);
     w16(at + 14, next);
 }
-fn submit(base: usize, sequence: u16, write: bool, pattern: u8) {
-    w32(base + 0x300, u32::from(write));
+#[derive(Clone, Copy)]
+#[repr(u32)]
+enum Operation {
+    Read = 0,
+    Write = 1,
+}
+fn submit(base: usize, sequence: u16, operation: Operation, pattern: u8) {
+    w32(base + 0x300, operation as u32);
     w32(base + 0x304, 0);
     w64(base + 0x308, 0);
     for i in 0..512 {
         w8(
             base + 0x400 + i,
-            if write {
+            if matches!(operation, Operation::Write) {
                 pattern.wrapping_add(i as u8)
             } else {
                 0
@@ -107,7 +113,18 @@ fn submit(base: usize, sequence: u16, write: bool, pattern: u8) {
     }
     w8(base + 0x600, 0xff);
     descriptor(base, 0, 0x300, 16, 1, 1);
-    descriptor(base, 1, 0x400, 512, if write { 1 } else { 3 }, 2);
+    descriptor(
+        base,
+        1,
+        0x400,
+        512,
+        if matches!(operation, Operation::Write) {
+            1
+        } else {
+            3
+        },
+        2,
+    );
     descriptor(base, 2, 0x600, 1, 2, 0);
     w16(base + 0x104 + 2 * ((sequence as usize - 1) % 8), 0);
     order();
@@ -121,7 +138,7 @@ fn submit(base: usize, sequence: u16, write: bool, pattern: u8) {
     order();
     assert_eq!(r32(base + 0x204 + 8 * ((sequence as usize - 1) % 8)), 0);
     assert_eq!(r8(base + 0x600), 0);
-    if !write {
+    if matches!(operation, Operation::Read) {
         for i in 0..512 {
             assert_eq!(r8(base + 0x400 + i), pattern.wrapping_add(i as u8));
         }
@@ -191,8 +208,8 @@ pub fn run() {
     start();
     let before = room::clock();
     for n in 0..32 {
-        submit(base, 2 * n + 1, true, n as u8);
-        submit(base, 2 * n + 2, false, n as u8);
+        submit(base, 2 * n + 1, Operation::Write, n as u8);
+        submit(base, 2 * n + 2, Operation::Read, n as u8);
     }
     let elapsed = room::clock() - before;
     assert_eq!(memo_status(cpu).generation, cg);
