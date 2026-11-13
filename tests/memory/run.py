@@ -84,7 +84,7 @@ def main():
     if args.capsule_version == 10:
         assert status != "timeout" and "shuyra: boot failed" in log and "assemble boot capsule" in log and "virtual address not in any declared map" in log and "START native-memory" not in log, log
     else:
-        required = ["PASS native-memory", "PASS native-version", "PASS native-fault", "PASS native-ipc", "PASS native-swap", "PASS native-virtqueue", "iommu: command engine closed", "task: all tasks exited"]
+        required = ["PASS native-memory", "PASS native-version", "PASS native-fault", "PASS native-ipc", "PASS native-swap", "PASS native-virtqueue", "PASS acceptance-unit", "PASS acceptance-scopes", "PASS acceptance-replace", "PASS acceptance-aba", "PASS acceptance-lineage", "PASS acceptance-share", "PASS acceptance-foreign-control", "PASS acceptance-authority", "PASS acceptance-maintenance", *[f"PASS acceptance-lifecycle mode={mode}" for mode in ["Revoke", "Return", "Release", "Delete"]], "iommu: command engine closed", "task: all tasks exited"]
         assert status == 0 and "FAIL" not in log and all(marker in log for marker in required), log
     print(log)
     print(f"Evidence: {evidence}")

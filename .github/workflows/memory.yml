@@ -29,7 +29,9 @@ jobs:
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check formatting
-        run: cargo fmt --manifest-path tests/memory/Cargo.toml --all -- --check
+        run: |
+          cargo fmt --manifest-path tests/memory/Cargo.toml --all -- --check
+          python3 tests/memory/versions.py
       - name: Run pinned native image (debug)
         run: python3 tests/memory/run.py
       - name: Reject old Capsule in native image

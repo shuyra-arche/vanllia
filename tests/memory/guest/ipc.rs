@@ -53,11 +53,16 @@ extern "C" fn child(at: usize, count: usize) -> ! {
     );
     unit::exit(73, 0, VirtAddr::new(0), 0, ExitScope::Task)
 }
-pub fn run() {
+pub fn create_team() -> (TeamId, PendId) {
+    let Value::CreatedNest {
+        token: original, ..
+    } = mutate(Action::CreateNest { license: license() })
+    else {
+        panic!("Nest")
+    };
     let descriptor = UnitCreate::Team {
-        kind: ProgramKind::User,
         guard: ControlId::NONE,
-        nest: None,
+        nest: Some(original),
         member_exit: true,
     }
     .to_bytes();
@@ -66,6 +71,10 @@ pub fn run() {
     else {
         panic!("Team")
     };
+    assert_eq!(nest, original, "adoption preserves the Nest grant identity");
+    assert!(
+        !matches!(pend_info(nest).limits.operations,Operations::Nest(rights) if rights.intersects(NestRights::ATTACH | NestRights::DELETE))
+    );
     let source = image();
     let capsule = Capsule::parse(source).unwrap();
     // Load through ordinary Flat/Nest authority. Every writable staging mapping
@@ -100,6 +109,10 @@ pub fn run() {
             publish(memo);
         }
     }
+    (team, nest)
+}
+pub fn run() {
+    let (team, nest) = create_team();
     let slot = create(1);
     mutate(Action::Occupy {
         slot,

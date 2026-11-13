@@ -1,10 +1,10 @@
 name: Platform
 on:
   pull_request:
-    paths: ["platform/**", "tests/platform/**", ".github/workflows/platform.yml"]
+    paths: ["platform/**", "tests/platform/**", "crates/build/**", "Cargo.lock", "components/kernel", ".github/workflows/platform.yml"]
   push:
     branches: [main]
-    paths: ["platform/**", "tests/platform/**", ".github/workflows/platform.yml"]
+    paths: ["platform/**", "tests/platform/**", "crates/build/**", "Cargo.lock", "components/kernel", ".github/workflows/platform.yml"]
 permissions:
   contents: read
 env:
@@ -15,7 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install toolchain
-        run: rustup toolchain install nightly --profile minimal --component rustfmt --target riscv64gc-unknown-none-elf
+        run: |
+          rustup toolchain install nightly --profile minimal --component rustfmt --component llvm-tools --target riscv64gc-unknown-none-elf
+          echo "$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
       - name: Check formatting and portable admission
         env:
           RUSTFLAGS: "-Dwarnings"
@@ -25,6 +27,8 @@ jobs:
           cargo fmt --manifest-path tests/platform/hardware/Cargo.toml -- --check
           cargo test --locked --manifest-path platform/riscv/Cargo.toml --no-default-features --target x86_64-unknown-linux-gnu
           cargo test --locked --manifest-path tests/platform/qemu/Cargo.toml --no-default-features --target x86_64-unknown-linux-gnu
+          cargo test --locked -p vanllia-build --target x86_64-unknown-linux-gnu
+          python3 tests/memory/versions.py
       - name: Build the pinned provider and both boot images
         env:
           RUSTFLAGS: "-Crelocation-model=static -Cforce-frame-pointers=yes -Ccode-model=medium -Dwarnings"
