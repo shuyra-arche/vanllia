@@ -26,6 +26,34 @@ pub fn run() {
         slot: inspected,
         expected: slot_status(slot).version,
     }));
+    let target_control = accord(memo.token(), worker.0, pend_info(memo.token()).limits);
+    // Give the target every necessary right: this rejection must come from
+    // the INSPECT-only source, independently of the FAULT-only test below.
+    rejected(worker.call(Action::Insert {
+        target: at(memo, target_control, 0),
+        expected: memo_status(memo).generation,
+        source: Source::Flat {
+            position: inspected,
+            expected: slot_status(slot).version,
+        },
+    }));
+    let inspect_only = accord(
+        memo.token(),
+        worker.0,
+        Limits {
+            operations: Operations::Nest(NestRights::INSPECT),
+            ..pend_info(memo.token()).limits
+        },
+    );
+    assert!(matches!(
+        worker.call(Action::Inspect(Query::Memo(at(memo, inspect_only, 0)))),
+        Ok(Response::Observation(_))
+    ));
+    rejected(worker.call(Action::Publish {
+        memo: at(memo, inspect_only, 0),
+        expected: memo_status(memo).generation,
+        maintenance: None,
+    }));
     let token = accord(
         memo.token(),
         worker.0,

@@ -29,6 +29,20 @@ pub fn run() {
         insert(memo, slot);
         let target = accord(memo.token(), worker.0, pend_info(memo.token()).limits);
         let local = at(memo, target, 0);
+        let Value::CreatedNest {
+            token: foreign_space,
+            ..
+        } = mutate(Action::CreateNest { license: license() })
+        else {
+            panic!("Nest")
+        };
+        let (foreign_memo, _) = reserve(foreign_space);
+        insert(foreign_memo, slot);
+        let foreign_target = accord(
+            foreign_memo.token(),
+            worker.0,
+            pend_info(foreign_memo.token()).limits,
+        );
         let held = credential(
             worker
                 .call(Action::Block {
@@ -39,6 +53,13 @@ pub fn run() {
                 .unwrap(),
             token,
         );
+        // Even valid source/target grants cannot publish a maintenance use
+        // into an Internal Nest other than the maintenance Task's Team.
+        rejected(worker.call(Action::Publish {
+            memo: at(foreign_memo, foreign_target, 0),
+            expected: memo_status(foreign_memo).generation,
+            maintenance: Some(held),
+        }));
         assert!(
             matches!(worker.call(Action::Publish {memo:local,expected:memo_status(memo).generation,maintenance:Some(held)}),Ok(Response::Reply(r)) if matches!(r.outcome(),Outcome::Committed(_)))
         );

@@ -35,7 +35,7 @@ def main():
         sources = {p.get("source") for p in packages if p["name"] in ["kernel", "kernel-api", "kernel-client", "kernel-api-macros"]}
         assert sources == {f"git+https://github.com/shuyra-arche/kernel.git?rev={revision}#{revision}"}, (lock, sources)
     mode, commit, *_ = subprocess.check_output(
-        ["git", "ls-files", "--stage", "components/kernel"], cwd=ROOT, text=True).split()
+        ["git", "-c", f"safe.directory={ROOT}", "ls-files", "--stage", "components/kernel"], cwd=ROOT, text=True).split()
     assert mode == "160000" and commit == revision, commit
     print(f"PASS coordinated-version abi=11 provider={revision} manifests={len(MANIFESTS)} locks={len(LOCKS)} submodule=matched")
 
