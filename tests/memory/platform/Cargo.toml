@@ -1,0 +1,15 @@
+[package]
+name = "memory-platform"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[[bin]]
+name = "memory-platform"
+path = "main.rs"
+test = false
+bench = false
+[dependencies]
+kernel-api.workspace = true
+kernel.workspace = true
+platform-riscv = { path = "../../../platform/riscv" }
+fdt = { version = "0.1.5", default-features = false }

@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["guest", "platform"]
+[workspace.dependencies]
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "0fb8f9bd0ae5e4a351eb18d53062b5577312ab3e", features = ["memory-v11"] }
+kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "0fb8f9bd0ae5e4a351eb18d53062b5577312ab3e", features = ["memory-v11"] }
+kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "0fb8f9bd0ae5e4a351eb18d53062b5577312ab3e", features = ["memory-v11"] }
+[profile.dev]
+panic = "abort"
+[profile.release]
+panic = "abort"

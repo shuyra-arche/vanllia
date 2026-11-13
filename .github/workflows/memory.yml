@@ -1,0 +1,45 @@
+name: Native memory
+on:
+  pull_request:
+    paths: ["tests/memory/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+  push:
+    branches: [main]
+    paths: ["tests/memory/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+permissions:
+  contents: read
+concurrency:
+  group: memory-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 20
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+      QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
+      RUSTFLAGS: "-Crelocation-model=static -Cforce-frame-pointers=yes -Ccode-model=medium -Dwarnings"
+    steps:
+      - name: Install image tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi python3
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain nightly --component rustfmt --target riscv64gc-unknown-none-elf
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check formatting
+        run: cargo fmt --manifest-path tests/memory/Cargo.toml --all -- --check
+      - name: Run pinned native image (debug)
+        run: python3 tests/memory/run.py
+      - name: Reject old Capsule in native image
+        run: python3 tests/memory/run.py --no-build --capsule-version 10
+      - name: Run pinned native image (release)
+        run: python3 tests/memory/run.py --profile release
+      - name: Preserve images and serial evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-memory
+          path: tests/memory/target/evidence/
+          if-no-files-found: error

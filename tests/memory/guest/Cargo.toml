@@ -1,0 +1,13 @@
+[package]
+name = "memory-guest"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[[bin]]
+name = "memory-guest"
+path = "main.rs"
+test = false
+bench = false
+[dependencies]
+kernel-api.workspace = true
+kernel-client.workspace = true
