@@ -95,10 +95,12 @@ image under `tests/platform/qemu` reuses the production boot path.
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
 The build library, platform images and native memory API/Client/Server
-composition pin Kernel `b2eb37e2af134e4bb4248df454c437b06c1f93c0`, the
-Gamma follow-up with the native Nest creation fix from
-[Kernel #175](https://github.com/shuyra-arche/kernel/pull/175): ABI/Ledger 11/11
-and Capsule format 2. All Kernel Git dependencies use that full `rev`, including
+composition pin Kernel `0ee104ddf94ca74a18135bf216b888a2437bd6f8`, the
+published candidate from [Kernel #180](https://github.com/shuyra-arche/kernel/pull/180).
+It retains the native Nest creation repair from [Kernel #175](https://github.com/shuyra-arche/kernel/pull/175)
+and adds read-only managed DTB/initrd sources for native Insert/Publish.
+ABI/Ledger remain 11/11 and Capsule format 2. Merge the Kernel provider before
+this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
 the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
 Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
 fixture and native memory workspaces. `python3 tests/memory/versions.py`
