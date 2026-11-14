@@ -1,5 +1,13 @@
 # Kernel device lifecycle across Units
 
+This is a historical fixture: `guest/Cargo.toml` and its independent lockfile
+retain Kernel `5e6ea8ff5f48f5ce17c88d98cbedcc7a0ffe3a9e`. The current root
+packager selects Gamma ABI 11, so matching only the guest and Kernel pins is
+insufficient to run this older composition. Migrate the guest and runner
+together before executing the commands below with the current root workspace.
+The ignored host test does not execute during normal root tests, and this
+fixture is outside the [Gamma acceptance scope](../../README.md).
+
 `cargo test --workspace` discovers this ignored, environment-dependent test.
 Use a Kernel built from the same revision as the guest's API/client pins:
 
