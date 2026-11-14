@@ -25,7 +25,7 @@ def main():
         assert dependencies, manifest
         for dependency in dependencies:
             assert dependency["git"] == "https://github.com/shuyra-arche/kernel.git", manifest
-            assert "memory-v11" in dependency.get("features", []), manifest
+            assert "memory-v11" not in dependency.get("features", []), manifest
             revisions.add(dependency["rev"])
     assert len(revisions) == 1, revisions
     revision, = revisions
