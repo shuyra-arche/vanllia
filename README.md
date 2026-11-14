@@ -95,10 +95,12 @@ image under `tests/platform/qemu` reuses the production boot path.
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
 The build library, platform images and native memory API/Client/Server
-composition pin Kernel `0ee104ddf94ca74a18135bf216b888a2437bd6f8`, the
-published candidate from [Kernel #180](https://github.com/shuyra-arche/kernel/pull/180).
+composition pin Kernel `2cfb581a7ef767ebae0fda4864ed5da625ef067e`, the
+validated data-only SMP candidate from [Kernel #182](https://github.com/shuyra-arche/kernel/pull/182).
 It retains the native Nest creation repair from [Kernel #175](https://github.com/shuyra-arche/kernel/pull/175)
-and adds read-only managed DTB/initrd sources for native Insert/Publish.
+and managed DTB/initrd sources from #180, adding bounded all-Hart CPU completion.
+Executable SMP remains Unsupported; this pin does not qualify a platform or
+claim complete System acceptance.
 ABI/Ledger remain 11/11 and Capsule format 2. Merge the Kernel provider before
 this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
 the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
