@@ -1,5 +1,12 @@
 # Exact product artifact acceptance
 
+This independent workspace has not been refreshed for Kernel Gamma: its
+lockfile still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Its
+path dependencies on the root CLI/build library now require a coordinated
+lockfile refresh and System/service compatibility validation before these
+commands can provide current-product evidence. It is excluded from the root
+workspace and from [Gamma's native memory acceptance](../memory/README.md).
+
 This Rust host test boots an existing product artifact unchanged: it adds no
 test Unit and does not rebuild initrd. It derives required startup identities
 from the product's declarations, then sends terminal EOF after native readiness
