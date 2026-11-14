@@ -95,13 +95,19 @@ image under `tests/platform/qemu` reuses the production boot path.
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
 The build library, platform images and native memory API/Client/Server
-composition pin Kernel [26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
-at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`: ABI/Ledger 11/11 and
-Capsule format 2. All Kernel Git dependencies use that full `rev`, including
+composition pin Kernel `b2eb37e2af134e4bb4248df454c437b06c1f93c0`, the
+Gamma follow-up with the native Nest creation fix from
+[Kernel #175](https://github.com/shuyra-arche/kernel/pull/175): ABI/Ledger 11/11
+and Capsule format 2. All Kernel Git dependencies use that full `rev`, including
 the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
 Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
 fixture and native memory workspaces. `python3 tests/memory/versions.py`
 checks their coordinated source identity. No Cargo feature selects the ABI.
+The original [26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
+tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`. Its native debug
+acceptance exposed a Unit commit-lock assertion during Nest creation. The
+product deliberately selects the later exact repair commit; it does not
+relabel or modify Gamma, and no new release tag is claimed for this pin.
 The build library writes capsule v2 with ABI 11;
 the Kernel parser validates generated
 capsules and retained artifacts before execution. Older ABI capsules require a
@@ -126,5 +132,5 @@ Gamma's release notes and the historical timings in the
 [native memory guide](tests/memory/README.md) are not execution evidence for
 this exact Vanllia composition. New Host, RV64 and QEMU results, exact source
 revisions and artifact identities are recorded separately in the
-[Gamma pin issue #37 and its linked PR](https://github.com/shuyra-arche/vanllia/issues/37).
+[provider acceptance PR #38](https://github.com/shuyra-arche/vanllia/pull/38).
 Hardware, SMP and the complete assembled System are separate acceptance gates.
