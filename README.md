@@ -94,9 +94,9 @@ image under `tests/platform/qemu` reuses the production boot path.
 
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
-The build library and platform images select Kernel ABI/Ledger 11 through
-`memory-v11`, using the same exact provider revision as the native memory
-API/Client/Server composition. The build library writes capsule v2 with ABI 11;
+The build library and platform images use Kernel ABI/Ledger 11 directly,
+using the same exact provider revision as the native memory API/Client/Server
+composition. No Cargo feature selects the ABI. The build library writes capsule v2 with ABI 11;
 the Kernel parser validates generated
 capsules and retained artifacts before execution. Older ABI capsules require a
 rebuild even when receipt hashes match. The historical build-library declaration
