@@ -105,7 +105,7 @@ ABI/Ledger remain 11/11 and Capsule format 2. Merge the Kernel provider before
 this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
 the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
 Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
-fixture and native memory workspaces. `python3 tests/memory/versions.py`
+fixture and native memory workspaces. `cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .`
 checks their coordinated source identity. No Cargo feature selects the ABI.
 The original [26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
 tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`. Its native debug

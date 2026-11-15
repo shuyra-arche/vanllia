@@ -1,0 +1,19 @@
+[package]
+name = "vanllia-verification"
+version = "0.1.0"
+edition = "2024"
+publish = false
+autotests = false
+
+[workspace]
+
+[[bin]]
+name = "verify"
+path = "main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+
+kernel-verification = { git = "https://github.com/shuyra-arche/kernel.git", rev = "ecf024b1156dbeadf2d9bfde73dcc0572216dcb6" }
