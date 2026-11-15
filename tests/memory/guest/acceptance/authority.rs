@@ -172,16 +172,17 @@ fn foreign_control() {
     );
     insert(memo, slot);
     let args = [address.get()];
+    let stack = crate::stack::Stack::in_space(nest, foreign as *const () as usize, &args, 65536);
     let bytes = UnitCreate::Task {
         team: Some(team),
-        start: crate::stack::Stack::in_space(nest, foreign as *const () as usize, &args, 65536)
-            .start,
+        start: stack.start,
     }
     .to_bytes();
     let CreatedUnit::Task(task) = unit::create(VirtAddr::new(bytes.as_ptr() as usize)).unwrap()
     else {
         panic!("Task")
     };
+    crate::stack::retain(task, stack);
     accord(memo.token(), task, pend_info(memo.token()).limits);
     unit::resume(UnitTarget::Task(task)).unwrap();
     assert!(matches!(join(task).exit, Some((ExitCause::Fault, _))));

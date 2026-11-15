@@ -129,9 +129,10 @@ pub fn run() {
         panic!("caller")
     };
     let args = [remote_va.get(), parent.get()];
+    let stack = crate::stack::Stack::in_space(nest, child as *const () as usize, &args, 65536);
     let descriptor = UnitCreate::Task {
         team: Some(team),
-        start: crate::stack::Stack::in_space(nest, child as *const () as usize, &args, 65536).start,
+        start: stack.start,
     }
     .to_bytes();
     let CreatedUnit::Task(task) =
@@ -139,6 +140,7 @@ pub fn run() {
     else {
         panic!("Task")
     };
+    crate::stack::retain(task, stack);
     accord(license(), task, pend_info(license()).limits);
     accord(nest, task, pend_info(nest).limits);
     unit::resume(UnitTarget::Task(task)).unwrap();

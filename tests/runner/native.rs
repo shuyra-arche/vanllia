@@ -74,7 +74,11 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
         .arg("-drive").arg(format!("file={},format=raw,if=none,id=disk,aio=threads",disk.display()))
         .args(["-device","virtio-blk-pci,drive=disk,disable-legacy=on,iommu_platform=on,ats=off,addr=1,ioeventfd=off,vectors=0"]);
     let boot = root.join("boot");
-    let mut result = process::run(&mut command, &boot, Duration::from_secs(120))?;
+    let mut result = process::run(
+        &mut command,
+        &boot,
+        Duration::from_secs(if profile == "debug" { 240 } else { 120 }),
+    )?;
     let serial = fs::read_to_string(boot.join("serial.log"))?;
     if version < 13 {
         result.passed = result.exited()

@@ -144,6 +144,9 @@ impl Stack {
                 }
             });
         }
+        for memo in [Some(self.memo), self.local].into_iter().flatten() {
+            kernel_client::call::pend::return_(memo.token()).unwrap();
+        }
         change(|| {
             let Snapshot::Flat(status) = inspect(Query::Flat {
                 token: self.flat.token(),
@@ -157,5 +160,50 @@ impl Stack {
                 expected: status.version,
             }
         });
+        kernel_client::call::pend::return_(self.flat.token()).unwrap();
+    }
+}
+
+// Only the initial fixture Task owns this registry. Checks precede borrowing;
+// no reference or borrow survives a Kernel call or scheduling boundary.
+struct Owners(core::cell::UnsafeCell<[Option<(kernel_api::model::identity::TaskId, Stack)>; 64]>);
+unsafe impl Sync for Owners {}
+static OWNERS: Owners = Owners(core::cell::UnsafeCell::new([const { None }; 64]));
+static OWNER: core::sync::atomic::AtomicUsize = core::sync::atomic::AtomicUsize::new(0);
+fn caller() -> usize {
+    let kernel_api::model::unit::UnitTarget::Task(task) =
+        task_info(kernel_api::model::unit::UnitQuery::Caller).target
+    else {
+        panic!("caller")
+    };
+    task.get()
+}
+pub fn init_owner() {
+    OWNER.store(caller(), core::sync::atomic::Ordering::Release);
+}
+fn check_owner() {
+    assert_eq!(caller(), OWNER.load(core::sync::atomic::Ordering::Acquire));
+}
+pub fn retain(task: kernel_api::model::identity::TaskId, stack: Stack) {
+    check_owner();
+    let owners = unsafe { &mut *OWNERS.0.get() };
+    let slot = owners
+        .iter_mut()
+        .find(|slot| slot.is_none())
+        .expect("bounded fixture stacks");
+    *slot = Some((task, stack));
+}
+pub fn retire_joined(task: kernel_api::model::identity::TaskId) {
+    check_owner();
+    let stack = {
+        let owners = unsafe { &mut *OWNERS.0.get() };
+        owners
+            .iter_mut()
+            .find(|slot| slot.as_ref().is_some_and(|(id, _)| *id == task))
+            .and_then(Option::take)
+            .map(|(_, stack)| stack)
+    };
+    if let Some(stack) = stack {
+        stack.retire();
     }
 }
