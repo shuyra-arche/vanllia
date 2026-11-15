@@ -1,11 +1,9 @@
 # Native verification
 
-This standalone Cargo workspace is a host utility. It is outside the product
-workspace and is never built as an RV64 guest. Run its host contracts with:
-
-```sh
-cargo test --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-```
+This standalone Cargo workspace is a host utility outside the product and RV64
+workspaces. It uses Kernel's small host execution library for bounded processes,
+evidence and Capsule encoding. Kernel does not depend on Vanllia's tooling.
+The shared orchestration contracts run in Kernel's own Host CI.
 
 `verify native` owns the current memory/IPC/Swap/Virtqueue composition, including
 ABI rejection; see [the memory guide](../memory/README.md). `verify versions`
@@ -18,18 +16,32 @@ the native System/Twine runtime regression. System is pinned to
 `7c75c62d15d173032d99fed54ca7fd00337d787b`; it executes release on 1/4 Harts.
 Neither command claims complete System or physical hardware acceptance.
 
-The library supplies one ELF-to-Capsule packager and bounded process execution
-for these commands and provider-owned Kernel probes. Scenario assertions stay
-with their owner. Output directories must be new. Tools preserve process output
-before checking acceptance; success requires a normal exit plus complete
-scenario evidence. The whole process group is killed and reaped at a deadline.
-Input checkouts are read through committed Git archives. Working-tree edits are
-not silently included. Every build preserves its original and resolved lock,
-commands, compiler/emulator/firmware identity and image hashes. Host contracts
-cover large output, deadlines after success output, signals, incomplete output
-and malformed ELF inputs.
+## CI ownership and parallelism
 
-Integration order for Kernel #199: publish this runner commit, update Kernel's
-runner dependency and fixture to that exact commit, then validate the assembled
-revision set. No moving branch pins and no implicit claim that unrelated
-Vanllia or System scripting has been removed.
+Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
+Vanllia owns cross-provider composition testing. The
+[integration workflow](../../.github/workflows/memory.yml) has 29 independent
+scenario/profile/Hart jobs, up to eight at once, with `fail-fast: false` and a
+separate evidence artifact per job. Native memory, CPU completion, A/D, Flat,
+IRQ, RT, System/Twine and the standalone IOMMU backend retain their scenarios.
+The Kernel candidate is the full SHA in `tests/runner/kernel`; it is an explicit
+test override, not a change to the product's default Kernel pin. Private Kernel
+probes use the published Vanllia fixture `f2dfa14f5b1f7bd47ee84841ba5c7112e8475950`.
+
+Long comparisons require `Room comparison: requested` and one exact
+`Room baseline: <40 lowercase hex characters>` line in the Vanllia PR body.
+Mode/instrumentation combinations run on independent workers. Within one paired
+comparison, build order and alternating A/B boots remain controlled; those
+samples cannot be run concurrently without changing the experiment.
+
+Outputs must be new directories. Tools preserve process output before checking
+acceptance; success requires a normal exit plus complete scenario evidence.
+The whole process group is killed and reaped at a deadline. Input checkouts are
+read through committed Git archives. Working-tree edits are not silently included.
+Builds preserve original/resolved locks, commands, compiler/emulator/firmware
+identity and image hashes.
+
+Integration order for Kernel #199: publish/land Kernel's host library and local
+verification first, then pin this composition consumer and run the assembled
+matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
+claim that unrelated Vanllia or System scripting has been removed.

@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
+use kernel_verification::Result;
 use std::path::PathBuf;
-use vanllia_verification::Result;
 mod native;
 mod system;
 mod versions;
