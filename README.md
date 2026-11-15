@@ -95,7 +95,7 @@ image under `tests/platform/qemu` reuses the production boot path.
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
 The build library, platform images and native memory API/Client/Server
-composition pin Kernel `5da3ae3e0b971f34a003a31d344ee20593725e53`, the
+composition pin Kernel `9c0fc4da1ca4e41bd6ddea3cba2b5964c07323d2`, the
 coordinated User startup candidate for Kernel #160/#206/#188.
 It retains the native Nest creation repair from [Kernel #175](https://github.com/shuyra-arche/kernel/pull/175)
 and managed DTB/initrd sources from #180, adding bounded all-Hart CPU completion.

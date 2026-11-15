@@ -46,7 +46,7 @@ verification first, then pin this composition consumer and run the assembled
 matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
 claim that unrelated Vanllia or System scripting has been removed.
 
-The ABI 13 composition pins Kernel 5da3ae3e0b971f34a003a31d344ee20593725e53,
+The ABI 13 composition pins Kernel 9c0fc4da1ca4e41bd6ddea3cba2b5964c07323d2,
 System 506b8a18d26f910e930699a3ecb0ac93a968f41f and Twine
 56b2be2017a035eabe140268cb6c195dfb6215d2. Kernel #207–#211 land first;
 Toolchain #19/Twine #12/System #24 follow before this composition consumer.
