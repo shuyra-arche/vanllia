@@ -47,6 +47,7 @@ jobs:
           - { scenario: native, profile: debug, harts: "1" }
           - { scenario: native, profile: release, harts: "1" }
           - { scenario: reject, profile: debug, harts: "1" }
+          - { scenario: reject12, profile: debug, harts: "1" }
           - { scenario: smp, profile: debug, harts: "1" }
           - { scenario: smp, profile: debug, harts: "2" }
           - { scenario: smp, profile: debug, harts: "4" }
@@ -72,6 +73,7 @@ jobs:
           - { scenario: realtime, profile: debug, harts: "4" }
           - { scenario: realtime, profile: release, harts: "4" }
           - { scenario: system, profile: release, harts: "1+4" }
+          - { scenario: std, profile: release, harts: "1" }
           - { scenario: iommu, profile: release, harts: "1" }
     env:
       QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
@@ -79,7 +81,7 @@ jobs:
       - name: Install native image tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential python3 qemu-system-riscv opensbi
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
           sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" --target riscv64gc-unknown-none-elf
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
@@ -98,18 +100,18 @@ jobs:
           path: .integration/kernel
           persist-credentials: false
       - name: Fetch this repository's published probe fixture
-        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'system' && matrix.scenario != 'iommu'
+        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std' && matrix.scenario != 'iommu'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
           path: .integration/fixture
           persist-credentials: false
       - name: Fetch System consumer
-        if: matrix.scenario == 'system'
+        if: matrix.scenario == 'system' || matrix.scenario == 'std'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
-          ref: 7e4f9dc19bdaf4a0e95ff3b557fdc8959b8547d7
+          ref: 470e97f38aa904c3702b665c0d225809b9f0d16e
           path: .integration/system
           persist-credentials: false
       - name: Fetch Twine recovery
@@ -117,8 +119,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/twine
-          ref: 7c75c62d15d173032d99fed54ca7fd00337d787b
+          ref: 932454c07bd2673ac7d6d9612d36182aae71e8b2
           path: .integration/twine
+          persist-credentials: false
+      - name: Fetch Toolchain std provider
+        if: matrix.scenario == 'std'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: shuyra-arche/toolchain
+          ref: 2e507cc6f473aaf0186d6c0a3f75c3a6adc0acd8
+          path: .integration/toolchain
           persist-credentials: false
       - name: Execute this scenario
         env:
@@ -129,7 +139,17 @@ jobs:
           kernel="$GITHUB_WORKSPACE/.integration/kernel"
           evidence="$GITHUB_WORKSPACE/.integration/evidence"
           case "$SCENARIO" in
-            native|reject|system)
+            std)
+              toolchain="$GITHUB_WORKSPACE/.integration/toolchain"
+              system="$GITHUB_WORKSPACE/.integration/system"
+              rustup component add rust-src --toolchain "$RUSTUP_TOOLCHAIN"
+              cargo run --locked --manifest-path "$toolchain/Cargo.toml" -- prepare-std --root "$toolchain"
+              cargo run --locked --manifest-path "$toolchain/Cargo.toml" -- build-std --root "$toolchain"
+              cargo build --locked --manifest-path "$system/tests/guest/runtime/platform/Cargo.toml" --features instructions --release --target riscv64gc-unknown-none-elf
+              platform="$system/tests/guest/runtime/platform/target/riscv64gc-unknown-none-elf/release/system-runtime-platform"
+              python3 "$system/tests/guest/loader/run.py" "$platform" --harts 1 --toolchain-receipt "$toolchain/build/std.json" --output "$evidence"
+              ;;
+            native|reject|reject12|system)
               cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
               runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
               if [[ "$SCENARIO" == system ]]; then
@@ -137,6 +157,7 @@ jobs:
               else
                 args=(native --profile "$PROFILE")
                 if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
+                if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
                 "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
               fi
               ;;
@@ -171,6 +192,12 @@ jobs:
             .integration/evidence/*.bin
             .integration/evidence/*.lock
             .integration/evidence/boot/*
+            .integration/evidence/harts-*.log
+            .integration/evidence/harts-*.json
+            .integration/evidence/riscv64gc-unknown-none-elf/release/system-loader-guest
+            .integration/evidence/riscv64gc-unknown-none-elf/release/system-loader-image
+            .integration/toolchain/build/std.json
+            .integration/toolchain/build/std/riscv64gc-unknown-vanllia/release/std-waits
             .integration/evidence/build/*
             .integration/evidence/resolve/*
             .integration/evidence/*-resolve/*

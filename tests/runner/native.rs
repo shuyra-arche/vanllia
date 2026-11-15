@@ -12,7 +12,7 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     let qemu = std::env::var("QEMU_RISCV64").unwrap_or("qemu-system-riscv64".into());
     let firmware = Path::new(&std::env::var("QEMU_OPENSBI")?).canonicalize()?;
     let mut inputs = serde_json::json!({"source":source,"fixture":pin,"profile":profile,
-        "capsule_version":version,"tools":tools(&qemu,&firmware)?, "builds":[]});
+        "capsule_version":version,"deadline_seconds":if profile == "debug" { 240 } else { 120 },"tools":tools(&qemu,&firmware)?, "builds":[]});
     let mut build = Command::new("cargo");
     build
         .args(["build", "--manifest-path"])
@@ -74,9 +74,13 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
         .arg("-drive").arg(format!("file={},format=raw,if=none,id=disk,aio=threads",disk.display()))
         .args(["-device","virtio-blk-pci,drive=disk,disable-legacy=on,iommu_platform=on,ats=off,addr=1,ioeventfd=off,vectors=0"]);
     let boot = root.join("boot");
-    let mut result = process::run(&mut command, &boot, Duration::from_secs(120))?;
+    let mut result = process::run(
+        &mut command,
+        &boot,
+        Duration::from_secs(if profile == "debug" { 240 } else { 120 }),
+    )?;
     let serial = fs::read_to_string(boot.join("serial.log"))?;
-    if version == 10 {
+    if version < 13 {
         result.passed = result.exited()
             && matches!(result.code, Some(0 | 1))
             && [

@@ -109,7 +109,8 @@ pub fn space() -> PendId {
 pub fn boot(at: usize, count: usize) {
     use kernel_api::boot::{args, ledger::Entries};
     assert_eq!(count, args::LEN);
-    assert_eq!(kernel_api::abi::VERSION, 11);
+    assert_eq!(kernel_api::abi::VERSION, 13);
+    crate::stack::init_owner();
     let a = unsafe { core::slice::from_raw_parts(at as *const usize, count) };
     IMAGE.store(a[args::VIEW], Ordering::Relaxed);
     IMAGE_LEN.store(a[args::VIEW_LEN], Ordering::Relaxed);
@@ -252,12 +253,10 @@ pub fn task_info(query: kernel_api::model::unit::UnitQuery) -> kernel_api::model
 }
 pub fn spawn(entry: extern "C" fn() -> !) -> TaskId {
     use kernel_api::model::unit::*;
+    let stack = crate::stack::Stack::new(entry as *const () as usize, &[], 65536);
     let bytes = UnitCreate::Task {
         team: None,
-        entry: VirtAddr::new(entry as *const () as usize),
-        args: VirtAddr::new(0),
-        count: 0,
-        stack: VirtAddr::new(0),
+        start: stack.start,
     }
     .to_bytes();
     let CreatedUnit::Task(task) =
@@ -265,6 +264,7 @@ pub fn spawn(entry: extern "C" fn() -> !) -> TaskId {
     else {
         panic!("Task")
     };
+    crate::stack::retain(task, stack);
     task
 }
 pub fn join(task: TaskId) -> kernel_api::model::unit::UnitInfo {
@@ -272,7 +272,8 @@ pub fn join(task: TaskId) -> kernel_api::model::unit::UnitInfo {
     let end = room::clock() + 3_000_000_000;
     loop {
         let info = task_info(UnitQuery::Target(UnitTarget::Task(task)));
-        if info.state == UnitState::Exited {
+        if info.state == UnitState::Exited && info.reclaimed {
+            crate::stack::retire_joined(task);
             return info;
         }
         assert!(room::clock() < end, "Task {task:?} stalled: {info:?}");

@@ -28,7 +28,7 @@ jobs:
           cargo test --locked --manifest-path platform/riscv/Cargo.toml --no-default-features --target x86_64-unknown-linux-gnu
           cargo test --locked --manifest-path tests/platform/qemu/Cargo.toml --no-default-features --target x86_64-unknown-linux-gnu
           cargo test --locked -p vanllia-build --target x86_64-unknown-linux-gnu
-          python3 tests/memory/versions.py
+          cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
       - name: Build the pinned provider and both boot images
         env:
           RUSTFLAGS: "-Crelocation-model=static -Cforce-frame-pointers=yes -Ccode-model=medium -Dwarnings"

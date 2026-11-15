@@ -159,7 +159,7 @@ extern "C" fn foreign(at: usize, count: usize) -> ! {
     panic!("foreign control unexpectedly granted a local translation");
 }
 fn foreign_control() {
-    let (team, _) = crate::ipc::create_team();
+    let (team, nest) = crate::ipc::create_team();
     let slot = create(1);
     mutate(Action::Occupy {
         slot,
@@ -172,18 +172,17 @@ fn foreign_control() {
     );
     insert(memo, slot);
     let args = [address.get()];
+    let stack = crate::stack::Stack::in_space(nest, foreign as *const () as usize, &args, 65536);
     let bytes = UnitCreate::Task {
         team: Some(team),
-        entry: VirtAddr::new(foreign as *const () as usize),
-        args: VirtAddr::new(args.as_ptr() as usize),
-        count: 1,
-        stack: VirtAddr::new(0),
+        start: stack.start,
     }
     .to_bytes();
     let CreatedUnit::Task(task) = unit::create(VirtAddr::new(bytes.as_ptr() as usize)).unwrap()
     else {
         panic!("Task")
     };
+    crate::stack::retain(task, stack);
     accord(memo.token(), task, pend_info(memo.token()).limits);
     unit::resume(UnitTarget::Task(task)).unwrap();
     assert!(matches!(join(task).exit, Some((ExitCause::Fault, _))));
