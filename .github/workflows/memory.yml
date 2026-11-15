@@ -73,6 +73,7 @@ jobs:
           - { scenario: realtime, profile: debug, harts: "4" }
           - { scenario: realtime, profile: release, harts: "4" }
           - { scenario: system, profile: release, harts: "1+4" }
+          - { scenario: std, profile: release, harts: "1" }
           - { scenario: iommu, profile: release, harts: "1" }
     env:
       QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
@@ -99,18 +100,18 @@ jobs:
           path: .integration/kernel
           persist-credentials: false
       - name: Fetch this repository's published probe fixture
-        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'iommu'
+        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std' && matrix.scenario != 'iommu'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
           path: .integration/fixture
           persist-credentials: false
       - name: Fetch System consumer
-        if: matrix.scenario == 'system'
+        if: matrix.scenario == 'system' || matrix.scenario == 'std'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
-          ref: 2bad2ab523b62aeff0aba87d680c2a0d921c827f
+          ref: 506b8a18d26f910e930699a3ecb0ac93a968f41f
           path: .integration/system
           persist-credentials: false
       - name: Fetch Twine recovery
@@ -118,8 +119,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/twine
-          ref: f835021f6afa80e68186846feb95260717487104
+          ref: 56b2be2017a035eabe140268cb6c195dfb6215d2
           path: .integration/twine
+          persist-credentials: false
+      - name: Fetch Toolchain std provider
+        if: matrix.scenario == 'std'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: shuyra-arche/toolchain
+          ref: badd417973e9b3d63d0cbcbbb8bf678d2894d368
+          path: .integration/toolchain
           persist-credentials: false
       - name: Execute this scenario
         env:
@@ -130,6 +139,16 @@ jobs:
           kernel="$GITHUB_WORKSPACE/.integration/kernel"
           evidence="$GITHUB_WORKSPACE/.integration/evidence"
           case "$SCENARIO" in
+            std)
+              toolchain="$GITHUB_WORKSPACE/.integration/toolchain"
+              system="$GITHUB_WORKSPACE/.integration/system"
+              rustup component add rust-src --toolchain "$RUSTUP_TOOLCHAIN"
+              cargo run --locked --manifest-path "$toolchain/Cargo.toml" -- prepare-std --root "$toolchain"
+              cargo run --locked --manifest-path "$toolchain/Cargo.toml" -- build-std --root "$toolchain"
+              cargo build --locked --manifest-path "$system/tests/guest/runtime/platform/Cargo.toml" --features instructions --release --target riscv64gc-unknown-none-elf
+              platform="$system/tests/guest/runtime/platform/target/riscv64gc-unknown-none-elf/release/system-runtime-platform"
+              python3 "$system/tests/guest/loader/run.py" "$platform" --harts 1 --toolchain-receipt "$toolchain/build/std.json" --output "$evidence"
+              ;;
             native|reject|reject12|system)
               cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
               runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
@@ -173,6 +192,12 @@ jobs:
             .integration/evidence/*.bin
             .integration/evidence/*.lock
             .integration/evidence/boot/*
+            .integration/evidence/harts-*.log
+            .integration/evidence/harts-*.json
+            .integration/evidence/riscv64gc-unknown-none-elf/release/system-loader-guest
+            .integration/evidence/riscv64gc-unknown-none-elf/release/system-loader-image
+            .integration/toolchain/build/std.json
+            .integration/toolchain/build/std/riscv64gc-unknown-vanllia/release/std-waits
             .integration/evidence/build/*
             .integration/evidence/resolve/*
             .integration/evidence/*-resolve/*

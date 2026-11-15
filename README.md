@@ -140,8 +140,8 @@ revisions and artifact identities are recorded separately in the
 Hardware, SMP and the complete assembled System are separate acceptance gates.
 
 The ABI 13 migration selects System's published candidate
-`2bad2ab523b62aeff0aba87d680c2a0d921c827f` in the product gitlink and native
-System/Twine composition. Toolchain's coordinated consumer is PR #19; the
+`506b8a18d26f910e930699a3ecb0ac93a968f41f` in the product gitlink and native
+System/Twine composition. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
 full ordinary std-Unit artifact handoff remains a separate #19/#39 acceptance
 gate. Existing historical Driver/product/device fixtures retain their explicitly
 recorded older dependencies and are not evidence for this candidate.

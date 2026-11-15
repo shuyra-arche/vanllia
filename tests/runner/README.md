@@ -12,15 +12,15 @@ Other Vanllia tooling has not been migrated by this change.
 
 `verify system --kernel PATH --fixture SYSTEM --twine TWINE --output NEW` owns
 the native System/Twine runtime regression. System is pinned to
-`2bad2ab523b62aeff0aba87d680c2a0d921c827f` and Twine to
-`f835021f6afa80e68186846feb95260717487104`; it executes release on 1/4 Harts.
+`506b8a18d26f910e930699a3ecb0ac93a968f41f` and Twine to
+`56b2be2017a035eabe140268cb6c195dfb6215d2`; it executes release on 1/4 Harts.
 Neither command claims complete System or physical hardware acceptance.
 
 ## CI ownership and parallelism
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) has 30 independent
+[integration workflow](../../.github/workflows/memory.yml) has 31 independent
 scenario/profile/Hart jobs, up to eight at once, with `fail-fast: false` and a
 separate evidence artifact per job. Native memory, CPU completion, A/D, Flat,
 IRQ, RT, System/Twine and the standalone IOMMU backend retain their scenarios.
@@ -47,8 +47,8 @@ matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
 claim that unrelated Vanllia or System scripting has been removed.
 
 The ABI 13 composition pins Kernel 5da3ae3e0b971f34a003a31d344ee20593725e53,
-System 2bad2ab523b62aeff0aba87d680c2a0d921c827f and Twine
-f835021f6afa80e68186846feb95260717487104. Kernel #207–#211 land first;
+System 506b8a18d26f910e930699a3ecb0ac93a968f41f and Twine
+56b2be2017a035eabe140268cb6c195dfb6215d2. Kernel #207–#211 land first;
 Toolchain #19/Twine #12/System #24 follow before this composition consumer.
 Native Debug has a bounded 240-second deadline (Release 120); the migrated
 fixture retains actual stack owners and retires them after observed Task
@@ -56,3 +56,9 @@ reclamation. An earlier Debug run completed its contracts but timed out during
 centralized root cleanup. With per-join retirement it completed in 108 seconds.
 The full-marker/normal-exit requirement is unchanged; ABI 10 and 12 are separate
 negative boot tests. No full System + Toolchain product acceptance is claimed.
+
+The separate std composition job checks out immutable System/Toolchain inputs,
+builds the receipt-checked real std-waits ELF and starts it through System's
+production Loader on one qualified Hart. Both the normal Loader invariants and
+std completion/reclamation/mapping-retirement marker are required; exact source
+commits, receipt/ELF/Kernel hashes and native logs are retained.
