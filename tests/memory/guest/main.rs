@@ -3,6 +3,8 @@
 mod acceptance;
 mod fault;
 mod ipc;
+#[allow(dead_code)]
+mod stack;
 mod support;
 mod swap;
 mod virtqueue;
@@ -55,7 +57,7 @@ extern "C" fn run(at: usize, count: usize) -> ! {
     mutate(Action::Allow { maintenance });
     let _ = writeln!(
         Console,
-        "PASS native-memory abi=11 ledger=11 occupy=1 publish=1 retract=1 vacate=1"
+        "PASS native-memory abi=13 ledger=13 occupy=1 publish=1 retract=1 vacate=1"
     );
     fault::run();
     acceptance::run();
@@ -69,7 +71,7 @@ fn version_checks() {
     use kernel_api::abi::{self, error::DispatchFail};
     for slot in [
         (10usize << 48),
-        (12usize << 48),
+        ((abi::VERSION as usize + 1) << 48),
         abi::PREFIX | (2usize << 32),
         abi::PREFIX | (10usize << 32) | 2,
     ] {

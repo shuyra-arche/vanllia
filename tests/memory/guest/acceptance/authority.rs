@@ -159,7 +159,7 @@ extern "C" fn foreign(at: usize, count: usize) -> ! {
     panic!("foreign control unexpectedly granted a local translation");
 }
 fn foreign_control() {
-    let (team, _) = crate::ipc::create_team();
+    let (team, nest) = crate::ipc::create_team();
     let slot = create(1);
     mutate(Action::Occupy {
         slot,
@@ -174,10 +174,8 @@ fn foreign_control() {
     let args = [address.get()];
     let bytes = UnitCreate::Task {
         team: Some(team),
-        entry: VirtAddr::new(foreign as *const () as usize),
-        args: VirtAddr::new(args.as_ptr() as usize),
-        count: 1,
-        stack: VirtAddr::new(0),
+        start: crate::stack::Stack::in_space(nest, foreign as *const () as usize, &args, 65536)
+            .start,
     }
     .to_bytes();
     let CreatedUnit::Task(task) = unit::create(VirtAddr::new(bytes.as_ptr() as usize)).unwrap()

@@ -131,10 +131,7 @@ pub fn run() {
     let args = [remote_va.get(), parent.get()];
     let descriptor = UnitCreate::Task {
         team: Some(team),
-        entry: VirtAddr::new(child as *const () as usize),
-        args: VirtAddr::new(args.as_ptr() as usize),
-        count: 2,
-        stack: VirtAddr::new(0),
+        start: crate::stack::Stack::in_space(nest, child as *const () as usize, &args, 65536).start,
     }
     .to_bytes();
     let CreatedUnit::Task(task) =

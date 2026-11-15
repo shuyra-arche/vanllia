@@ -77,6 +77,6 @@ pub fn run(root: &Path) -> Result<()> {
         fields.next() == Some("160000") && fields.next() == Some(pin),
         "Kernel gitlink does not match providers",
     )?;
-    println!("PASS coordinated-version abi=11 provider={pin}");
+    println!("PASS coordinated-version abi=13 provider={pin}");
     Ok(())
 }

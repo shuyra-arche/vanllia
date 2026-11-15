@@ -76,7 +76,7 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     let boot = root.join("boot");
     let mut result = process::run(&mut command, &boot, Duration::from_secs(120))?;
     let serial = fs::read_to_string(boot.join("serial.log"))?;
-    if version == 10 {
+    if version < 13 {
         result.passed = result.exited()
             && matches!(result.code, Some(0 | 1))
             && [
