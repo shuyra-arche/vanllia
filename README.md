@@ -138,3 +138,10 @@ this exact Vanllia composition. New Host, RV64 and QEMU results, exact source
 revisions and artifact identities are recorded separately in the
 [provider acceptance PR #38](https://github.com/shuyra-arche/vanllia/pull/38).
 Hardware, SMP and the complete assembled System are separate acceptance gates.
+
+The ABI 13 migration selects System's published candidate
+`2bad2ab523b62aeff0aba87d680c2a0d921c827f` in the product gitlink and native
+System/Twine composition. Toolchain's coordinated consumer is PR #19; the
+full ordinary std-Unit artifact handoff remains a separate #19/#39 acceptance
+gate. Existing historical Driver/product/device fixtures retain their explicitly
+recorded older dependencies and are not evidence for this candidate.

@@ -12,7 +12,7 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     let qemu = std::env::var("QEMU_RISCV64").unwrap_or("qemu-system-riscv64".into());
     let firmware = Path::new(&std::env::var("QEMU_OPENSBI")?).canonicalize()?;
     let mut inputs = serde_json::json!({"source":source,"fixture":pin,"profile":profile,
-        "capsule_version":version,"tools":tools(&qemu,&firmware)?, "builds":[]});
+        "capsule_version":version,"deadline_seconds":if profile == "debug" { 240 } else { 120 },"tools":tools(&qemu,&firmware)?, "builds":[]});
     let mut build = Command::new("cargo");
     build
         .args(["build", "--manifest-path"])

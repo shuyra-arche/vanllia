@@ -47,6 +47,7 @@ jobs:
           - { scenario: native, profile: debug, harts: "1" }
           - { scenario: native, profile: release, harts: "1" }
           - { scenario: reject, profile: debug, harts: "1" }
+          - { scenario: reject12, profile: debug, harts: "1" }
           - { scenario: smp, profile: debug, harts: "1" }
           - { scenario: smp, profile: debug, harts: "2" }
           - { scenario: smp, profile: debug, harts: "4" }
@@ -98,7 +99,7 @@ jobs:
           path: .integration/kernel
           persist-credentials: false
       - name: Fetch this repository's published probe fixture
-        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'system' && matrix.scenario != 'iommu'
+        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'iommu'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
@@ -109,7 +110,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
-          ref: 7e4f9dc19bdaf4a0e95ff3b557fdc8959b8547d7
+          ref: 2bad2ab523b62aeff0aba87d680c2a0d921c827f
           path: .integration/system
           persist-credentials: false
       - name: Fetch Twine recovery
@@ -117,7 +118,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/twine
-          ref: 7c75c62d15d173032d99fed54ca7fd00337d787b
+          ref: f835021f6afa80e68186846feb95260717487104
           path: .integration/twine
           persist-credentials: false
       - name: Execute this scenario
@@ -129,7 +130,7 @@ jobs:
           kernel="$GITHUB_WORKSPACE/.integration/kernel"
           evidence="$GITHUB_WORKSPACE/.integration/evidence"
           case "$SCENARIO" in
-            native|reject|system)
+            native|reject|reject12|system)
               cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
               runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
               if [[ "$SCENARIO" == system ]]; then
@@ -137,6 +138,7 @@ jobs:
               else
                 args=(native --profile "$PROFILE")
                 if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
+                if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
                 "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
               fi
               ;;
