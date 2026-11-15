@@ -111,7 +111,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
-          ref: ea9b04782e66c8b9edb028807b79b69710c70cfd
+          ref: ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd
           path: .integration/system
           persist-credentials: false
       - name: Fetch Twine recovery
@@ -119,7 +119,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/twine
-          ref: e547f60b2ed4c3c09c49de3a360210d90d4ad972
+          ref: 932454c07bd2673ac7d6d9612d36182aae71e8b2
           path: .integration/twine
           persist-credentials: false
       - name: Fetch Toolchain std provider
@@ -127,7 +127,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/toolchain
-          ref: d432b18d214ca680536dd4d488f714b7d42cc595
+          ref: 2e507cc6f473aaf0186d6c0a3f75c3a6adc0acd8
           path: .integration/toolchain
           persist-credentials: false
       - name: Execute this scenario

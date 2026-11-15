@@ -140,7 +140,7 @@ revisions and artifact identities are recorded separately in the
 Hardware, SMP and the complete assembled System are separate acceptance gates.
 
 The ABI 13 migration selects System's published candidate
-`ea9b04782e66c8b9edb028807b79b69710c70cfd` in the product gitlink and native
+`ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd` in the product gitlink and native
 System/Twine composition. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
 production Loader -> real std-waits execution/reclamation/retirement is covered
 by the independent composition job. Full product artifact distribution remains

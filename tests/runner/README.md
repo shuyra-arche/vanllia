@@ -12,8 +12,8 @@ Other Vanllia tooling has not been migrated by this change.
 
 `verify system --kernel PATH --fixture SYSTEM --twine TWINE --output NEW` owns
 the native System/Twine runtime regression. System is pinned to
-`ea9b04782e66c8b9edb028807b79b69710c70cfd` and Twine to
-`e547f60b2ed4c3c09c49de3a360210d90d4ad972`; it executes release on 1/4 Harts.
+`ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd` and Twine to
+`932454c07bd2673ac7d6d9612d36182aae71e8b2`; it executes release on 1/4 Harts.
 Neither command claims complete System or physical hardware acceptance.
 
 ## CI ownership and parallelism
@@ -47,8 +47,8 @@ matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
 claim that unrelated Vanllia or System scripting has been removed.
 
 The ABI 13 composition pins Kernel 789ffd19b5359f3de172fb9aad8a61f6a7113a64,
-System ea9b04782e66c8b9edb028807b79b69710c70cfd and Twine
-e547f60b2ed4c3c09c49de3a360210d90d4ad972. Kernel #207–#211 land first;
+System ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd and Twine
+932454c07bd2673ac7d6d9612d36182aae71e8b2. Kernel #207–#211 land first;
 Toolchain #19/Twine #12/System #24 follow before this composition consumer.
 Native Debug has a bounded 240-second deadline (Release 120); the migrated
 fixture retains actual stack owners and retires them after observed Task
