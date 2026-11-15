@@ -12,7 +12,7 @@ Other Vanllia tooling has not been migrated by this change.
 
 `verify system --kernel PATH --fixture SYSTEM --twine TWINE --output NEW` owns
 the native System/Twine runtime regression. System is pinned to
-`ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd` and Twine to
+`470e97f38aa904c3702b665c0d225809b9f0d16e` and Twine to
 `932454c07bd2673ac7d6d9612d36182aae71e8b2`; it executes release on 1/4 Harts.
 Neither command claims complete System or physical hardware acceptance.
 
@@ -47,7 +47,7 @@ matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
 claim that unrelated Vanllia or System scripting has been removed.
 
 The ABI 13 composition pins Kernel 789ffd19b5359f3de172fb9aad8a61f6a7113a64,
-System ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd and Twine
+System 470e97f38aa904c3702b665c0d225809b9f0d16e and Twine
 932454c07bd2673ac7d6d9612d36182aae71e8b2. Kernel #207–#211 land first;
 Toolchain #19/Twine #12/System #24 follow before this composition consumer.
 Native Debug has a bounded 240-second deadline (Release 120); the migrated
@@ -62,3 +62,10 @@ builds the receipt-checked real std-waits ELF and starts it through System's
 production Loader on one qualified Hart. Both the normal Loader invariants and
 std completion/reclamation/mapping-retirement marker are required; exact source
 commits, receipt/ELF/Kernel hashes and native logs are retained.
+
+The final test-provider override is `6fe567ab8b7532772ec34ecc7ab803282d3f30c8`.
+It adds only bounded retries for the RT guest's required-success admissions
+after production provider `789ffd19b5359f3de172fb9aad8a61f6a7113a64`;
+production sources and ABI are identical. Rejected Busy is not admission proof.
+The exact overload rejection and every budget/preemption/retirement assertion
+remain required. Product manifests/locks/gitlink retain the production pin.

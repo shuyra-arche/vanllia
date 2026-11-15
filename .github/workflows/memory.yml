@@ -111,7 +111,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
-          ref: ee5584bb6b6dae24ebd93e8ecd822cdb9d4c8efd
+          ref: 470e97f38aa904c3702b665c0d225809b9f0d16e
           path: .integration/system
           persist-credentials: false
       - name: Fetch Twine recovery
