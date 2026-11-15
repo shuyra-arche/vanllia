@@ -20,6 +20,10 @@ pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<(
         ("platform", "tests/guest/runtime/platform"),
     ] {
         let buildroot = root.join("fixture").join(subdir);
+        fs::copy(
+            buildroot.join("Cargo.lock"),
+            root.join(format!("{name}.original.Cargo.lock")),
+        )?;
         let mut command = Command::new("cargo");
         command
             .args(["build", "--release", "--target", TARGET, "--manifest-path"])
@@ -34,6 +38,9 @@ pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<(
         command
             .current_dir(root.join("provider"))
             .env("RUSTFLAGS", FLAGS);
+        command
+            .env_remove("CARGO_TARGET_DIR")
+            .env_remove("CARGO_ENCODED_RUSTFLAGS");
         for phase in ["resolve", "locked"] {
             if phase == "locked" {
                 command.arg("--locked");
@@ -60,7 +67,7 @@ pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<(
     }
     fs::write(
         root.join("initrd.bin"),
-        capsule::initrd(&fs::read(root.join("guest.elf"))?, 11)?,
+        capsule::system_initrd(&fs::read(root.join("guest.elf"))?)?,
     )?;
     for name in [
         "guest.elf",

@@ -9,6 +9,13 @@ fn word(elf: &[u8], at: usize, width: usize) -> Result<usize> {
     Ok(usize::try_from(u64::from_le_bytes(value))?)
 }
 pub fn initrd(elf: &[u8], version: u8) -> Result<Vec<u8>> {
+    encode(elf, version, false)
+}
+/// The pinned System client fixture materializes all BSS pages in its image.
+pub fn system_initrd(elf: &[u8]) -> Result<Vec<u8>> {
+    encode(elf, 11, true)
+}
+fn encode(elf: &[u8], version: u8, dense: bool) -> Result<Vec<u8>> {
     require(matches!(version, 10 | 11), "unsupported capsule version")?;
     require(
         elf.get(..6) == Some(b"\x7fELF\x02\x01"),
@@ -41,7 +48,11 @@ pub fn initrd(elf: &[u8], version: u8) -> Result<Vec<u8>> {
         )?;
         va.checked_add(memory).ok_or("ELF virtual range overflow")?;
         let pages = memory.div_ceil(4096);
-        let data = size.div_ceil(4096);
+        require(
+            !dense || matches!(flags, 5 | 6),
+            "invalid System load flags",
+        )?;
+        let data = if dense { pages } else { size.div_ceil(4096) };
         let payload = if data == 0 { 0 } else { capsule.len() };
         if data != 0 {
             let bytes = elf

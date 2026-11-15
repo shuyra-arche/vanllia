@@ -88,8 +88,32 @@ fn malformed_elf_never_panics_or_builds_an_image() {
     assert_eq!(image[4107], 11);
     let rejected = capsule::initrd(&elf, 10).unwrap();
     assert_eq!(rejected[4107], 10);
+    elf[68..72].copy_from_slice(&6u32.to_le_bytes());
+    let dense = capsule::system_initrd(&elf).unwrap();
+    assert_eq!(
+        u64::from_le_bytes(dense[4096 + 48..4096 + 56].try_into().unwrap()),
+        1
+    );
+    assert_eq!(dense.len(), 12288);
     elf[96..104].copy_from_slice(&4097u64.to_le_bytes());
     assert!(capsule::initrd(&elf, 11).is_err());
     elf[32..40].copy_from_slice(&u64::MAX.to_le_bytes());
     assert!(capsule::initrd(&elf, 11).is_err());
+}
+#[test]
+fn failed_launch_preserves_a_failed_result() {
+    let root = scratch("spawn");
+    assert!(
+        process::run(
+            &mut Command::new("/nonexistent/vanllia-qemu"),
+            &root,
+            Duration::from_secs(1)
+        )
+        .is_err()
+    );
+    let result: serde_json::Value =
+        serde_json::from_slice(&fs::read(root.join("result.json")).unwrap()).unwrap();
+    assert_eq!(result["status"], "spawn-error");
+    assert_eq!(result["passed"], false);
+    fs::remove_dir_all(root).unwrap();
 }

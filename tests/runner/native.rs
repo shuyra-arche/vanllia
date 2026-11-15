@@ -25,6 +25,9 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     build
         .current_dir(root.join("fixture"))
         .env("RUSTFLAGS", FLAGS);
+    build
+        .env_remove("CARGO_TARGET_DIR")
+        .env_remove("CARGO_ENCODED_RUSTFLAGS");
     // Only provider substitutions may change resolution. Keep the old and
     // resolved graph, then insist the exact resolved graph builds with --locked.
     fs::copy(
@@ -113,7 +116,9 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
         }
         process::accept(&mut result, &serial, &markers);
     }
-    json(&boot.join("result.json"), &result)?;
+    let mut record = serde_json::to_value(&result)?;
+    record["disk_sha256"] = digest(&disk)?.into();
+    json(&boot.join("result.json"), &record)?;
     println!(
         "{} native {profile} v{version}: {}",
         if result.passed { "PASS" } else { "FAIL" },

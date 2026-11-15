@@ -73,7 +73,9 @@ pub fn run(command: &mut Command, directory: &Path, timeout: Duration) -> Result
     Ok(result)
 }
 pub fn build(command: &mut Command, directory: &Path) -> Result<()> {
-    let result = run(command, directory, Duration::from_secs(900))?;
+    let mut result = run(command, directory, Duration::from_secs(900))?;
+    result.passed = result.success();
+    json(&directory.join("result.json"), &result)?;
     require(
         result.success(),
         format!("build failed: {} ({})", directory.display(), result.status),
