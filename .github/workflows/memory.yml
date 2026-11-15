@@ -1,10 +1,10 @@
 name: Native memory
 on:
   pull_request:
-    paths: ["tests/memory/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", ".github/workflows/memory.yml"]
   push:
     branches: [main]
-    paths: ["tests/memory/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", ".github/workflows/memory.yml"]
 permissions:
   contents: read
 concurrency:
@@ -23,25 +23,42 @@ jobs:
       - name: Install image tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi python3
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
           sh /tmp/rustup.sh -y --profile minimal --default-toolchain nightly --component rustfmt --target riscv64gc-unknown-none-elf
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Fetch pinned provider
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: shuyra-arche/kernel
+          ref: 684f479c45dc2d94d405b32b4ffc6334a4233fc9
+          path: .integration/kernel
+          persist-credentials: false
       - name: Check formatting
         run: |
           cargo fmt --manifest-path tests/memory/Cargo.toml --all -- --check
-          python3 tests/memory/versions.py
+          cargo fmt --manifest-path tests/runner/Cargo.toml -- --check
+          cargo test --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture "$PWD"
       - name: Run pinned native image (debug)
-        run: python3 tests/memory/run.py
+        run: cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel .integration/kernel --output .integration/native-debug
       - name: Reject old Capsule in native image
-        run: python3 tests/memory/run.py --no-build --capsule-version 10
+        run: cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel .integration/kernel --output .integration/native-reject --capsule-version 10
       - name: Run pinned native image (release)
-        run: python3 tests/memory/run.py --profile release
+        run: cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel .integration/kernel --output .integration/native-release --profile release
       - name: Preserve images and serial evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: native-memory
-          path: tests/memory/target/evidence/
+          include-hidden-files: true
+          path: |
+            .integration/native-*/inputs.json
+            .integration/native-*/*.elf
+            .integration/native-*/*.bin
+            .integration/native-*/*.lock
+            .integration/native-*/boot/*
+            .integration/native-*/build/*
+            .integration/native-*/resolve/*
           if-no-files-found: error

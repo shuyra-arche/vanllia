@@ -24,21 +24,26 @@ QEMU 10.0.x and OpenSBI with DBCN:
 ```sh
 export QEMU_RISCV64=qemu-system-riscv64
 export QEMU_OPENSBI=/usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
-python3 tests/memory/run.py
-python3 tests/memory/run.py --no-build --capsule-version 10
-python3 tests/memory/run.py --profile release
+cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-debug
+cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-reject --capsule-version 10
+cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-release --profile release
 ```
 
-The default build uses `--locked` and published exact provider pins. For provider
-development only, `--kernel /absolute/path/to/kernel` explicitly patches all
-three provider packages; `inputs.json` records that override. Do not commit a
-lockfile generated with a local override as the pinned consumer lockfile.
+The host-only [runner](../runner/README.md) archives the committed fixture and
+provider revisions into a fresh output directory. Provider path substitution is
+explicit: original and resolved locks and both build commands are retained, then
+the resolved graph must build with `--locked`. It never edits the input checkouts.
 
-`target/evidence/{debug,release}` retains the Capsule, disk, command, QEMU version,
-ELF/firmware/image SHA-256, serial, stderr and elapsed/exit result. The negative
-Capsule run has its own `reject-v10` directory. Failure and timeout preserve
-evidence. Success requires every scenario marker and final controller shutdown.
-Host timeouts bound the whole image; guest deadlines bound polling and joins.
+Each output retains the Capsule, ELF files, firmware and source identities,
+SHA-256 hashes, tool versions, commands, build output and serial/stderr logs.
+A deadline, signal, failed exit or incomplete marker set fails acceptance.
+The ABI 10 Capsule rejection is a negative case of the current ABI 11 boot
+contract, not a retained ABI 10 guest. It requires an ordinary process exit and
+all boot-rejection diagnostics, with no native guest start.
+
+Release reobserves only `Rejected(Stale)` before assigning a fresh request;
+accepted Pending/Failed requests are never retried as new mutations. This fix
+now belongs to the fixture rather than a consumer's source rewriting script.
 
 ## Scenarios
 

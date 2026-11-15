@@ -277,20 +277,34 @@ pub fn run() {
 }
 
 fn release(memo: MemoPosition) {
-    let Snapshot::Reservation(s) = inspect(Query::Reservation {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
-    }) else {
-        panic!("Reservation")
-    };
-    mutate(Action::Release {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
-        expected: s.version,
-    });
+    let deadline = room::clock() + 3_000_000_000;
+    loop {
+        let Snapshot::Reservation(s) = inspect(Query::Reservation {
+            token: memo.token(),
+            nest: memo.nest(),
+            reservation: memo.reservation(),
+        }) else {
+            panic!("Reservation")
+        };
+        let Response::Reply(reply) = call(Action::Release {
+            token: memo.token(),
+            nest: memo.nest(),
+            reservation: memo.reservation(),
+            expected: s.version,
+        }) else {
+            panic!("Release reply")
+        };
+        match reply.outcome() {
+            Outcome::Committed(_) => return,
+            Outcome::Rejected(Failure::Stale) => {
+                assert!(room::clock() < deadline, "Release version did not settle");
+                room::yield_();
+            }
+            other => panic!("Release: {other:?}"),
+        }
+    }
 }
+
 #[derive(Clone, Copy, Debug)]
 enum Close {
     Revoke,
