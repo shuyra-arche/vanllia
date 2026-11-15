@@ -26,7 +26,7 @@ path = "tests/second_package.rs"
 # in-repo composition or a repository layout.
 
 [dependencies]
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "63f45109fae68f9f1f02befa3722edd78a7b01a6" }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "12cb1b5ae7fcd57b46cc0103a0f30ea29631724e" }
 # Host-safe declaration/type package: no execution, no server, no client, no composition.
 env = { git = "https://github.com/shuyra-arche/env.git", rev = "d3000253cd5d13d466e91fafd4dbb27a5ec5aaae" }
 unit = { git = "https://github.com/shuyra-arche/unit.git", rev = "90396f0fda376e0693fb1b9553aa21864d241057" }
