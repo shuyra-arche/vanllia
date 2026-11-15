@@ -81,7 +81,7 @@ jobs:
       - name: Install native image tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential python3 qemu-system-riscv opensbi
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
           sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" --target riscv64gc-unknown-none-elf
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
