@@ -1,7 +1,7 @@
 //! Cross-repository System/Twine acceptance belongs to the composition owner.
 use kernel_verification::{process, *};
 use std::{fs, path::Path, process::Command, time::Duration};
-const SYSTEM: &str = "91dd6c5d43e00b152855eff0915212eb08a62664";
+const SYSTEM: &str = "c6d57dbd0ff4cc8503a4049b42c8f08df0655bdf";
 const TWINE: &str = "e547f60b2ed4c3c09c49de3a360210d90d4ad972";
 pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<()> {
     require(revision(fixture)? == SYSTEM, "unreviewed System fixture")?;
