@@ -164,17 +164,17 @@ pub fn reserve_pages(
     let Snapshot::Nest(s) = inspect(Query::Nest { token, nest }) else {
         panic!("Nest")
     };
-    let Value::Reservation {
+    let Value::Span {
         token,
         nest,
-        reservation,
+        span,
         address,
         ..
-    } = mutate(Action::Reserve {
+    } = mutate(Action::CreateSpan {
         token,
         nest,
         expected: s.version,
-        reservation: ReserveRequest {
+        request: CreateSpanRequest {
             placement,
             count: PageCount::new(count).unwrap(),
             level: CellLevel::new(0).unwrap(),
@@ -185,7 +185,7 @@ pub fn reserve_pages(
         panic!("Reservation")
     };
     (
-        MemoPosition::new(token, nest, reservation, 0).unwrap(),
+        MemoPosition::new(token, nest, span, 0).unwrap(),
         address,
     )
 }

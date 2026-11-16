@@ -82,7 +82,7 @@ pub fn run() {
         .call(Action::FaultRoute {
             token,
             nest: memo.nest(),
-            reservation: memo.reservation(),
+            span: memo.span(),
             expected: reservation(memo).version,
             epoch: FaultEpoch::new(1).unwrap(),
             route: Some(FaultRoute {
@@ -108,7 +108,7 @@ pub fn run() {
     rejected(worker.call(Action::Inspect(Query::FaultEvent {
         token,
         nest: memo.nest(),
-        reservation: memo.reservation(),
+        span: memo.span(),
         epoch: old,
         after: 0,
         wait: kernel_api::model::wait::Wait::Poll,
@@ -136,13 +136,13 @@ extern "C" fn foreign(at: usize, count: usize) -> ! {
     let p = find(|p| {
         matches!(
             p.limits.scope,
-            PendScope::Nest(NestScope::Reservation { .. })
+            PendScope::Nest(NestScope::Span { .. })
         )
     });
     let Target::Nest(nest) = p.target else {
         panic!("Nest")
     };
-    let PendScope::Nest(NestScope::Reservation { id, .. }) = p.limits.scope else {
+    let PendScope::Nest(NestScope::Span { id, .. }) = p.limits.scope else {
         panic!("Reservation")
     };
     let memo = MemoPosition::new(p.token, nest, id, 0).unwrap();

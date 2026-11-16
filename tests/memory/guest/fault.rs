@@ -29,24 +29,24 @@ extern "C" fn reader() -> ! {
     unit::exit(42, 0, VirtAddr::new(0), 0, ExitScope::Task)
 }
 pub fn configure(memo: MemoPosition, route: Option<FaultRoute>) -> FaultEpoch {
-    let Snapshot::Reservation(status) = inspect(Query::Reservation {
+    let Snapshot::Span(status) = inspect(Query::Span {
         token: memo.token(),
         nest: memo.nest(),
-        reservation: memo.reservation(),
+        span: memo.span(),
     }) else {
         panic!("Reservation")
     };
     let Snapshot::FaultRoute(fault) = inspect(Query::FaultRoute {
         token: memo.token(),
         nest: memo.nest(),
-        reservation: memo.reservation(),
+        span: memo.span(),
     }) else {
         panic!("FaultRoute")
     };
     let Value::FaultRoute { epoch, .. } = mutate(Action::FaultRoute {
         token: memo.token(),
         nest: memo.nest(),
-        reservation: memo.reservation(),
+        span: memo.span(),
         expected: status.version,
         epoch: fault.epoch,
         route,
@@ -59,7 +59,7 @@ pub fn event(memo: MemoPosition, epoch: FaultEpoch, wait: Wait) -> FaultEvent {
     let Snapshot::FaultEvent(event) = inspect(Query::FaultEvent {
         token: memo.token(),
         nest: memo.nest(),
-        reservation: memo.reservation(),
+        span: memo.span(),
         epoch,
         after: 0,
         wait,

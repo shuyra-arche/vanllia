@@ -279,17 +279,17 @@ pub fn run() {
 fn release(memo: MemoPosition) {
     let deadline = room::clock() + 3_000_000_000;
     loop {
-        let Snapshot::Reservation(s) = inspect(Query::Reservation {
+        let Snapshot::Span(s) = inspect(Query::Span {
             token: memo.token(),
             nest: memo.nest(),
-            reservation: memo.reservation(),
+            span: memo.span(),
         }) else {
             panic!("Reservation")
         };
-        let Response::Reply(reply) = call(Action::Release {
+        let Response::Reply(reply) = call(Action::DeleteSpan {
             token: memo.token(),
             nest: memo.nest(),
-            reservation: memo.reservation(),
+            span: memo.span(),
             expected: s.version,
         }) else {
             panic!("Release reply")
@@ -341,7 +341,7 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
         }
         .to_bytes();
         let branch = pend::accord(VirtAddr::new(bytes.as_ptr() as usize)).unwrap();
-        let local = MemoPosition::new(branch, device.nest(), device.reservation(), 0).unwrap();
+        let local = MemoPosition::new(branch, device.nest(), device.span(), 0).unwrap();
         let Response::Reply(r) = call(Action::Publish {
             memo: local,
             expected: memo_status(device).generation,
@@ -371,17 +371,17 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
                 let _ = pend::return_(branch);
             }
             Close::Release => {
-                let Snapshot::Reservation(s) = inspect(Query::Reservation {
+                let Snapshot::Span(s) = inspect(Query::Span {
                     token: device.token(),
                     nest: device.nest(),
-                    reservation: device.reservation(),
+                    span: device.span(),
                 }) else {
                     panic!("Reservation")
                 };
-                let Response::Reply(r) = call(Action::Release {
+                let Response::Reply(r) = call(Action::DeleteSpan {
                     token: device.token(),
                     nest: device.nest(),
-                    reservation: device.reservation(),
+                    span: device.span(),
                     expected: s.version,
                 }) else {
                     panic!("Release")

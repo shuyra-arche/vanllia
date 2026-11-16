@@ -66,7 +66,7 @@ impl Stack {
         for page in 0..pages {
             let slot = SlotPosition::new(flat.token(), flat.flat(), page).unwrap();
             let target =
-                MemoPosition::new(memo.token(), memo.nest(), memo.reservation(), page + 1).unwrap();
+                MemoPosition::new(memo.token(), memo.nest(), memo.span(), page + 1).unwrap();
             change(|| Action::Occupy {
                 slot,
                 expected: slot_status(slot).version,
@@ -86,7 +86,7 @@ impl Stack {
             });
             if let Some((first, _)) = local {
                 let target =
-                    MemoPosition::new(first.token(), first.nest(), first.reservation(), page)
+                    MemoPosition::new(first.token(), first.nest(), first.span(), page)
                         .unwrap();
                 change(|| Action::Insert {
                     target,
@@ -129,17 +129,17 @@ impl Stack {
     pub fn retire(self) {
         for memo in [Some(self.memo), self.local].into_iter().flatten() {
             change(|| {
-                let Snapshot::Reservation(status) = inspect(Query::Reservation {
+                let Snapshot::Span(status) = inspect(Query::Span {
                     token: memo.token(),
                     nest: memo.nest(),
-                    reservation: memo.reservation(),
+                    span: memo.span(),
                 }) else {
                     panic!("reservation")
                 };
-                Action::Release {
+                Action::DeleteSpan {
                     token: memo.token(),
                     nest: memo.nest(),
-                    reservation: memo.reservation(),
+                    span: memo.span(),
                     expected: status.version,
                 }
             });
