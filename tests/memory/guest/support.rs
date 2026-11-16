@@ -109,7 +109,7 @@ pub fn space() -> PendId {
 pub fn boot(at: usize, count: usize) {
     use kernel_api::boot::{args, ledger::Entries};
     assert_eq!(count, args::LEN);
-    assert_eq!(kernel_api::abi::VERSION, 13);
+    assert_eq!(kernel_api::abi::VERSION, 14);
     crate::stack::init_owner();
     let a = unsafe { core::slice::from_raw_parts(at as *const usize, count) };
     IMAGE.store(a[args::VIEW], Ordering::Relaxed);
