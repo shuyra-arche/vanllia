@@ -95,13 +95,13 @@ image under `tests/platform/qemu` reuses the production boot path.
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
 The build library, platform images and native memory API/Client/Server
-composition pin Kernel `789ffd19b5359f3de172fb9aad8a61f6a7113a64`, the
+composition pin Kernel `690cdec70c3579545da1fffe6e9638a9e4bd66ac`, the
 coordinated User startup candidate for Kernel #160/#206/#188.
 It retains the native Nest creation repair from [Kernel #175](https://github.com/shuyra-arche/kernel/pull/175)
 and managed DTB/initrd sources from #180, adding bounded all-Hart CPU completion.
 Executable SMP requires explicit all-Hart qualification; this pin does not qualify a platform or
 claim complete System acceptance.
-ABI/Ledger are 13/13 and Capsule format 2. Merge the Kernel provider before
+ABI/Ledger are 14/14 and Capsule format 2. Merge the Kernel provider before
 this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
 the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
 Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
@@ -112,7 +112,7 @@ tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`. Its native debug
 acceptance exposed a Unit commit-lock assertion during Nest creation. The
 product deliberately selects the later exact repair commit; it does not
 relabel or modify Gamma, and no new release tag is claimed for this pin.
-The build library writes capsule v2 with ABI 13;
+The build library writes capsule v2 with ABI 14;
 the Kernel parser validates generated
 capsules and retained artifacts before execution. Older ABI capsules require a
 rebuild even when receipt hashes match. The historical build-library declaration
