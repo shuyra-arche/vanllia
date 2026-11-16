@@ -103,7 +103,7 @@ jobs:
         if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std' && matrix.scenario != 'iommu'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
           path: .integration/fixture
           persist-credentials: false
       - name: Fetch System consumer
@@ -272,7 +272,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
           path: .integration/fixture
           persist-credentials: false
       - name: Compare paired boots
