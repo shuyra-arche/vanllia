@@ -86,8 +86,7 @@ impl Stack {
             });
             if let Some((first, _)) = local {
                 let target =
-                    MemoPosition::new(first.token(), first.nest(), first.span(), page)
-                        .unwrap();
+                    MemoPosition::new(first.token(), first.nest(), first.span(), page).unwrap();
                 change(|| Action::Insert {
                     target,
                     expected: memo_status(target).generation,
