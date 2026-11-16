@@ -46,7 +46,7 @@ verification first, then pin this composition consumer and run the assembled
 matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
 claim that unrelated Vanllia or System scripting has been removed.
 
-The ABI 14 composition pins Kernel 2b35364bd0ff68217260220c9dfe9fd52c8b4d55,
+The ABI 14 composition pins Kernel e2dc8276da591e78f2d374262c888bbc34786071,
 System 470e97f38aa904c3702b665c0d225809b9f0d16e and Twine
 932454c07bd2673ac7d6d9612d36182aae71e8b2. Kernel #207–#211 land first;
 Toolchain #19/Twine #12/System #24 follow before this composition consumer.
@@ -63,9 +63,9 @@ production Loader on one qualified Hart. Both the normal Loader invariants and
 std completion/reclamation/mapping-retirement marker are required; exact source
 commits, receipt/ELF/Kernel hashes and native logs are retained.
 
-The selected test provider `2b35364bd0ff68217260220c9dfe9fd52c8b4d55` includes the RT admission retry `6fe567ab8b7532772ec34ecc7ab803282d3f30c8`.
+The selected test provider `e2dc8276da591e78f2d374262c888bbc34786071` includes the RT admission retry `6fe567ab8b7532772ec34ecc7ab803282d3f30c8`.
 It adds only bounded retries for the RT guest's required-success admissions
-after production provider `2b35364bd0ff68217260220c9dfe9fd52c8b4d55`;
+after production provider `e2dc8276da591e78f2d374262c888bbc34786071`;
 production sources and ABI are identical. Rejected Busy is not admission proof.
 The exact overload rejection and every budget/preemption/retirement assertion
 remain required. Product manifests/locks/gitlink retain the production pin.
