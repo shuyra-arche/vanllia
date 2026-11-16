@@ -204,7 +204,7 @@ checksum = "3bd1574e617a9a6c1f8f8181bd7e841e1f20e4277607ef28945765188d6284d4"
 [[package]]
 name = "kernel-verification"
 version = "0.1.0"
-source = "git+https://github.com/shuyra-arche/kernel.git?rev=e2dc8276da591e78f2d374262c888bbc34786071#e2dc8276da591e78f2d374262c888bbc34786071"
+source = "git+https://github.com/shuyra-arche/kernel.git?rev=14b2714811e84031ec1fcd0fb94c59db48437f86#14b2714811e84031ec1fcd0fb94c59db48437f86"
 dependencies = [
  "clap",
  "libc",
