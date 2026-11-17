@@ -56,7 +56,10 @@ fn run_suite(
     if lock.is_file() {
         fs::copy(&lock, root.join("original.Cargo.lock"))?;
     } else {
-        require(candidate, "accepted native suite requires its committed Cargo.lock")?;
+        require(
+            candidate,
+            "accepted native suite requires its committed Cargo.lock",
+        )?;
         // During the initial candidate migration, Cargo generates the resolved
         // lock. The final PR must commit it before this becomes a release gate.
         inputs["initial_lock_missing"] = true.into();
@@ -111,13 +114,31 @@ fn run_suite(
     json(&root.join("inputs.json"), &inputs)?;
     let mut command = Command::new(qemu);
     command
-        .args(["-accel", "tcg,thread=single", "-machine",
-            if candidate { "virt" } else { "virt,iommu-sys=on" },
-            "-cpu", "rv64", "-smp", "1", "-m", "128M",
-            "-nographic", "-monitor", "none", "-bios"])
+        .args([
+            "-accel",
+            "tcg,thread=single",
+            "-machine",
+            if candidate {
+                "virt"
+            } else {
+                "virt,iommu-sys=on"
+            },
+            "-cpu",
+            "rv64",
+            "-smp",
+            "1",
+            "-m",
+            "128M",
+            "-nographic",
+            "-monitor",
+            "none",
+            "-bios",
+        ])
         .arg(firmware)
-        .arg("-kernel").arg(root.join("platform.elf"))
-        .arg("-initrd").arg(image);
+        .arg("-kernel")
+        .arg(root.join("platform.elf"))
+        .arg("-initrd")
+        .arg(image);
     if candidate {
         command.args(["-nic", "none"]);
     } else {
@@ -139,7 +160,8 @@ fn run_suite(
             &serial,
             &[
                 "START native-memory14 abi=14 ledger=14".to_owned(),
-                "PASS memory-abi14 flat=created occupied=1 nest=reserved memo=published rw=1".to_owned(),
+                "PASS memory-abi14 flat=created occupied=1 nest=reserved memo=published rw=1"
+                    .to_owned(),
                 "task: all tasks exited".to_owned(),
             ],
         );

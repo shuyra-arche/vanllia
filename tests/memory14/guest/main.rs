@@ -7,12 +7,12 @@ use core::{
 };
 use kernel_api::{
     abi::memory::{self, Outcome, RequestId, Snapshot, Source, Value, flat, nest},
-    address::{PageCount, VirtAddr, PAGE_SIZE},
+    address::{PAGE_SIZE, PageCount, VirtAddr},
     model::{
         cell::{CellLevel, Placement},
-        flat::{SlotPosition, SlotPhase},
+        flat::{SlotPhase, SlotPosition},
         identity::PendId,
-        nest::{CreateSpanRequest, MemoPosition, NestKind, MemoPhase},
+        nest::{CreateSpanRequest, MemoPhase, MemoPosition, NestKind},
         pend::{NestScope, PendInfo, PendScope, Target},
         unit::ExitScope,
     },
@@ -64,8 +64,8 @@ fn number() -> RequestId {
 fn flat_mutate(action: flat::Action) -> Value {
     let id = number();
     let call = flat::Call::new(Some(id), action).expect("valid Flat action");
-    let Response::Reply(mut reply) = kernel_client::memory::flat::invoke(call)
-        .expect("Flat delivery")
+    let Response::Reply(mut reply) =
+        kernel_client::memory::flat::invoke(call).expect("Flat delivery")
     else {
         panic!("Flat mutation returned an observation")
     };
@@ -76,10 +76,10 @@ fn flat_mutate(action: flat::Action) -> Value {
             Outcome::Pending(_) => {
                 assert!(room::clock() < deadline, "Flat result did not settle");
                 room::yield_();
-                let query = flat::Call::new(None, flat::Action::InspectResult { request: id })
-                    .unwrap();
-                let Response::Reply(next) = kernel_client::memory::flat::invoke(query)
-                    .expect("Flat retained delivery")
+                let query =
+                    flat::Call::new(None, flat::Action::InspectResult { request: id }).unwrap();
+                let Response::Reply(next) =
+                    kernel_client::memory::flat::invoke(query).expect("Flat retained delivery")
                 else {
                     panic!("Flat result inspection returned an observation")
                 };
@@ -93,8 +93,8 @@ fn flat_mutate(action: flat::Action) -> Value {
 fn nest_mutate(action: nest::Action) -> Value {
     let id = number();
     let call = nest::Call::new(Some(id), action).expect("valid Nest action");
-    let Response::Reply(mut reply) = kernel_client::memory::nest::invoke(call)
-        .expect("Nest delivery")
+    let Response::Reply(mut reply) =
+        kernel_client::memory::nest::invoke(call).expect("Nest delivery")
     else {
         panic!("Nest mutation returned an observation")
     };
@@ -105,10 +105,10 @@ fn nest_mutate(action: nest::Action) -> Value {
             Outcome::Pending(_) => {
                 assert!(room::clock() < deadline, "Nest result did not settle");
                 room::yield_();
-                let query = nest::Call::new(None, nest::Action::InspectResult { request: id })
-                    .unwrap();
-                let Response::Reply(next) = kernel_client::memory::nest::invoke(query)
-                    .expect("Nest retained delivery")
+                let query =
+                    nest::Call::new(None, nest::Action::InspectResult { request: id }).unwrap();
+                let Response::Reply(next) =
+                    kernel_client::memory::nest::invoke(query).expect("Nest retained delivery")
                 else {
                     panic!("Nest result inspection returned an observation")
                 };
@@ -121,8 +121,8 @@ fn nest_mutate(action: nest::Action) -> Value {
 
 fn flat_inspect(query: flat::Query) -> Snapshot {
     let call = flat::Call::new(None, flat::Action::Inspect(query)).unwrap();
-    let Response::Observation(observation) = kernel_client::memory::flat::invoke(call)
-        .expect("Flat observation delivery")
+    let Response::Observation(observation) =
+        kernel_client::memory::flat::invoke(call).expect("Flat observation delivery")
     else {
         panic!("Flat inspect returned a mutation")
     };
@@ -131,8 +131,8 @@ fn flat_inspect(query: flat::Query) -> Snapshot {
 
 fn nest_inspect(query: nest::Query) -> Snapshot {
     let call = nest::Call::new(None, nest::Action::Inspect(query)).unwrap();
-    let Response::Observation(observation) = kernel_client::memory::nest::invoke(call)
-        .expect("Nest observation delivery")
+    let Response::Observation(observation) =
+        kernel_client::memory::nest::invoke(call).expect("Nest observation delivery")
     else {
         panic!("Nest inspect returned a mutation")
     };
