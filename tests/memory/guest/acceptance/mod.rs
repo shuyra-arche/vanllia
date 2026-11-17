@@ -42,10 +42,10 @@ fn narrow(token: PendId, limits: Limits) {
         kernel_client::call::room::yield_();
     }
 }
-fn at(memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
+fn at(_memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
     MemoPosition::new(token, page).unwrap()
 }
-fn reservation(memo: MemoPosition) -> SpanStatus {
+fn span_status(memo: MemoPosition) -> SpanStatus {
     let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
         panic!("Span")
     };
@@ -54,7 +54,7 @@ fn reservation(memo: MemoPosition) -> SpanStatus {
 fn release(memo: MemoPosition) -> Action {
     Action::DeleteSpan {
         range: memo.range(),
-        expected: reservation(memo).version,
+        expected: span_status(memo).version,
     }
 }
 #[track_caller]

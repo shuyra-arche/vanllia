@@ -35,11 +35,11 @@ pub fn run() {
         rejected(worker.call(Action::Inspect(Query::Memo(own))));
         rejected(worker.call(Action::DeleteSpan {
             range: token,
-            expected: reservation(own).version,
+            expected: span_status(own).version,
         }));
         rejected(worker.call(Action::FaultRoute {
             range: token,
-            expected: reservation(own).version,
+            expected: span_status(own).version,
             epoch: FaultEpoch::new(1).unwrap(),
             route: None,
         }));
@@ -56,8 +56,8 @@ pub fn run() {
             flat: flat.flat(),
             expected: flat_info.version,
         }));
-        assert_eq!(reservation(own).count, 3);
-        assert_eq!(reservation(other).phase, SpanPhase::Open);
+        assert_eq!(span_status(own).count, 3);
+        assert_eq!(span_status(other).phase, SpanPhase::Open);
         worker.stop();
     }
     let token = derive(
@@ -81,10 +81,10 @@ pub fn run() {
         },
     );
     let narrowed = at(a, token, 1);
-    assert_eq!(reservation(narrowed).offset, 1);
+    assert_eq!(span_status(narrowed).offset, 1);
     assert_eq!(memo_status(narrowed).coordinate, 1);
     rejected(try_call(Action::Inspect(Query::Memo(at(a, token, 0)))));
-    assert_eq!(reservation(narrowed).address, reservation(a).address);
+    assert_eq!(span_status(narrowed).address, span_status(a).address);
     let flat_child = derive(flat.token(), pend_info(flat.token()).limits);
     narrow(
         flat_child,
@@ -191,12 +191,12 @@ fn aba() {
         let Snapshot::Memo(s) = o.snapshot() else {
             panic!("Memo")
         };
-        assert_eq!(s.reservation, span_identity(old));
-        assert_ne!(s.reservation, span_identity(new));
+        assert_eq!(s.range, Some(old.range()));
+        assert_ne!(s.range, Some(new.range()));
     }
-    rejected(try_call(Action::Inspect(Query::Memo(
-        MemoPosition::new(new.range(), 0).unwrap(),
-    ))));
+    // The new position contains no caller-supplied SpanId. Its Pend binds the
+    // replacement, while the old Pend remains tied to the retired instance.
+    assert_eq!(memo_status(new).range, Some(new.range()));
     rejected(try_call(old_release));
     rejected(try_call(Action::Publish {
         memo: old,

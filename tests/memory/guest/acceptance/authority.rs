@@ -81,7 +81,7 @@ pub fn run() {
     let response = worker
         .call(Action::FaultRoute {
             range: token,
-            expected: reservation(memo).version,
+            expected: span_status(memo).version,
             epoch: FaultEpoch::new(1).unwrap(),
             route: Some(FaultRoute {
                 sign: child_sign,
@@ -135,10 +135,10 @@ extern "C" fn foreign(at: usize, count: usize) -> ! {
             PendScope::Nest(NestScope::Span { .. })
         )
     });
-    let Target::Nest(nest) = p.target else {
+    let Target::Nest(_) = p.target else {
         panic!("Nest")
     };
-    let PendScope::Nest(NestScope::Span { id, .. }) = p.limits.scope else {
+    let PendScope::Nest(NestScope::Span { .. }) = p.limits.scope else {
         panic!("Span")
     };
     let memo = MemoPosition::new(p.token, 0).unwrap();
