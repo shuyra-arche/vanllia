@@ -47,12 +47,16 @@ jobs:
           import re
           pin = os.environ["PROVIDER_SHA"]
           assert re.fullmatch(r"[0-9a-f]{40}", pin)
-          path = Path("tests/memory/Cargo.toml")
-          source = path.read_text()
           previous = "789ffd19b5359f3de172fb9aad8a61f6a7113a64"
-          assert source.count(previous) == 3
-          path.write_text(source.replace(previous, pin))
-          print(f"Guest candidate Kernel/API/Client = {pin}")
+          for name, expected in [
+              ("tests/memory/Cargo.toml", 3),
+              ("platform/riscv/Cargo.toml", 2),
+          ]:
+              path = Path(name)
+              source = path.read_text()
+              assert source.count(previous) == expected, (name, source.count(previous))
+              path.write_text(source.replace(previous, pin))
+              print(f"Candidate {name} = {pin}")
           PY
       - name: Check Native guest against ABI 14
         run: |
