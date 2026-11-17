@@ -60,6 +60,19 @@ jobs:
             --fixture "$GITHUB_WORKSPACE" \
             --output "$GITHUB_WORKSPACE/.integration/native-abi14" \
             --capsule-version 14
+      - name: Report build or QEMU failure
+        if: failure()
+        run: |
+          for step in resolve build boot; do
+            dir=".integration/native-abi14/$step"
+            for file in "$dir/stderr.log" "$dir/serial.log" "$dir/result.json"; do
+              if [[ -f "$file" ]]; then
+                echo "::group::$file"
+                tail -n 160 "$file"
+                echo "::endgroup::"
+              fi
+            done
+          done
       - name: Preserve candidate evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -67,4 +80,9 @@ jobs:
           name: native-abi14-debug
           if-no-files-found: warn
           include-hidden-files: true
-          path: .integration/native-abi14/
+          path: |
+            .integration/native-abi14/inputs.json
+            .integration/native-abi14/resolve/*
+            .integration/native-abi14/build/*
+            .integration/native-abi14/boot/*
+            .integration/native-abi14/Cargo.lock

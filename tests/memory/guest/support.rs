@@ -164,11 +164,7 @@ pub fn reserve_pages(
     let Snapshot::Nest(s) = inspect(Query::Nest { token, nest }) else {
         panic!("Nest")
     };
-    let Value::Span {
-        range,
-        address,
-        ..
-    } = mutate(Action::CreateSpan {
+    let Value::Span { range, address, .. } = mutate(Action::CreateSpan {
         token,
         nest,
         expected: s.version,
@@ -178,8 +174,7 @@ pub fn reserve_pages(
             level: CellLevel::new(0).unwrap(),
             access,
         },
-    })
-    else {
+    }) else {
         panic!("Span")
     };
     (MemoPosition::new(range, 0).unwrap(), address)

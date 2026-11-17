@@ -129,12 +129,7 @@ pub fn run() {
 extern "C" fn foreign(at: usize, count: usize) -> ! {
     assert_eq!(count, 1);
     let address = unsafe { *(at as *const usize) };
-    let p = find(|p| {
-        matches!(
-            p.limits.scope,
-            PendScope::Nest(NestScope::Span { .. })
-        )
-    });
+    let p = find(|p| matches!(p.limits.scope, PendScope::Nest(NestScope::Span { .. })));
     let Target::Nest(_) = p.target else {
         panic!("Nest")
     };

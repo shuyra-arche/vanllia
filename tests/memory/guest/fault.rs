@@ -29,10 +29,14 @@ extern "C" fn reader() -> ! {
     unit::exit(42, 0, VirtAddr::new(0), 0, ExitScope::Task)
 }
 pub fn configure(memo: MemoPosition, route: Option<FaultRoute>) -> FaultEpoch {
-    let Snapshot::Span(status) = inspect(Query::Span { range: memo.range() }) else {
+    let Snapshot::Span(status) = inspect(Query::Span {
+        range: memo.range(),
+    }) else {
         panic!("Span")
     };
-    let Snapshot::FaultRoute(fault) = inspect(Query::FaultRoute { range: memo.range() }) else {
+    let Snapshot::FaultRoute(fault) = inspect(Query::FaultRoute {
+        range: memo.range(),
+    }) else {
         panic!("FaultRoute")
     };
     let Value::FaultRoute { epoch, .. } = mutate(Action::FaultRoute {

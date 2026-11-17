@@ -279,7 +279,9 @@ pub fn run() {
 fn release(memo: MemoPosition) {
     let deadline = room::clock() + 3_000_000_000;
     loop {
-        let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
+        let Snapshot::Span(s) = inspect(Query::Span {
+            range: memo.range(),
+        }) else {
             panic!("Span")
         };
         let Response::Reply(reply) = call(Action::DeleteSpan {
@@ -365,7 +367,9 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
                 let _ = pend::return_(branch);
             }
             Close::Release => {
-                let Snapshot::Span(s) = inspect(Query::Span { range: device.range() }) else {
+                let Snapshot::Span(s) = inspect(Query::Span {
+                    range: device.range(),
+                }) else {
                     panic!("Span")
                 };
                 let Response::Reply(r) = call(Action::DeleteSpan {

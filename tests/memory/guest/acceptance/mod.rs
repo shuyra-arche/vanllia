@@ -46,7 +46,9 @@ fn at(_memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
     MemoPosition::new(token, page).unwrap()
 }
 fn span_status(memo: MemoPosition) -> SpanStatus {
-    let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
+    let Snapshot::Span(s) = inspect(Query::Span {
+        range: memo.range(),
+    }) else {
         panic!("Span")
     };
     s
