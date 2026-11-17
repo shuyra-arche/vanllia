@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/kernel
-          ref: c3f9e1167f753541a12e84f571c9b48dcedc65bf
+          ref: 17c6548a2a683c0ee09a3305d94991ddfa0d8cfe
           path: .integration/kernel
           persist-credentials: false
       - name: Run candidate Native composition
