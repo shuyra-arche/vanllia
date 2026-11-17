@@ -97,6 +97,31 @@ jobs:
             --fixture "$GITHUB_WORKSPACE" \
             --output "$GITHUB_WORKSPACE/.integration/evidence" \
             --profile "$PROFILE"
+      - name: Print failed candidate stage diagnostics
+        if: failure()
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/.integration/evidence"
+          for stage in resolve build boot; do
+            file="$root/$stage/stderr.log"
+            if [[ -f "$file" ]]; then
+              echo "::group::$stage stderr (last 180 lines)"
+              tail -n 180 "$file"
+              echo "::endgroup::"
+            fi
+            file="$root/$stage/serial.log"
+            if [[ -f "$file" ]]; then
+              echo "::group::$stage stdout (last 100 lines)"
+              tail -n 100 "$file"
+              echo "::endgroup::"
+            fi
+            file="$root/$stage/result.json"
+            if [[ -f "$file" ]]; then
+              echo "::group::$stage result"
+              cat "$file"
+              echo "::endgroup::"
+            fi
+          done
       - name: Preserve candidate build and boot evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
