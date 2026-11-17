@@ -30,7 +30,8 @@ extern "C" fn main(hart: usize, dtp: usize) -> ! {
             .map(|topology| topology.with_local_instructions())
         }
         .map_err(|_| boot::BootError::Description("invalid native14 RAM topology"))?;
-        boot::qualify_memory(topology)?;
+        boot::qualify_memory(topology)
+            .map_err(|_| boot::BootError::Description("invalid native14 RAM qualification"))?;
         boot::start()
     });
     match result {
