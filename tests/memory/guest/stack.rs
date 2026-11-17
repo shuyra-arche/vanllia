@@ -4,7 +4,7 @@ use crate::support::*;
 use kernel_api::{
     abi::memory::*,
     address::*,
-    model::{cell::Placement, flat::SlotPosition, nest::MemoPosition, unit::TaskStart},
+    model::{cell::Placement, flat::SlotPosition, nest::{MemoPosition, RangeVersion}, unit::TaskStart},
 };
 use kernel_client::{call::room, memory::Response};
 

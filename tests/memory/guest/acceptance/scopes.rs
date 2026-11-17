@@ -175,23 +175,24 @@ fn aba() {
         kernel_api::model::wait::Wait::At(kernel_client::call::room::clock() + 1_000_000_000),
     );
     let old_generation = event.generation;
+    let old_identity = span_id(old);
     let old_release = release(old);
     mutate(old_release);
     assert!(matches!(join(reader).exit, Some((ExitCause::Fault, _))));
     let (new, actual) = reserve_at(space(), Placement::exact(address, 4096).unwrap(), 6);
     assert_eq!(actual, address);
-    assert_ne!(span_id(old), span_id(new));
+    assert_ne!(old_identity, span_id(new));
     // A retained observation may describe the old lifecycle, never the new one.
     if let Ok(Response::Observation(o)) = try_call(Action::Inspect(Query::Memo(old))) {
         let Snapshot::Memo(s) = o.snapshot() else {
             panic!("Memo")
         };
-        assert_eq!(s.reservation, span_id(old));
-        assert_ne!(s.reservation, span_id(new));
+        assert_eq!(s.range, Some(old.range()));
+        assert_ne!(s.range, Some(new.range()));
     }
-    rejected(try_call(Action::Inspect(Query::Memo(
-        MemoPosition::new(new.range(), 0).unwrap(),
-    ))));
+    // ABI 14 cannot forge a Span identity into a MemoPosition. Old authority
+    // is invalid even when the address has been reoccupied by a new Span.
+    rejected(try_call(Action::Inspect(Query::Span { range: old.range() })));
     rejected(try_call(old_release));
     rejected(try_call(Action::Publish {
         memo: old,

@@ -243,7 +243,7 @@ pub fn run() {
     assert!(matches!(completed.outcome(), Outcome::Committed(_)));
     let retry = nest::Call::new(
         Some(reply.request()),
-        Action::Retract {
+        nest::Action::Retract {
             memo: device,
             expected: dg,
         },
