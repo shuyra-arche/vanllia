@@ -38,24 +38,19 @@ jobs:
         with:
           submodules: false
           persist-credentials: false
-      - name: Select exact ABI 14 candidate for temporary workspace
+      - name: Verify exact ABI 14 candidate source pins
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import os
           from pathlib import Path
-          import re
           pin = os.environ["PROVIDER_SHA"]
-          assert re.fullmatch(r"[0-9a-f]{40}", pin)
-          previous = "789ffd19b5359f3de172fb9aad8a61f6a7113a64"
-          for name, expected in [
+          for name, count in [
               ("tests/memory/Cargo.toml", 3),
               ("platform/riscv/Cargo.toml", 2),
           ]:
-              path = Path(name)
-              source = path.read_text()
-              assert source.count(previous) == expected, (name, source.count(previous))
-              path.write_text(source.replace(previous, pin))
+              source = Path(name).read_text()
+              assert source.count(pin) == count, (name, pin)
               print(f"Candidate {name} = {pin}")
           PY
       - name: Check Native guest against ABI 14
