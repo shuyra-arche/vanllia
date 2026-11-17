@@ -28,6 +28,16 @@ enum Scenario {
         #[arg(long, default_value_t=13, value_parser=clap::value_parser!(u8).range(10..=13))]
         capsule_version: u8,
     },
+    Native14 {
+        #[arg(long)]
+        kernel: PathBuf,
+        #[arg(long)]
+        fixture: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long, default_value="debug", value_parser=["debug", "release"])]
+        profile: String,
+    },
     System {
         #[arg(long)]
         kernel: PathBuf,
@@ -49,6 +59,12 @@ fn main() {
             profile,
             capsule_version,
         } => native::run(&kernel, &fixture, &output, &profile, capsule_version),
+        Scenario::Native14 {
+            kernel,
+            fixture,
+            output,
+            profile,
+        } => native::run_abi14(&kernel, &fixture, &output, &profile),
         Scenario::System {
             kernel,
             fixture,

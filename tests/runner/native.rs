@@ -1,6 +1,23 @@
 use kernel_verification::{process, *};
 use std::{fs, path::Path, process::Command, time::Duration};
 pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u8) -> Result<()> {
+    run_suite(kernel, fixture, root, profile, version, false)
+}
+
+/// Candidate-only ABI 14 path. The accepted ABI 13 product and native suite
+/// remain unchanged; this shares the same runner, evidence, and bounded VM.
+pub fn run_abi14(kernel: &Path, fixture: &Path, root: &Path, profile: &str) -> Result<()> {
+    run_suite(kernel, fixture, root, profile, 14, true)
+}
+
+fn run_suite(
+    kernel: &Path,
+    fixture: &Path,
+    root: &Path,
+    profile: &str,
+    version: u8,
+    candidate: bool,
+) -> Result<()> {
     fresh(root)?;
     let root = root.canonicalize()?;
     let source = revision(kernel)?;
@@ -8,10 +25,15 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     archive(kernel, &source, &root.join("provider"))?;
     archive(fixture, &pin, &root.join("fixture"))?;
     let provider = root.join("provider");
-    let composition = root.join("fixture/tests/memory");
+    let composition = root.join(if candidate {
+        "fixture/tests/memory14"
+    } else {
+        "fixture/tests/memory"
+    });
     let qemu = std::env::var("QEMU_RISCV64").unwrap_or("qemu-system-riscv64".into());
     let firmware = Path::new(&std::env::var("QEMU_OPENSBI")?).canonicalize()?;
     let mut inputs = serde_json::json!({"source":source,"fixture":pin,"profile":profile,
+        "suite":if candidate { "memory14" } else { "memory13" },
         "capsule_version":version,"deadline_seconds":if profile == "debug" { 240 } else { 120 },"tools":tools(&qemu,&firmware)?, "builds":[]});
     let mut build = Command::new("cargo");
     build
@@ -30,10 +52,15 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
         .env_remove("CARGO_ENCODED_RUSTFLAGS");
     // Only provider substitutions may change resolution. Keep the old and
     // resolved graph, then insist the exact resolved graph builds with --locked.
-    fs::copy(
-        composition.join("Cargo.lock"),
-        root.join("original.Cargo.lock"),
-    )?;
+    let lock = composition.join("Cargo.lock");
+    if lock.is_file() {
+        fs::copy(&lock, root.join("original.Cargo.lock"))?;
+    } else {
+        require(candidate, "accepted native suite requires its committed Cargo.lock")?;
+        // During the initial candidate migration, Cargo generates the resolved
+        // lock. The final PR must commit it before this becomes a release gate.
+        inputs["initial_lock_missing"] = true.into();
+    }
     inputs["builds"]
         .as_array_mut()
         .unwrap()
@@ -49,8 +76,22 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     process::build(&mut build, &root.join("build"))?;
     let binaries = composition.join("target").join(TARGET).join(profile);
     for (from, to) in [
-        (binaries.join("memory-guest"), "guest.elf"),
-        (binaries.join("memory-platform"), "platform.elf"),
+        (
+            binaries.join(if candidate {
+                "memory14-guest"
+            } else {
+                "memory-guest"
+            }),
+            "guest.elf",
+        ),
+        (
+            binaries.join(if candidate {
+                "memory14-platform"
+            } else {
+                "memory-platform"
+            }),
+            "platform.elf",
+        ),
         (composition.join("Cargo.lock"), "Cargo.lock"),
     ] {
         fs::copy(from, root.join(to))?;
@@ -69,10 +110,22 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     inputs["sha256"] = hashes.into();
     json(&root.join("inputs.json"), &inputs)?;
     let mut command = Command::new(qemu);
-    command.args(["-accel","tcg,thread=single","-machine","virt,iommu-sys=on","-cpu","rv64","-smp","1","-m","128M","-nographic","-monitor","none","-bios"])
-        .arg(firmware).arg("-kernel").arg(root.join("platform.elf")).arg("-initrd").arg(image)
-        .arg("-drive").arg(format!("file={},format=raw,if=none,id=disk,aio=threads",disk.display()))
-        .args(["-device","virtio-blk-pci,drive=disk,disable-legacy=on,iommu_platform=on,ats=off,addr=1,ioeventfd=off,vectors=0"]);
+    command
+        .args(["-accel", "tcg,thread=single", "-machine",
+            if candidate { "virt" } else { "virt,iommu-sys=on" },
+            "-cpu", "rv64", "-smp", "1", "-m", "128M",
+            "-nographic", "-monitor", "none", "-bios"])
+        .arg(firmware)
+        .arg("-kernel").arg(root.join("platform.elf"))
+        .arg("-initrd").arg(image);
+    if candidate {
+        command.args(["-nic", "none"]);
+    } else {
+        command.arg("-drive")
+            .arg(format!("file={},format=raw,if=none,id=disk,aio=threads",disk.display()))
+            .args(["-device",
+                "virtio-blk-pci,drive=disk,disable-legacy=on,iommu_platform=on,ats=off,addr=1,ioeventfd=off,vectors=0"]);
+    }
     let boot = root.join("boot");
     let mut result = process::run(
         &mut command,
@@ -80,7 +133,17 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
         Duration::from_secs(if profile == "debug" { 240 } else { 120 }),
     )?;
     let serial = fs::read_to_string(boot.join("serial.log"))?;
-    if version < 13 {
+    if candidate {
+        process::accept(
+            &mut result,
+            &serial,
+            &[
+                "START native-memory14 abi=14 ledger=14".to_owned(),
+                "PASS memory-abi14 flat=created occupied=1 nest=reserved memo=published rw=1".to_owned(),
+                "task: all tasks exited".to_owned(),
+            ],
+        );
+    } else if version < 13 {
         result.passed = result.exited()
             && matches!(result.code, Some(0 | 1))
             && [
