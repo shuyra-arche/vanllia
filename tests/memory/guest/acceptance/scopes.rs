@@ -74,6 +74,13 @@ pub fn run() {
             ..pend_info(a.range()).limits
         },
     );
+    // A complete derived Pend can inspect the same Span and fault route,
+    // but every observation must be correlated with that queried Pend.
+    assert_eq!(span_status(at(a, token, 1)).range, token);
+    let Snapshot::FaultRoute(route) = inspect(Query::FaultRoute { range: token }) else {
+        panic!("FaultRoute")
+    };
+    assert_eq!(route.range, token);
     narrow(
         token,
         Limits {
@@ -86,6 +93,7 @@ pub fn run() {
     );
     let narrowed = at(a, token, 1);
     assert_eq!(span_status(narrowed).offset, 1);
+    assert_eq!(span_status(narrowed).range, token);
     assert_eq!(memo_status(narrowed).coordinate, 1);
     rejected(try_call(Action::Inspect(Query::Memo(at(a, token, 0)))));
     assert_eq!(span_status(narrowed).address, span_status(a).address);

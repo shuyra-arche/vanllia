@@ -16,4 +16,4 @@ clap = { version = "4", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"
 
-kernel-verification = { git = "https://github.com/shuyra-arche/kernel.git", rev = "ba4568cb4769364bb9db5b089d940d985394fd91" }
+kernel-verification = { git = "https://github.com/shuyra-arche/kernel.git", rev = "bbd4e2e619850b0bacf5bc9ccfcbd40165ac8ac3" }
