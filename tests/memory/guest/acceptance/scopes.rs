@@ -35,11 +35,11 @@ pub fn run() {
         rejected(worker.call(Action::Inspect(Query::Memo(own))));
         rejected(worker.call(Action::DeleteSpan {
             range: token,
-            expected: span_status(own).version,
+            expected: kernel_api::model::nest::RangeVersion::new(span_status(own).version.get()).expect("range revision"),
         }));
         rejected(worker.call(Action::FaultRoute {
             range: token,
-            expected: span_status(own).version,
+            expected: kernel_api::model::nest::RangeVersion::new(span_status(own).version.get()).expect("range revision"),
             epoch: FaultEpoch::new(1).unwrap(),
             route: None,
         }));

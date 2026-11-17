@@ -243,7 +243,7 @@ pub fn run() {
     assert!(matches!(completed.outcome(), Outcome::Committed(_)));
     let retry = nest::Call::new(
         Some(reply.request()),
-        Action::Retract {
+        nest::Action::Retract {
             memo: device,
             expected: dg,
         },
@@ -286,7 +286,7 @@ fn release(memo: MemoPosition) {
         };
         let Response::Reply(reply) = call(Action::DeleteSpan {
             range: memo.range(),
-            expected: s.version,
+            expected: kernel_api::model::nest::RangeVersion::new(s.version.get()).expect("range revision"),
         }) else {
             panic!("Release reply")
         };
@@ -374,7 +374,7 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
                 };
                 let Response::Reply(r) = call(Action::DeleteSpan {
                     range: device.range(),
-                    expected: s.version,
+                    expected: kernel_api::model::nest::RangeVersion::new(s.version.get()).expect("range revision"),
                 }) else {
                     panic!("Release")
                 };
