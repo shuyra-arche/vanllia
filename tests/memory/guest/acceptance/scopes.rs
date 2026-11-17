@@ -30,8 +30,12 @@ pub fn run() {
             Ok(Response::Observation(_))
         ));
         rejected(worker.call(Action::Inspect(Query::Memo(at(own, token, 0)))));
-        rejected(worker.call(Action::Inspect(Query::Memo(at(other, token, 1)))));
-        // Even the actual parent's numeric token is not in this Task's ledger.
+        // ABI 14 MemoPosition has no independent Span identity: the live
+        // Pend resolves the owning Span, so changing the descriptive origin
+        // cannot redirect an otherwise identical (Pend, page) coordinate.
+        assert_eq!(at(own, token, 1), at(other, token, 1));
+        // Neither parent's real Pend is in the worker's ledger.
+        rejected(worker.call(Action::Inspect(Query::Memo(other))));
         rejected(worker.call(Action::Inspect(Query::Memo(own))));
         rejected(worker.call(Action::DeleteSpan {
             range: token,
