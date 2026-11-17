@@ -81,7 +81,7 @@ pub fn run() {
     let response = worker
         .call(Action::FaultRoute {
             range: token,
-            expected: kernel_api::model::nest::RangeVersion::new(span_status(memo).version.get()).expect("range revision"),
+            expected: range_version(memo),
             epoch: FaultEpoch::new(1).unwrap(),
             route: Some(FaultRoute {
                 sign: child_sign,

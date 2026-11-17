@@ -60,6 +60,17 @@ jobs:
             --fixture "$GITHUB_WORKSPACE" \
             --output "$GITHUB_WORKSPACE/.integration/native-abi14" \
             --capsule-version 14
+      - name: Symbolize fatal against exact platform ELF
+        if: failure()
+        run: |
+          elf=.integration/native-abi14/platform.elf
+          log=.integration/native-abi14/boot/serial.log
+          if [[ -f "$elf" && -f "$log" ]] && grep -q '\[kernel\] fatal' "$log"; then
+            cargo +nightly run --locked --manifest-path \
+              .integration/kernel/server/tests/runner/Cargo.toml \
+              --target x86_64-unknown-linux-gnu -- symbolize \
+              "$elf" "$log" --addr2line llvm-addr2line
+          fi
       - name: Report build or QEMU failure
         if: failure()
         run: |
