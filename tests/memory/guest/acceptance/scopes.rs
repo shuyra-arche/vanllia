@@ -207,11 +207,18 @@ fn aba() {
         assert_eq!(s.range, Some(old.range()));
         assert_ne!(s.range, Some(new.range()));
     }
-    // ABI 14 cannot forge a Span identity into a MemoPosition. Old authority
-    // is invalid even when the address has been reoccupied by a new Span.
-    rejected(try_call(Action::Inspect(Query::Span {
-        range: old.range(),
-    })));
+    // The retired Pend may still describe its old lifecycle. It must never
+    // resolve to the new, open Span occupying the same virtual address.
+    match try_call(Action::Inspect(Query::Span { range: old.range() })) {
+        Ok(Response::Observation(observation)) => {
+            let Snapshot::Span(status) = observation.snapshot() else {
+                panic!("retired Span")
+            };
+            assert_eq!(status.range, old.range());
+            assert_eq!(status.phase, SpanPhase::Closed);
+        }
+        other => rejected(other),
+    }
     rejected(try_call(old_release));
     rejected(try_call(Action::Publish {
         memo: old,
