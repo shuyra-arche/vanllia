@@ -1,0 +1,20 @@
+[package]
+name = "memory14-platform"
+version = "0.0.0"
+edition = "2024"
+publish = false
+autotests = false
+
+[[bin]]
+name = "memory14-platform"
+path = "main.rs"
+test = false
+bench = false
+
+[dependencies]
+kernel-api.workspace = true
+platform-riscv = { package = "platform-riscv-candidate", path = "../provider" }
+fdt = { version = "0.1.5", default-features = false }
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+kernel.workspace = true
