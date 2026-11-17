@@ -65,8 +65,7 @@ impl Stack {
             .then(|| reserve_pages(space(), Placement::lowest(PAGE_SIZE).unwrap(), 6, pages));
         for page in 0..pages {
             let slot = SlotPosition::new(flat.token(), flat.flat(), page).unwrap();
-            let target =
-                MemoPosition::new(memo.range(), page + 1).unwrap();
+            let target = MemoPosition::new(memo.range(), page + 1).unwrap();
             change(|| Action::Occupy {
                 slot,
                 expected: slot_status(slot).version,
@@ -85,9 +84,7 @@ impl Stack {
                 maintenance: None,
             });
             if let Some((first, _)) = local {
-                let target =
-                    MemoPosition::new(first.range(), page)
-                        .unwrap();
+                let target = MemoPosition::new(first.range(), page).unwrap();
                 change(|| Action::Insert {
                     target,
                     expected: memo_status(target).generation,
