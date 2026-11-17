@@ -79,7 +79,11 @@ jobs:
             tests/memory/Cargo.lock
 
   native:
-    name: ABI 14 Native QEMU (release)
+    name: ABI 14 Native QEMU (${{ matrix.profile }})
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
     runs-on: ubuntu-latest
     container: debian:trixie
     timeout-minutes: 30
@@ -127,15 +131,15 @@ jobs:
           tests/runner/target/x86_64-unknown-linux-gnu/debug/verify native \
             --kernel "$GITHUB_WORKSPACE/.integration/provider" \
             --fixture "$GITHUB_WORKSPACE" \
-            --output "$GITHUB_WORKSPACE/.integration/evidence/native-release" \
-            --profile release \
+            --output "$GITHUB_WORKSPACE/.integration/evidence/native-${{ matrix.profile }}" \
+            --profile "${{ matrix.profile }}" \
             --capsule-version 14 \
             2>&1 | tee .integration/evidence/runner.log
       - name: Report failed Native QEMU result
         if: failure()
         run: |
           set -eu
-          directory=.integration/evidence/native-release/boot
+          directory=.integration/evidence/native-${{ matrix.profile }}/boot
           if test -f "$directory/result.json"; then cat "$directory/result.json"; fi
           if test -f "$directory/serial.log"; then tail -n 140 "$directory/serial.log"; fi
           if test -f "$directory/stderr.log"; then tail -n 70 "$directory/stderr.log"; fi
@@ -143,6 +147,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: abi14-native-qemu
+          name: abi14-native-qemu-${{ matrix.profile }}
           if-no-files-found: warn
           path: .integration/evidence/
