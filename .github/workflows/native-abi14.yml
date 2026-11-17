@@ -1,0 +1,74 @@
+name: Native ABI 14 candidate
+
+# Candidate-only: existing product gitlink and lockfiles stay untouched.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/native-abi14.yml'
+      - 'tests/memory/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vanllia-native-abi14-¤{{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ¤{{ github.event_name == 'pull_request' }}
+
+jobs:
+  candidate:
+    name: ABI 14 Native guest compilation
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 20
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+      PROVIDER_SHA: 0f5f1ab614f662f111fbd3e0c7ca9782d60dee3d
+    steps:
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential python3
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" \
+            --target riscv64gc-unknown-none-elf
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Select exact ABI 14 candidate for temporary workspace
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          pin = os.environ["PROVIDER_SHA"]
+          assert re.fullmatch(r"[0-9a-f]{40}", pin)
+          path = Path("tests/memory/Cargo.toml")
+          source = path.read_text()
+          previous = "789ffd19b5359f3de172fb9aad8a61f6a7113a64"
+          assert source.count(previous) == 3
+          path.write_text(source.replace(previous, pin))
+          print(f"Guest candidate Kernel/API/Client = {pin}")
+          PY
+      - name: Check Native guest against ABI 14
+        run: |
+          set -euo pipefail
+          mkdir -p .integration/abi14
+          cargo +nightly generate-lockfile --manifest-path tests/memory/Cargo.toml \
+            2>&1 | tee .integration/abi14/resolve.log
+          cargo +nightly check --manifest-path tests/memory/Cargo.toml \
+            --target riscv64gc-unknown-none-elf --package memory-guest \
+            2>&1 | tee .integration/abi14/guest.log
+      - name: Preserve exact source diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: abi14-guest-compile
+          if-no-files-found: warn
+          path: |
+            .integration/abi14/
+            tests/memory/Cargo.lock
