@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: vanllia-native-abi14-¤{{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ¤{{ github.event_name == 'pull_request' }}
+  group: vanllia-native-abi14-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   candidate:
