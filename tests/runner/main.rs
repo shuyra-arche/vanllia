@@ -25,7 +25,7 @@ enum Scenario {
         output: PathBuf,
         #[arg(long, default_value="debug", value_parser=["debug", "release"])]
         profile: String,
-        #[arg(long, default_value_t=13, value_parser=clap::value_parser!(u8).range(10..=13))]
+        #[arg(long, default_value_t=13, value_parser=clap::value_parser!(u8).range(10..=14))]
         capsule_version: u8,
     },
     System {

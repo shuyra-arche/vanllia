@@ -109,7 +109,7 @@ pub fn space() -> PendId {
 pub fn boot(at: usize, count: usize) {
     use kernel_api::boot::{args, ledger::Entries};
     assert_eq!(count, args::LEN);
-    assert_eq!(kernel_api::abi::VERSION, 13);
+    assert_eq!(kernel_api::abi::VERSION, 14);
     crate::stack::init_owner();
     let a = unsafe { core::slice::from_raw_parts(at as *const usize, count) };
     IMAGE.store(a[args::VIEW], Ordering::Relaxed);
@@ -164,17 +164,15 @@ pub fn reserve_pages(
     let Snapshot::Nest(s) = inspect(Query::Nest { token, nest }) else {
         panic!("Nest")
     };
-    let Value::Reservation {
-        token,
-        nest,
-        reservation,
+    let Value::Span {
+        range,
         address,
         ..
-    } = mutate(Action::Reserve {
+    } = mutate(Action::CreateSpan {
         token,
         nest,
         expected: s.version,
-        reservation: ReserveRequest {
+        request: CreateSpanRequest {
             placement,
             count: PageCount::new(count).unwrap(),
             level: CellLevel::new(0).unwrap(),
@@ -182,13 +180,24 @@ pub fn reserve_pages(
         },
     })
     else {
-        panic!("Reservation")
+        panic!("Span")
     };
-    (
-        MemoPosition::new(token, nest, reservation, 0).unwrap(),
-        address,
-    )
+    (MemoPosition::new(range, 0).unwrap(), address)
 }
+/// The Pend remains the authority; these identities are descriptive only.
+pub fn nest_identity(memo: MemoPosition) -> NestId {
+    let Target::Nest(id) = pend_info(memo.range()).target else {
+        panic!("Nest grant")
+    };
+    id
+}
+pub fn span_identity(memo: MemoPosition) -> SpanId {
+    let PendScope::Nest(NestScope::Span { id, .. }) = pend_info(memo.range()).limits.scope else {
+        panic!("Span grant")
+    };
+    id
+}
+
 pub fn insert(target: MemoPosition, slot: SlotPosition) {
     mutate(Action::Insert {
         target,
