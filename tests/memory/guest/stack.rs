@@ -153,6 +153,14 @@ impl Stack {
                             expected: memo_status(position).generation,
                         });
                     }
+                    // A retired publication does not itself remove the logical
+                    // source association. Release it before closing the Span.
+                    if memo_status(position).source.is_some() {
+                        change(|| Action::Remove {
+                            memo: position,
+                            expected: memo_status(position).generation,
+                        });
+                    }
                 }
             }
         }
