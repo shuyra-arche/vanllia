@@ -286,8 +286,7 @@ fn release(memo: MemoPosition) {
         };
         let Response::Reply(reply) = call(Action::DeleteSpan {
             range: memo.range(),
-            expected: kernel_api::model::nest::RangeVersion::new(s.version.get())
-                .expect("range revision"),
+            expected: RangeVersion::new(s.version.get()).expect("range revision"),
         }) else {
             panic!("Release reply")
         };
@@ -375,8 +374,7 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
                 };
                 let Response::Reply(r) = call(Action::DeleteSpan {
                     range: device.range(),
-                    expected: kernel_api::model::nest::RangeVersion::new(s.version.get())
-                .expect("range revision"),
+                    expected: RangeVersion::new(s.version.get()).expect("range revision"),
                 }) else {
                     panic!("Release")
                 };
