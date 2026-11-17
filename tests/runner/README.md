@@ -3,6 +3,11 @@
 This standalone Cargo workspace is a host utility outside the product and RV64
 workspaces. It uses Kernel's small host execution library for bounded processes,
 evidence and Capsule encoding. Kernel does not depend on Vanllia's tooling.
+The runner's **tooling** dependency now pins Kernel 0f5f1ab614f662f111fbd3e0c7ca9782d60dee3d for Capsule
+14 support; this changes neither the ABI 13 product selection nor its native
+Guest/Platform source pins. The shared Capsule encoder still admits the old
+published Capsule versions. CI checks the old native matrix alongside the
+new candidate before a product pin may change.
 The shared orchestration contracts run in Kernel's own Host CI.
 
 `verify native` owns the current memory/IPC/Swap/Virtqueue composition, including
