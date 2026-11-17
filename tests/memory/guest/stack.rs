@@ -23,7 +23,8 @@ pub struct Stack {
 fn change(action: impl Fn() -> Action) -> Value {
     let deadline = room::clock() + 5_000_000_000;
     loop {
-        let Response::Reply(mut reply) = call(action()) else {
+        let attempted = action();
+        let Response::Reply(mut reply) = call(attempted) else {
             panic!("memory reply")
         };
         while matches!(reply.outcome(), Outcome::Pending(_)) {
@@ -40,7 +41,11 @@ fn change(action: impl Fn() -> Action) -> Value {
         match reply.outcome() {
             Outcome::Committed(value) => return value,
             Outcome::Rejected(Failure::Busy | Failure::Stale) => {
-                assert!(room::clock() < deadline);
+                assert!(
+                    room::clock() < deadline,
+                    "stack retry expired: {attempted:?}, outcome={:?}",
+                    reply.outcome(),
+                );
                 room::yield_();
             }
             other => panic!("memory mutation: {other:?}"),
