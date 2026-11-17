@@ -41,7 +41,7 @@ pub fn configure(memo: MemoPosition, route: Option<FaultRoute>) -> FaultEpoch {
     };
     let Value::FaultRoute { epoch, .. } = mutate(Action::FaultRoute {
         range: memo.range(),
-        expected: status.version,
+        expected: RangeVersion::new(status.version.get()).expect("range revision"),
         epoch: fault.epoch,
         route,
     }) else {

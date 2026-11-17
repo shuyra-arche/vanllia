@@ -56,7 +56,8 @@ fn span_status(memo: MemoPosition) -> SpanStatus {
 fn release(memo: MemoPosition) -> Action {
     Action::DeleteSpan {
         range: memo.range(),
-        expected: span_status(memo).version,
+        expected: kernel_api::model::nest::RangeVersion::new(span_status(memo).version.get())
+            .expect("range revision"),
     }
 }
 #[track_caller]
