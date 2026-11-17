@@ -134,6 +134,28 @@ impl Stack {
     /// Call only after the child is independently observed reclaimed. Release
     /// settles its real hardware obligations before the Flat may be deleted.
     pub fn retire(self) {
+        let Snapshot::Flat(flat) = inspect(Query::Flat {
+            token: self.flat.token(),
+            flat: self.flat.flat(),
+        }) else {
+            panic!("flat")
+        };
+        // Retire each concrete CPU publication before closing its Span. A
+        // reclaimed child Task no longer executes, but its stack mappings and
+        // their Page obligations are still owned by the publishing Span.
+        for (memo, first) in [(Some(self.memo), 1), (self.local, 0)] {
+            if let Some(memo) = memo {
+                for page in first..first + flat.count {
+                    let position = MemoPosition::new(memo.range(), page).unwrap();
+                    if memo_status(position).phase == MemoPhase::Published {
+                        change(|| Action::Retract {
+                            memo: position,
+                            expected: memo_status(position).generation,
+                        });
+                    }
+                }
+            }
+        }
         for memo in [Some(self.memo), self.local].into_iter().flatten() {
             change(|| {
                 let Snapshot::Span(status) = inspect(Query::Span {
