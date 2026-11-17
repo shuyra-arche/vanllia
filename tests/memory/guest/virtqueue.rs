@@ -279,19 +279,10 @@ pub fn run() {
 fn release(memo: MemoPosition) {
     let deadline = room::clock() + 3_000_000_000;
     loop {
-        let Snapshot::Reservation(s) = inspect(Query::Reservation {
-            token: memo.token(),
-            nest: memo.nest(),
-            reservation: memo.reservation(),
-        }) else {
+        let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
             panic!("Reservation")
         };
-        let Response::Reply(reply) = call(Action::Release {
-            token: memo.token(),
-            nest: memo.nest(),
-            reservation: memo.reservation(),
-            expected: s.version,
-        }) else {
+        let Response::Reply(reply) = call(Action::DeleteSpan { range: memo.range(), expected: RangeVersion::new(s.version.get()).unwrap() }) else {
             panic!("Release reply")
         };
         match reply.outcome() {
@@ -334,14 +325,14 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
         );
         insert(device, slot);
         let bytes = AccordRequest {
-            src: device.token(),
+            src: device.range(),
             target: AccordTarget::Caller,
-            limits: pend_info(device.token()).limits,
+            limits: pend_info(device.range()).limits,
             mark: Mark::NONE,
         }
         .to_bytes();
         let branch = pend::accord(VirtAddr::new(bytes.as_ptr() as usize)).unwrap();
-        let local = MemoPosition::new(branch, device.nest(), device.reservation(), 0).unwrap();
+        let local = MemoPosition::new(branch, 0).unwrap();
         let Response::Reply(r) = call(Action::Publish {
             memo: local,
             expected: memo_status(device).generation,
@@ -371,19 +362,10 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
                 let _ = pend::return_(branch);
             }
             Close::Release => {
-                let Snapshot::Reservation(s) = inspect(Query::Reservation {
-                    token: device.token(),
-                    nest: device.nest(),
-                    reservation: device.reservation(),
-                }) else {
+                let Snapshot::Span(s) = inspect(Query::Span { range: device.range() }) else {
                     panic!("Reservation")
                 };
-                let Response::Reply(r) = call(Action::Release {
-                    token: device.token(),
-                    nest: device.nest(),
-                    reservation: device.reservation(),
-                    expected: s.version,
-                }) else {
+                let Response::Reply(r) = call(Action::DeleteSpan { range: device.range(), expected: RangeVersion::new(s.version.get()).unwrap() }) else {
                     panic!("Release")
                 };
                 assert!(
@@ -402,13 +384,13 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
             Close::Delete => {
                 let Snapshot::Nest(s) = inspect(Query::Nest {
                     token: external,
-                    nest: device.nest(),
+                    nest: nest_id(device),
                 }) else {
                     panic!("Nest")
                 };
                 let Response::Reply(r) = call(Action::DeleteNest {
                     token: external,
-                    nest: device.nest(),
+                    nest: nest_id(device),
                     expected: s.version,
                 }) else {
                     panic!("Delete")
@@ -497,7 +479,7 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
         } else {
             let Snapshot::Nest(s) = inspect(Query::Nest {
                 token: external,
-                nest: device.nest(),
+                nest: nest_id(device),
             }) else {
                 panic!("Nest")
             };
@@ -505,7 +487,7 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
             loop {
                 let Response::Reply(r) = call(Action::DeleteNest {
                     token: external,
-                    nest: device.nest(),
+                    nest: nest_id(device),
                     expected: s.version,
                 }) else {
                     panic!("Delete")

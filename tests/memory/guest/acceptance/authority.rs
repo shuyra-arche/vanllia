@@ -26,7 +26,7 @@ pub fn run() {
         slot: inspected,
         expected: slot_status(slot).version,
     }));
-    let target_control = accord(memo.token(), worker.0, pend_info(memo.token()).limits);
+    let target_control = accord(memo.range(), worker.0, pend_info(memo.range()).limits);
     // Give the target every necessary right: this rejection must come from
     // the INSPECT-only source, independently of the FAULT-only test below.
     rejected(worker.call(Action::Insert {
@@ -38,11 +38,11 @@ pub fn run() {
         },
     }));
     let inspect_only = accord(
-        memo.token(),
+        memo.range(),
         worker.0,
         Limits {
             operations: Operations::Nest(NestRights::INSPECT),
-            ..pend_info(memo.token()).limits
+            ..pend_info(memo.range()).limits
         },
     );
     assert!(matches!(
@@ -55,11 +55,11 @@ pub fn run() {
         maintenance: None,
     }));
     let token = accord(
-        memo.token(),
+        memo.range(),
         worker.0,
         Limits {
             operations: Operations::Nest(NestRights::FAULT),
-            ..pend_info(memo.token()).limits
+            ..pend_info(memo.range()).limits
         },
     );
     let local = at(memo, token, 0);
@@ -79,11 +79,7 @@ pub fn run() {
     let signal = sign::create(license()).unwrap();
     let child_sign = accord(signal, worker.0, pend_info(signal).limits);
     let response = worker
-        .call(Action::FaultRoute {
-            token,
-            nest: memo.nest(),
-            reservation: memo.reservation(),
-            expected: reservation(memo).version,
+        .call(Action::FaultRoute { range: token, expected: RangeVersion::new(span_status(memo).version.get()).unwrap(),
             epoch: FaultEpoch::new(1).unwrap(),
             route: Some(FaultRoute {
                 sign: child_sign,
@@ -105,14 +101,9 @@ pub fn run() {
         }),
     );
     assert_ne!(old, replacement);
-    rejected(worker.call(Action::Inspect(Query::FaultEvent {
-        token,
-        nest: memo.nest(),
-        reservation: memo.reservation(),
-        epoch: old,
+    rejected(worker.call(Action::Inspect(Query::FaultEvent { range: token, epoch: old,
         after: 0,
-        wait: kernel_api::model::wait::Wait::Poll,
-    })));
+        wait: kernel_api::model::wait::Wait::Poll, })));
     let stale = memo_status(memo).generation;
     insert(memo, create(1));
     rejected(try_call(Action::Publish {
@@ -136,16 +127,16 @@ extern "C" fn foreign(at: usize, count: usize) -> ! {
     let p = find(|p| {
         matches!(
             p.limits.scope,
-            PendScope::Nest(NestScope::Reservation { .. })
+            PendScope::Nest(NestScope::Span { .. })
         )
     });
-    let Target::Nest(nest) = p.target else {
+    let Target::Nest(_) = p.target else {
         panic!("Nest")
     };
-    let PendScope::Nest(NestScope::Reservation { id, .. }) = p.limits.scope else {
+    let PendScope::Nest(NestScope::Span { .. }) = p.limits.scope else {
         panic!("Reservation")
     };
-    let memo = MemoPosition::new(p.token, nest, id, 0).unwrap();
+    let memo = MemoPosition::new(p.token, 0).unwrap();
     publish(memo);
     let _ = writeln!(
         Console,
@@ -183,7 +174,7 @@ fn foreign_control() {
         panic!("Task")
     };
     crate::stack::retain(task, stack);
-    accord(memo.token(), task, pend_info(memo.token()).limits);
+    accord(memo.range(), task, pend_info(memo.range()).limits);
     unit::resume(UnitTarget::Task(task)).unwrap();
     assert!(matches!(join(task).exit, Some((ExitCause::Fault, _))));
     assert_eq!(slot_status(slot).obligations, 0);

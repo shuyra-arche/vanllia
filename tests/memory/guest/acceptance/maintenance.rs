@@ -27,7 +27,7 @@ pub fn run() {
         let start = SlotPosition::new(token, slot.flat(), 0).unwrap();
         let (memo, _) = reserve(space());
         insert(memo, slot);
-        let target = accord(memo.token(), worker.0, pend_info(memo.token()).limits);
+        let target = accord(memo.range(), worker.0, pend_info(memo.range()).limits);
         let local = at(memo, target, 0);
         let Value::CreatedNest {
             token: foreign_space,
@@ -39,9 +39,9 @@ pub fn run() {
         let (foreign_memo, _) = reserve(foreign_space);
         insert(foreign_memo, slot);
         let foreign_target = accord(
-            foreign_memo.token(),
+            foreign_memo.range(),
             worker.0,
-            pend_info(foreign_memo.token()).limits,
+            pend_info(foreign_memo.range()).limits,
         );
         let held = credential(
             worker
@@ -73,9 +73,9 @@ pub fn run() {
         let (unrelated, _) = reserve(space());
         insert(unrelated, other);
         let foreign = accord(
-            unrelated.token(),
+            unrelated.range(),
             worker.0,
-            pend_info(unrelated.token()).limits,
+            pend_info(unrelated.range()).limits,
         );
         rejected(worker.call(Action::Publish {
             memo: at(unrelated, foreign, 0),

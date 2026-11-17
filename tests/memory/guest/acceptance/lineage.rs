@@ -110,7 +110,7 @@ pub fn run() {
     retract(local);
 
     // A target branch can retire only its own publication; the source stays live.
-    let child = derive(local.token(), pend_info(local.token()).limits);
+    let child = derive(local.range(), pend_info(local.range()).limits);
     let target = at(local, child, 0);
     publish(target);
     pend::revoke(caller(), child).unwrap();
@@ -189,7 +189,7 @@ fn race(slot: SlotPosition) {
         if !inserting {
             insert(memo, position);
         }
-        let token = accord(memo.token(), worker.0, pend_info(memo.token()).limits);
+        let token = accord(memo.range(), worker.0, pend_info(memo.range()).limits);
         let source_token = inserting.then(|| accord(source, worker.0, pend_info(source).limits));
         worker.begin(if inserting {
             Action::Insert {
