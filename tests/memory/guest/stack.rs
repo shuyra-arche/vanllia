@@ -7,7 +7,7 @@ use kernel_api::{
     model::{
         cell::Placement,
         flat::SlotPosition,
-        nest::{MemoPosition, RangeVersion},
+        nest::{MemoPhase, MemoPosition, RangeVersion},
         unit::TaskStart,
     },
 };
