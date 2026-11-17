@@ -6,7 +6,7 @@ use core::{
     sync::atomic::{AtomicU64, Ordering},
 };
 use kernel_api::{
-    abi::memory::{self, Outcome, RequestId, Snapshot, Source, Value, flat, nest},
+    abi::memory::{Outcome, RequestId, Snapshot, Source, Value, flat, nest},
     address::{PAGE_SIZE, PageCount, VirtAddr},
     model::{
         cell::{CellLevel, Placement},
