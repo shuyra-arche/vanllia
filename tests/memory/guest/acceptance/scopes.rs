@@ -217,7 +217,9 @@ fn aba() {
             assert_eq!(status.range, old.range());
             assert_eq!(status.phase, SpanPhase::Closed);
         }
-        other => rejected(other),
+        other => {
+            rejected(other);
+        }
     }
     rejected(try_call(old_release));
     rejected(try_call(Action::Publish {
