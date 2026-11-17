@@ -1,0 +1,108 @@
+name: Memory ABI 14 candidate
+
+# An independent migration gate. Existing ABI 13 product pins and all native
+# scenarios retain their accepted provenance until the consumer is migrated.
+on:
+  pull_request:
+    paths:
+      - 'tests/memory14/**'
+      - 'tests/runner/native.rs'
+      - 'tests/runner/main.rs'
+      - '.github/workflows/abi14.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: memory-abi14-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  RUSTUP_TOOLCHAIN: nightly
+
+jobs:
+  host:
+    name: ABI 14 candidate host contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install host toolchain
+        run: rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy
+      - name: Check candidate and runner formatting
+        run: |
+          cargo fmt --manifest-path tests/memory14/Cargo.toml --all -- --check
+          cargo fmt --manifest-path tests/runner/Cargo.toml -- --check
+      - name: Verify retained native runner
+        run: |
+          cargo clippy --locked --manifest-path tests/runner/Cargo.toml \
+            --all-targets --target x86_64-unknown-linux-gnu -- -Dwarnings
+          cargo test --locked --manifest-path tests/runner/Cargo.toml \
+            --target x86_64-unknown-linux-gnu
+
+  qemu:
+    name: Native ABI 14 / ${{ matrix.profile }}
+    needs: host
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+    env:
+      QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
+    steps:
+      - name: Install native QEMU tools
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates curl git build-essential python3 \
+            qemu-system-riscv opensbi
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal \
+            --default-toolchain "$RUSTUP_TOOLCHAIN" --target riscv64gc-unknown-none-elf
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Select immutable candidate provider
+        id: provider
+        run: |
+          set -euo pipefail
+          pin=$(cat tests/memory14/kernel)
+          [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$pin" >> "$GITHUB_OUTPUT"
+      - name: Checkout exact Kernel candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: shuyra-arche/kernel
+          ref: ${{ steps.provider.outputs.sha }}
+          path: .integration/kernel
+          persist-credentials: false
+      - name: Run ABI 14 VM through shared native executor
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: |
+          set -euo pipefail
+          cargo build --locked --manifest-path tests/runner/Cargo.toml \
+            --target x86_64-unknown-linux-gnu
+          runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
+          "$runner" native14 \
+            --kernel "$GITHUB_WORKSPACE/.integration/kernel" \
+            --fixture "$GITHUB_WORKSPACE" \
+            --output "$GITHUB_WORKSPACE/.integration/evidence" \
+            --profile "$PROFILE"
+      - name: Preserve candidate build and boot evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: memory14-${{ matrix.profile }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            .integration/evidence/
