@@ -98,7 +98,7 @@ jobs:
           sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" \
             --target riscv64gc-unknown-none-elf
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-          firmware="$(dpkg -L opensbi | grep '/fw_dynamic.bin$' | head -n 1)"
+          firmware="$(dpkg -L opensbi | grep '/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin$' | head -n 1)"
           test -n "$firmware" && test -f "$firmware"
           echo "QEMU_OPENSBI=$firmware" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -131,6 +131,14 @@ jobs:
             --profile release \
             --capsule-version 14 \
             2>&1 | tee .integration/evidence/runner.log
+      - name: Report failed Native QEMU result
+        if: failure()
+        run: |
+          set -eu
+          directory=.integration/evidence/native-release/boot
+          if test -f "$directory/result.json"; then cat "$directory/result.json"; fi
+          if test -f "$directory/serial.log"; then tail -n 140 "$directory/serial.log"; fi
+          if test -f "$directory/stderr.log"; then tail -n 70 "$directory/stderr.log"; fi
       - name: Preserve exact QEMU and build evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
