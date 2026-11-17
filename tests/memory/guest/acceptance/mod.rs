@@ -43,23 +43,17 @@ fn narrow(token: PendId, limits: Limits) {
     }
 }
 fn at(memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
-    MemoPosition::new(token, memo.nest(), memo.reservation(), page).unwrap()
+    MemoPosition::new(token, page).unwrap()
 }
-fn reservation(memo: MemoPosition) -> ReservationStatus {
-    let Snapshot::Reservation(s) = inspect(Query::Reservation {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
-    }) else {
-        panic!("Reservation")
+fn reservation(memo: MemoPosition) -> SpanStatus {
+    let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
+        panic!("Span")
     };
     s
 }
 fn release(memo: MemoPosition) -> Action {
-    Action::Release {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
+    Action::DeleteSpan {
+        range: memo.range(),
         expected: reservation(memo).version,
     }
 }

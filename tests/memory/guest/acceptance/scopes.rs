@@ -17,13 +17,13 @@ pub fn run() {
     for (own, other) in [(a, b), (b, a)] {
         let worker = Worker::new();
         let limits = Limits {
-            scope: PendScope::Nest(NestScope::Reservation {
-                id: own.reservation(),
+            scope: PendScope::Nest(NestScope::Span {
+                id: span_identity(own),
                 range: PendRange::pages(1, 1).unwrap(),
             }),
-            ..pend_info(own.token()).limits
+            ..pend_info(own.range()).limits
         };
-        let token = accord(own.token(), worker.0, limits);
+        let token = accord(own.range(), worker.0, limits);
         let local = at(own, token, 1);
         assert!(matches!(
             worker.call(Action::Inspect(Query::Memo(local))),
@@ -33,16 +33,12 @@ pub fn run() {
         rejected(worker.call(Action::Inspect(Query::Memo(at(other, token, 1)))));
         // Even the actual parent's numeric token is not in this Task's ledger.
         rejected(worker.call(Action::Inspect(Query::Memo(own))));
-        rejected(worker.call(Action::Release {
-            token,
-            nest: own.nest(),
-            reservation: own.reservation(),
+        rejected(worker.call(Action::DeleteSpan {
+            range: token,
             expected: reservation(own).version,
         }));
         rejected(worker.call(Action::FaultRoute {
-            token,
-            nest: own.nest(),
-            reservation: own.reservation(),
+            range: token,
             expected: reservation(own).version,
             epoch: FaultEpoch::new(1).unwrap(),
             route: None,
@@ -61,24 +57,24 @@ pub fn run() {
             expected: flat_info.version,
         }));
         assert_eq!(reservation(own).count, 3);
-        assert_eq!(reservation(other).phase, ReservationPhase::Open);
+        assert_eq!(reservation(other).phase, SpanPhase::Open);
         worker.stop();
     }
     let token = derive(
-        a.token(),
+        a.range(),
         Limits {
-            scope: PendScope::Nest(NestScope::Reservation {
-                id: a.reservation(),
+            scope: PendScope::Nest(NestScope::Span {
+                id: span_identity(a),
                 range: PendRange::Inherit,
             }),
-            ..pend_info(a.token()).limits
+            ..pend_info(a.range()).limits
         },
     );
     narrow(
         token,
         Limits {
-            scope: PendScope::Nest(NestScope::Reservation {
-                id: a.reservation(),
+            scope: PendScope::Nest(NestScope::Span {
+                id: span_identity(a),
                 range: PendRange::pages(1, 1).unwrap(),
             }),
             ..pend_info(token).limits
@@ -124,7 +120,7 @@ fn replacement() {
     let owner = pend_info(first.token()).owner;
     let page = slot_status(first).page;
     let (memo, _) = reserve_pages(space(), Placement::lowest(4096).unwrap(), 6, 2);
-    let neighbor = at(memo, memo.token(), 1);
+    let neighbor = at(memo, memo.range(), 1);
     insert(memo, first);
     insert(neighbor, first);
     let before = memo_status(neighbor);
@@ -139,11 +135,11 @@ fn replacement() {
         (NestRights::INSERT | NestRights::REMOVE, true),
     ] {
         let token = accord(
-            memo.token(),
+            memo.range(),
             worker.0,
             Limits {
                 operations: Operations::Nest(rights),
-                ..pend_info(memo.token()).limits
+                ..pend_info(memo.range()).limits
             },
         );
         let response = worker.call(Action::Insert {
@@ -189,17 +185,17 @@ fn aba() {
     assert!(matches!(join(reader).exit, Some((ExitCause::Fault, _))));
     let (new, actual) = reserve_at(space(), Placement::exact(address, 4096).unwrap(), 6);
     assert_eq!(actual, address);
-    assert_ne!(old.reservation(), new.reservation());
+    assert_ne!(span_identity(old), span_identity(new));
     // A retained observation may describe the old lifecycle, never the new one.
     if let Ok(Response::Observation(o)) = try_call(Action::Inspect(Query::Memo(old))) {
         let Snapshot::Memo(s) = o.snapshot() else {
             panic!("Memo")
         };
-        assert_eq!(s.reservation, old.reservation());
-        assert_ne!(s.reservation, new.reservation());
+        assert_eq!(s.reservation, span_identity(old));
+        assert_ne!(s.reservation, span_identity(new));
     }
     rejected(try_call(Action::Inspect(Query::Memo(
-        MemoPosition::new(new.token(), new.nest(), old.reservation(), 0).unwrap(),
+        MemoPosition::new(new.range(), 0).unwrap(),
     ))));
     rejected(try_call(old_release));
     rejected(try_call(Action::Publish {
@@ -208,9 +204,7 @@ fn aba() {
         maintenance: None,
     }));
     rejected(try_call(Action::Inspect(Query::FaultEvent {
-        token: new.token(),
-        nest: new.nest(),
-        reservation: event.reservation,
+        range: new.range(),
         epoch,
         after: 0,
         wait: kernel_api::model::wait::Wait::Poll,
