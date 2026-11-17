@@ -188,10 +188,7 @@ pub fn reserve_pages(
     else {
         panic!("Reservation")
     };
-    (
-        MemoPosition::new(token, 0).unwrap(),
-        address,
-    )
+    (MemoPosition::new(token, 0).unwrap(), address)
 }
 pub fn insert(target: MemoPosition, slot: SlotPosition) {
     mutate(Action::Insert {

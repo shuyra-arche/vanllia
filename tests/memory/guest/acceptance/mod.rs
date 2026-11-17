@@ -46,7 +46,9 @@ fn at(_memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
     MemoPosition::new(token, page).unwrap()
 }
 fn span_status(memo: MemoPosition) -> SpanStatus {
-    let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
+    let Snapshot::Span(s) = inspect(Query::Span {
+        range: memo.range(),
+    }) else {
         panic!("Span")
     };
     s
@@ -58,7 +60,10 @@ fn span_id(memo: MemoPosition) -> SpanId {
     id
 }
 fn release(memo: MemoPosition) -> Action {
-    Action::DeleteSpan { range: memo.range(), expected: RangeVersion::new(span_status(memo).version.get()).unwrap() }
+    Action::DeleteSpan {
+        range: memo.range(),
+        expected: RangeVersion::new(span_status(memo).version.get()).unwrap(),
+    }
 }
 #[track_caller]
 fn rejected(response: Result<Response, kernel_client::memory::Error>) -> Failure {

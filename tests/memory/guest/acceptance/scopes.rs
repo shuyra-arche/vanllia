@@ -33,8 +33,13 @@ pub fn run() {
         rejected(worker.call(Action::Inspect(Query::Memo(at(other, token, 1)))));
         // Even the actual parent's numeric token is not in this Task's ledger.
         rejected(worker.call(Action::Inspect(Query::Memo(own))));
-        rejected(worker.call(Action::DeleteSpan { range: token, expected: RangeVersion::new(span_status(own).version.get()).unwrap() }));
-        rejected(worker.call(Action::FaultRoute { range: token, expected: RangeVersion::new(span_status(own).version.get()).unwrap(),
+        rejected(worker.call(Action::DeleteSpan {
+            range: token,
+            expected: RangeVersion::new(span_status(own).version.get()).unwrap(),
+        }));
+        rejected(worker.call(Action::FaultRoute {
+            range: token,
+            expected: RangeVersion::new(span_status(own).version.get()).unwrap(),
             epoch: FaultEpoch::new(1).unwrap(),
             route: None,
         }));
@@ -192,16 +197,21 @@ fn aba() {
     }
     // ABI 14 cannot forge a Span identity into a MemoPosition. Old authority
     // is invalid even when the address has been reoccupied by a new Span.
-    rejected(try_call(Action::Inspect(Query::Span { range: old.range() })));
+    rejected(try_call(Action::Inspect(Query::Span {
+        range: old.range(),
+    })));
     rejected(try_call(old_release));
     rejected(try_call(Action::Publish {
         memo: old,
         expected: old_generation,
         maintenance: None,
     }));
-    rejected(try_call(Action::Inspect(Query::FaultEvent { range: new.range(), epoch,
+    rejected(try_call(Action::Inspect(Query::FaultEvent {
+        range: new.range(),
+        epoch,
         after: 0,
-        wait: kernel_api::model::wait::Wait::Poll, })));
+        wait: kernel_api::model::wait::Wait::Poll,
+    })));
     assert_eq!(memo_status(new).phase, MemoPhase::Empty);
     let _ = writeln!(
         Console,

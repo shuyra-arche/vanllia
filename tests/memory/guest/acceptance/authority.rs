@@ -79,7 +79,9 @@ pub fn run() {
     let signal = sign::create(license()).unwrap();
     let child_sign = accord(signal, worker.0, pend_info(signal).limits);
     let response = worker
-        .call(Action::FaultRoute { range: token, expected: RangeVersion::new(span_status(memo).version.get()).unwrap(),
+        .call(Action::FaultRoute {
+            range: token,
+            expected: RangeVersion::new(span_status(memo).version.get()).unwrap(),
             epoch: FaultEpoch::new(1).unwrap(),
             route: Some(FaultRoute {
                 sign: child_sign,
@@ -101,9 +103,12 @@ pub fn run() {
         }),
     );
     assert_ne!(old, replacement);
-    rejected(worker.call(Action::Inspect(Query::FaultEvent { range: token, epoch: old,
+    rejected(worker.call(Action::Inspect(Query::FaultEvent {
+        range: token,
+        epoch: old,
         after: 0,
-        wait: kernel_api::model::wait::Wait::Poll, })));
+        wait: kernel_api::model::wait::Wait::Poll,
+    })));
     let stale = memo_status(memo).generation;
     insert(memo, create(1));
     rejected(try_call(Action::Publish {
@@ -124,12 +129,7 @@ pub fn run() {
 extern "C" fn foreign(at: usize, count: usize) -> ! {
     assert_eq!(count, 1);
     let address = unsafe { *(at as *const usize) };
-    let p = find(|p| {
-        matches!(
-            p.limits.scope,
-            PendScope::Nest(NestScope::Span { .. })
-        )
-    });
+    let p = find(|p| matches!(p.limits.scope, PendScope::Nest(NestScope::Span { .. })));
     let Target::Nest(_) = p.target else {
         panic!("Nest")
     };

@@ -4,7 +4,12 @@ use crate::support::*;
 use kernel_api::{
     abi::memory::*,
     address::*,
-    model::{cell::Placement, flat::SlotPosition, nest::{MemoPosition, RangeVersion}, unit::TaskStart},
+    model::{
+        cell::Placement,
+        flat::SlotPosition,
+        nest::{MemoPosition, RangeVersion},
+        unit::TaskStart,
+    },
 };
 use kernel_client::{call::room, memory::Response};
 
@@ -65,8 +70,7 @@ impl Stack {
             .then(|| reserve_pages(space(), Placement::lowest(PAGE_SIZE).unwrap(), 6, pages));
         for page in 0..pages {
             let slot = SlotPosition::new(flat.token(), flat.flat(), page).unwrap();
-            let target =
-                MemoPosition::new(memo.range(), page + 1).unwrap();
+            let target = MemoPosition::new(memo.range(), page + 1).unwrap();
             change(|| Action::Occupy {
                 slot,
                 expected: slot_status(slot).version,
@@ -85,9 +89,7 @@ impl Stack {
                 maintenance: None,
             });
             if let Some((first, _)) = local {
-                let target =
-                    MemoPosition::new(first.range(), page)
-                        .unwrap();
+                let target = MemoPosition::new(first.range(), page).unwrap();
                 change(|| Action::Insert {
                     target,
                     expected: memo_status(target).generation,
@@ -129,10 +131,15 @@ impl Stack {
     pub fn retire(self) {
         for memo in [Some(self.memo), self.local].into_iter().flatten() {
             change(|| {
-                let Snapshot::Span(status) = inspect(Query::Span { range: memo.range() }) else {
+                let Snapshot::Span(status) = inspect(Query::Span {
+                    range: memo.range(),
+                }) else {
                     panic!("reservation")
                 };
-                Action::DeleteSpan { range: memo.range(), expected: RangeVersion::new(status.version.get()).unwrap() }
+                Action::DeleteSpan {
+                    range: memo.range(),
+                    expected: RangeVersion::new(status.version.get()).unwrap(),
+                }
             });
         }
         for memo in [Some(self.memo), self.local].into_iter().flatten() {

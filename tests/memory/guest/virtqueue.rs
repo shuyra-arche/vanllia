@@ -279,10 +279,15 @@ pub fn run() {
 fn release(memo: MemoPosition) {
     let deadline = room::clock() + 3_000_000_000;
     loop {
-        let Snapshot::Span(s) = inspect(Query::Span { range: memo.range() }) else {
+        let Snapshot::Span(s) = inspect(Query::Span {
+            range: memo.range(),
+        }) else {
             panic!("Reservation")
         };
-        let Response::Reply(reply) = call(Action::DeleteSpan { range: memo.range(), expected: RangeVersion::new(s.version.get()).unwrap() }) else {
+        let Response::Reply(reply) = call(Action::DeleteSpan {
+            range: memo.range(),
+            expected: RangeVersion::new(s.version.get()).unwrap(),
+        }) else {
             panic!("Release reply")
         };
         match reply.outcome() {
@@ -362,10 +367,15 @@ fn lifecycle(external: kernel_api::model::identity::PendId) {
                 let _ = pend::return_(branch);
             }
             Close::Release => {
-                let Snapshot::Span(s) = inspect(Query::Span { range: device.range() }) else {
+                let Snapshot::Span(s) = inspect(Query::Span {
+                    range: device.range(),
+                }) else {
                     panic!("Reservation")
                 };
-                let Response::Reply(r) = call(Action::DeleteSpan { range: device.range(), expected: RangeVersion::new(s.version.get()).unwrap() }) else {
+                let Response::Reply(r) = call(Action::DeleteSpan {
+                    range: device.range(),
+                    expected: RangeVersion::new(s.version.get()).unwrap(),
+                }) else {
                     panic!("Release")
                 };
                 assert!(
