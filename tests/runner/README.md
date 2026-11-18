@@ -20,17 +20,19 @@ complete System or physical hardware acceptance.
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) selects 11
-single-Hart contract/ABI/QEMU jobs, up to eight in parallel, with `fail-fast: false`
-and separate evidence per job. Kernel's standalone
-[IOMMU target QEMU workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
-owns its MMIO/DMA assertions and target evidence; Vanllia no longer duplicates
-that Kernel-private QEMU invocation. System separately runs its own runtime,
-Supply, RPC and handoff contracts; Vanllia no longer duplicates their runtime
-scenario. The Kernel-owned SMP, Flat and realtime multi-Hart campaign is not
-a routine CI gate; affected tests remain explicitly
-runnable by their owners. Opt-in paired Room/IRQ performance comparisons run with
-four Harts and retain reproducible baseline evidence.
+[integration workflow](../../.github/workflows/memory.yml) directly selects
+five single-Hart Native/ABI/std composition QEMU cases, each with separate
+evidence. A pinned
+[Kernel-owned reusable workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/pinned-target.yml)
+selects and executes six separate single-Hart Activity, Unsupported, Stopped
+and IRQ cases: Vanllia passes only the Kernel SHA from its product gitlink,
+not Kernel-private runner commands, fixture revisions or scenario matrices.
+Kernel also owns the separate
+[IOMMU target QEMU workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml).
+System's own native CI checks its Runtime, Supply, RPC and handoff contracts.
+Ordinary CI does not claim SMP or Realtime qualification; manual owner-side
+execution remains available. Opt-in paired Room/IRQ performance comparisons
+still run with four Harts and retain baseline evidence.
 The Kernel tested by the workflow is selected from the product's committed
 `components/kernel` gitlink, which must agree with its manifests and lockfiles.
 There is no separate test-only Kernel version selection. Private Kernel probes
