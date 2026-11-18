@@ -48,11 +48,13 @@ still use the immutable published Vanllia fixture
 `f2dfa14f5b1f7bd47ee84841ba5c7112e8475950`; changes to these test inputs
 are distinct from ABI migration.
 
-Long comparisons require `Room comparison: requested` and one exact
-`Room baseline: <40 lowercase hex characters>` line in the Vanllia PR body.
-Mode/instrumentation combinations run on independent workers. Within one paired
-comparison, build order and alternating A/B boots remain controlled; those
-samples cannot be run concurrently without changing the experiment.
+The optional [Kernel-owned Room/IRQ comparison workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/room-comparison.yml)
+owns its five private experiment variants, four-Hart release profiles, five
+rounds, immutable control revision, alternating boots, and raw evidence.
+Vanllia only gates the requested run and passes its selected product Kernel
+SHA. A caller PR must include `Room comparison: requested` and exactly one
+`Room baseline: <40 lowercase hex characters>` line. The comparison is not
+ordinary CI or product acceptance; samples from a pair are not run concurrently.
 
 Outputs must be new directories. The Vanllia Host executor preserves
 `execution.json`, `stdout.log`, `stderr.log`, `exit.json` and a transport
