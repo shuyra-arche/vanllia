@@ -2,9 +2,9 @@
 resolver = "2"
 members = ["guest", "platform"]
 [workspace.dependencies]
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "a3d7a04ce2c3e007b2ee9a622969b00287bb77c0" }
-kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "a3d7a04ce2c3e007b2ee9a622969b00287bb77c0" }
-kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "a3d7a04ce2c3e007b2ee9a622969b00287bb77c0" }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "335e70adeb071ae663fd7135c593d6206abb9b28" }
+kernel-client = { git = "https://github.com/shuyra-arche/kernel.git", rev = "335e70adeb071ae663fd7135c593d6206abb9b28" }
+kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "335e70adeb071ae663fd7135c593d6206abb9b28" }
 [profile.dev]
 panic = "abort"
 [profile.release]
