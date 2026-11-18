@@ -1,9 +1,13 @@
 # Native verification
 
-This standalone Cargo workspace is a host utility outside the product and RV64
-workspaces. It uses Kernel's small host execution library for bounded processes,
-evidence and Capsule encoding. Kernel does not depend on Vanllia's tooling.
-The shared orchestration contracts run in Kernel's own Host CI.
+This standalone Cargo workspace is a Host-only test utility outside the
+production and RV64 workspaces. It reuses the existing
+`vanllia-build::workflow::process` for bounded processes, cleanup and execution
+evidence, and the production `vanllia_build::boot_capsule` encoder for guest
+payload bytes. Local test-only helpers handle exact Git archives, provenance and
+the outer initrd envelope, including ABI 10/12 rejection inputs.
+It does **not** source or depend on Kernel's private `kernel-verification`
+Host library. The Kernel owner maintains its target test runner separately.
 
 `verify native` owns the current memory/IPC/Swap/Virtqueue composition, including
 ABI rejection; see [the memory guide](../memory/README.md). `verify versions`
