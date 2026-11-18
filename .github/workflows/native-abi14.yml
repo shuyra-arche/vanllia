@@ -110,6 +110,7 @@ jobs:
               print(f"Candidate {name} = {pin}")
           assert Path("tests/runner/kernel").read_text().strip() == pin
           PY
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           test "$(git ls-files --stage components/kernel | awk '{print $2}')" = "$PROVIDER_SHA"
       - name: Check Native guest against ABI 14
         run: |
