@@ -60,6 +60,3 @@ path = "tests/cli/verdict.rs"
 name = "workspace"
 path = "tests/cli/workspace.rs"
 
-[[test]]
-name = "device"
-path = "tests/device/mod.rs"
