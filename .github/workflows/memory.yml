@@ -240,8 +240,8 @@ jobs:
         id: control
         if: matrix.mode != 'warmup'
         run: |
-          cargo build --locked --manifest-path .integration/kernel/server/product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          .integration/kernel/server/product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify baseline --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
+          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify baseline --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: matrix.mode != 'warmup'
         with:
@@ -259,7 +259,7 @@ jobs:
           MODE: ${{ matrix.mode }}
           LATENCY: ${{ matrix.latency }}
         run: |
-          cargo build --locked --manifest-path .integration/kernel/server/product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
           args=()
           if [[ "$LATENCY" == disabled ]]; then args+=(--no-latency); fi
           if [[ "$MODE" == warmup ]]; then
@@ -268,7 +268,7 @@ jobs:
           else
             args+=(--baseline .integration/control)
           fi
-          .integration/kernel/server/product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --harts 4 --rounds 5 "${args[@]}"
+          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --harts 4 --rounds 5 "${args[@]}"
       - name: Preserve paired evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
