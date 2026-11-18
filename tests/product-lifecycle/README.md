@@ -33,8 +33,9 @@ process evidence and `verdict.json`. The monitor is a failure cleanup mechanism;
 using it to force shutdown cannot satisfy the verdict.
 
 This covers startup and terminal EOF cleanup. It does not exercise authenticated
-Shell creation or old scenarios. The separate ignored `cost` target measures
-[paired syscall cost](../syscall-cost/README.md); it is not part of this lifecycle test.
+Shell creation or old scenarios. The historical syscall-cost guest and its
+pairwise comparison target were retired as an unqualified legacy experiment;
+see [retirement details](../../docs/migration.md#retired-syscall-cost-experiment-2026-11-18).
 
 ## Login and requested Shell smoke
 

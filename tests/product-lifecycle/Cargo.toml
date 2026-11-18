@@ -14,10 +14,6 @@ name = "login"
 path = "login.rs"
 
 [[test]]
-name = "cost"
-path = "cost.rs"
-
-[[test]]
 name = "drivers"
 path = "drivers.rs"
 
