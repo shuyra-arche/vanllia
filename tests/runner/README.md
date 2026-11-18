@@ -31,9 +31,12 @@ scenario. The Kernel-owned SMP, Flat and realtime multi-Hart campaign is not
 a routine CI gate; affected tests remain explicitly
 runnable by their owners. Opt-in paired Room/IRQ performance comparisons run with
 four Harts and retain reproducible baseline evidence.
-The Kernel candidate is the full SHA in `tests/runner/kernel`; it is an explicit
-test override, not a change to the product's default Kernel pin. Private Kernel
-probes use the published Vanllia fixture `f2dfa14f5b1f7bd47ee84841ba5c7112e8475950`.
+The Kernel tested by the workflow is selected from the product's committed
+`components/kernel` gitlink, which must agree with its manifests and lockfiles.
+There is no separate test-only Kernel version selection. Private Kernel probes
+still use the immutable published Vanllia fixture
+`f2dfa14f5b1f7bd47ee84841ba5c7112e8475950`; changes to these test inputs
+are distinct from ABI migration.
 
 Long comparisons require `Room comparison: requested` and one exact
 `Room baseline: <40 lowercase hex characters>` line in the Vanllia PR body.
@@ -71,9 +74,9 @@ production Loader on one qualified Hart. Both the normal Loader invariants and
 std completion/reclamation/mapping-retirement marker are required; exact source
 commits, receipt/ELF/Kernel hashes and native logs are retained.
 
-The final test-provider override is `6fe567ab8b7532772ec34ecc7ab803282d3f30c8`.
-It adds only bounded retries for the RT guest's required-success admissions
-after production provider `789ffd19b5359f3de172fb9aad8a61f6a7113a64`;
-production sources and ABI are identical. Rejected Busy is not admission proof.
-The exact overload rejection and every budget/preemption/retirement assertion
-remain required. Product manifests/locks/gitlink retain the production pin.
+The earlier `6fe567ab8b7532772ec34ecc7ab803282d3f30c8` test-only
+override changed only the Realtime test admission retry and is no longer
+selected by the ordinary integration workflow, which does not run Realtime
+qualification. Owner-side Realtime tests and their required Busy/budget
+assertions remain available by explicit execution. The product Kernel pin,
+ABI and lockfiles are unchanged.
