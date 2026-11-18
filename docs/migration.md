@@ -39,8 +39,9 @@ The original source/blob attribution is preserved unchanged in
 [`provenance/legacy-source-files.json`](provenance/legacy-source-files.json);
 its path entries describe the retired files.
 
-Current CLI/build-library tests, product lifecycle gates and the syscall-cost
-benchmark remain. The imported build-library examples (including their Python
+Current CLI/build-library tests and the separately ignored product lifecycle
+gates remain. The incompatible syscall-cost experiment was retired later; see
+the explicit record below. The imported build-library examples (including their Python
 runner adapters and fixed external source recipes) remain as library fixtures.
 They do not depend on the removed in-repository acceptance machinery.
 
@@ -74,3 +75,27 @@ until an owner validates the behavior at a compatible revision.
 
 This retirement does not update Kernel ABI, any product pin or lockfile,
 normal QEMU integration matrices, or `vanllia test` semantics.
+
+## Retired syscall-cost experiment (2026-11-18)
+
+The standalone `tests/syscall-cost/` no_std guest still imported the obsolete
+`env`, `execution` and `mold` provider graph. Its accompanying ignored
+`tests/product-lifecycle/cost.rs` target attempted paired baseline/current
+Kernel comparisons against a different modern artifact and native-result graph.
+It was not part of ordinary CI and was not a verified current-product benchmark.
+Running or keeping its test entry was not evidence about ABI 13 or current
+Kernel performance.
+
+Both the guest and test-only paired cost target have been retired rather
+than silently porting their runtime ABI. Their exact source files, fixed
+Cargo.lock, benchmark input requirements and measurement codec remain in
+[Git history at `32c63003726eff3226db740b4b2cd69df48532fe`](https://github.com/shuyra-arche/vanllia/tree/32c63003726eff3226db740b4b2cd69df48532fe/tests/syscall-cost),
+along with the [paired cost host target](https://github.com/shuyra-arche/vanllia/blob/32c63003726eff3226db740b4b2cd69df48532fe/tests/product-lifecycle/cost.rs).
+
+The `SelfId` syscall-cost and mixed Kernel-version performance properties
+are **not replaced or qualified** by the existing Kernel Room/IRQ benchmarks.
+Any new comparison belongs to the Kernel performance or real product
+measurement owner, using compatible immutable revisions and the typed native
+verdict. The normal Vanllia build/test tooling and optional four-Hart
+Kernel-owned paired benchmarks are unchanged. No production ABI, provider pin,
+product lock, business assertion, or current CI scenario has been changed.

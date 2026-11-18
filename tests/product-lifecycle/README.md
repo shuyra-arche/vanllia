@@ -1,11 +1,13 @@
-# Exact product artifact acceptance
+# Historical product artifact acceptance (not current CI)
 
-This independent workspace has not been refreshed for Kernel Gamma: its
-lockfile still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Its
-path dependencies on the root CLI/build library now require a coordinated
-lockfile refresh and System/service compatibility validation before these
-commands can provide current-product evidence. It is excluded from the root
-workspace and from [Gamma's native memory acceptance](../memory/README.md).
+This independent, opt-in workspace is **not an active product release
+gate** and has not been refreshed for current Kernel ABI 13: its lockfile
+still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Local CLI/build
+library dependencies require a coordinated product-owner lock refresh and
+System/service compatibility validation before these scenarios can produce
+current-product evidence. It is excluded from root Host CI and
+[Native memory acceptance](../memory/README.md); an ignored or historical run
+is not a passing current-product verdict.
 
 This Rust host test boots an existing product artifact unchanged: it adds no
 test Unit and does not rebuild initrd. It derives required startup identities
@@ -33,8 +35,9 @@ process evidence and `verdict.json`. The monitor is a failure cleanup mechanism;
 using it to force shutdown cannot satisfy the verdict.
 
 This covers startup and terminal EOF cleanup. It does not exercise authenticated
-Shell creation or old scenarios. The separate ignored `cost` target measures
-[paired syscall cost](../syscall-cost/README.md); it is not part of this lifecycle test.
+Shell creation or old scenarios. The historical syscall-cost guest and its
+pairwise comparison target were retired as an unqualified legacy experiment;
+see [retirement details](../../docs/migration.md#retired-syscall-cost-experiment-2026-11-18).
 
 ## Login and requested Shell smoke
 

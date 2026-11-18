@@ -14,7 +14,6 @@ build work; Units describe runtime policy.
 - `components/`: pinned Kernel, System and service repositories.
 - `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
 - `tests/platform/qemu/`: [trusted QEMU boot image](tests/platform/qemu/README.md) for Kernel IOMMU acceptance.
-- `tests/syscall-cost/`: optional paired syscall benchmark.
 
 ## Build and run
 
@@ -57,8 +56,9 @@ vanllia test -- pipe.roundtrip
 ```
 
 Artifacts and native receipts live under `.vanllia/`. A successful build alone
-is not a runtime verdict. [Product lifecycle tests](tests/product-lifecycle/README.md)
-document the additional explicit QEMU gates and their limits.
+is not a runtime verdict. [Historical product lifecycle probes](tests/product-lifecycle/README.md)
+are ignored and have not been qualified against the current product lock;
+they are **not** passing release acceptance.
 
 ## Development and checks
 
@@ -121,15 +121,15 @@ rebuild even when receipt hashes match. The historical build-library declaration
 workflow still carries legacy dependencies and is not evidence of a clean
 assembled System dependency graph.
 
-The separate `tests/device/guest` workspace retains Kernel
-`5e6ea8ff5f48f5ce17c88d98cbedcc7a0ffe3a9e`; its ignored device runner
-requires migration before use with the current packager. The independent
+The old `tests/device` guest and experimental `tests/syscall-cost`
+benchmark were retired because their historical provider graphs cannot
+qualify the current ABI 13 product; their complete sources and coverage gaps
+are preserved in the [migration record](docs/migration.md). The independent
 `tests/product-lifecycle` lockfile still records Kernel
-`a9986c82127cf25183bf5c30e7d42e4a9376b734`; it also needs a coordinated
-refresh and validation. The optional `tests/syscall-cost` guest and legacy
-System/Driver providers remain outside this Gamma acceptance. These paths
-are not selected by the platform or native memory workspaces, and root host
-tests do not execute their guests. Full System/service migration belongs to
+`a9986c82127cf25183bf5c30e7d42e4a9376b734` and requires a coordinated
+product-owner refresh and validation. Its ignored scenarios are not selected
+by ordinary Host, Platform or Native CI and are **not current-product acceptance**.
+Legacy System/Driver providers also remain outside this product gate. Full System/service migration belongs to
 [System #10](https://github.com/shuyra-arche/system/issues/10),
 [System #13](https://github.com/shuyra-arche/system/issues/13) and
 [Hub #3](https://github.com/shuyra-arche/driver-hub/issues/3).
