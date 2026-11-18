@@ -16,9 +16,11 @@ not a requirement for other products using Vanllia's existing `--root`.
   product lock**.
 
 The existing [composition workflow](../.github/workflows/memory.yml) runs five
-Vanllia-product Native/ABI/std QEMU cases and calls six Kernel-owned Activity/IRQ
-target cases on one Hart. No full product/physical hardware/SMP/Realtime/ABI14
-qualification is implied.
+Shuyra-product Native/ABI/std QEMU cases and calls six Kernel-owned Activity/IRQ
+target cases on one Hart. Optional four-Hart Room/IRQ performance comparisons
+are also **defined and executed by Kernel**; this product merely opts in and
+supplies its exact candidate Kernel revision. No full product/physical
+hardware/SMP/Realtime/ABI14 qualification is implied.
 
 The generic CLI, builder and test discovery contracts remain in `tests/cli/`
 and `crates/build/tests/`. New provider tests can use public `test.toml` and
