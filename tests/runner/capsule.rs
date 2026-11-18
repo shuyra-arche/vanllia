@@ -1,6 +1,6 @@
 //! Test-only initrd envelope for the production Vanllia boot Capsule encoder.
 //! ABI-negative cases change only the byte under test, not ELF normalization.
-use kernel_verification::{Result, require};
+use crate::support::{Result, require};
 
 pub fn initrd(elf: &[u8], version: u8) -> Result<Vec<u8>> {
     require(matches!(version, 10..=13), "unsupported test ABI version")?;
