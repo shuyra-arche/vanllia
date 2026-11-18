@@ -22,7 +22,7 @@ export VANLLIA_TEST_ARTIFACT=/absolute/path/to/artifact-directory
 export VANLLIA_TEST_FIRMWARE=/absolute/path/to/fw_dynamic.bin
 export VANLLIA_TEST_FIRMWARE_SHA256=verified-sha256
 export VANLLIA_TEST_FIRMWARE_BYTES=verified-length
-export VANLLIA_TEST_CPUS=4 # optional; defaults to 1, accepts 1 through 4
+export VANLLIA_TEST_CPUS=4 # optional; defaults to 4, accepts 1 through 4
 cargo test --manifest-path tests/product-lifecycle/Cargo.toml \
   --test product --target x86_64-unknown-linux-gnu --locked -- --ignored --nocapture
 ```
