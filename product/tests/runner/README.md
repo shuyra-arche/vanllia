@@ -1,4 +1,8 @@
-# Native verification
+# Product Native verification
+
+This runner belongs to the selected Shuyra ABI13 product composition, not to
+Vanllia's generic CLI or its Host regression suite. It intentionally remains a
+separate Cargo workspace for byte-accurate Native/ABI verification.
 
 This standalone Cargo workspace is a Host-only test utility outside the
 production and RV64 workspaces. It reuses the existing
@@ -24,7 +28,7 @@ complete System or physical hardware acceptance.
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) directly selects
+[integration workflow](../../../.github/workflows/memory.yml) directly selects
 five single-Hart Native/ABI/std composition QEMU cases, each with separate
 evidence. A pinned
 [Kernel-owned reusable workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/pinned-target.yml)

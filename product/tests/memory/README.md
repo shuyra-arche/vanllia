@@ -1,5 +1,10 @@
 # Native memory integration
 
+This is a Shuyra **product-owned** ABI13 composition regression, not a generic
+Vanllia build-tool test. The default Shuyra product currently keeps its
+`vanllia.toml` and provider gitlinks at the repository root; moving this
+fixture under `product/tests/` does not change any selected source revision.
+
 This standalone workspace composes one ABI 13 image from the pinned Kernel API,
 Client and Server. It exercises real Tasks and Teams through the public ABI,
 including a PCI virtio-blk split Virtqueue behind the RISC-V IOMMU. Production
@@ -24,9 +29,9 @@ QEMU 10.0.x and OpenSBI with DBCN:
 ```sh
 export QEMU_RISCV64=qemu-system-riscv64
 export QEMU_OPENSBI=/usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
-cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-debug
-cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-reject --capsule-version 10
-cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-release --profile release
+cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-debug
+cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-reject --capsule-version 10
+cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- native --fixture "$PWD" --kernel /absolute/path/to/kernel --output /new/native-release --profile release
 ```
 
 The host-only [runner](../runner/README.md) archives the committed fixture and
@@ -91,7 +96,7 @@ then blocks the Page and refuses Vacate until reset/drain. A retained Draining
 Block is explicitly resumed with its original credential before Vacate/Allow.
 The runner requires every acceptance marker and clean final controller shutdown.
 
-`python3 tests/memory/versions.py` checks the API/Client/Server and Capsule/platform
+`cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .` checks the API/Client/Server and Capsule/platform
 provider revision, native feature, five lockfiles and Kernel submodule together.
 The packager's host tests validate generated and rejected Capsule headers.
 

@@ -1,10 +1,10 @@
 name: Platform
 on:
   pull_request:
-    paths: ["platform/**", "tests/platform/**", "crates/build/**", "Cargo.lock", "components/kernel", ".github/workflows/platform.yml"]
+    paths: ["platform/**", "tests/platform/**", "product/tests/runner/**", "crates/build/**", "Cargo.lock", "components/kernel", ".github/workflows/platform.yml"]
   push:
     branches: [main]
-    paths: ["platform/**", "tests/platform/**", "crates/build/**", "Cargo.lock", "components/kernel", ".github/workflows/platform.yml"]
+    paths: ["platform/**", "tests/platform/**", "product/tests/runner/**", "crates/build/**", "Cargo.lock", "components/kernel", ".github/workflows/platform.yml"]
 permissions:
   contents: read
 env:
@@ -28,7 +28,7 @@ jobs:
           cargo test --locked --manifest-path platform/riscv/Cargo.toml --no-default-features --target x86_64-unknown-linux-gnu
           cargo test --locked --manifest-path tests/platform/qemu/Cargo.toml --no-default-features --target x86_64-unknown-linux-gnu
           cargo test --locked -p vanllia-build --target x86_64-unknown-linux-gnu
-          cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
+          cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
       - name: Build the pinned provider and both boot images
         env:
           RUSTFLAGS: "-Crelocation-model=static -Cforce-frame-pointers=yes -Ccode-model=medium -Dwarnings"

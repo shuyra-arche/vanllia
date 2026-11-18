@@ -11,6 +11,8 @@ build work; Units describe runtime policy.
 - `src/`: Vanllia CLI; [CLI guide](docs/cli.md).
 - `crates/build/`: `vanllia-build` library, its tests and workflow examples.
 - `tests/cli/`: CLI integration tests.
+- `product/tests/`: selected Shuyra **product-owned** ABI13 Native/negative-boot
+  composition fixtures and their Host runner (not generic CLI tests).
 - `components/`: pinned Kernel, System and service repositories.
 - `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
 - `tests/platform/qemu/`: [trusted QEMU boot image](tests/platform/qemu/README.md) for Kernel IOMMU acceptance.
@@ -107,7 +109,7 @@ ABI/Ledger are 13/13 and Capsule format 2. Merge the Kernel provider before
 this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
 the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
 Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
-fixture and native memory workspaces. `cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .`
+fixture and native memory workspaces. `cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .`
 checks their coordinated source identity. No Cargo feature selects the ABI.
 The original [26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
 tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`. Its native debug
@@ -135,7 +137,7 @@ Legacy System/Driver providers also remain outside this product gate. Full Syste
 [Hub #3](https://github.com/shuyra-arche/driver-hub/issues/3).
 
 Gamma's release notes and the historical timings in the
-[native memory guide](tests/memory/README.md) are not execution evidence for
+[native memory guide](product/tests/memory/README.md) are not execution evidence for
 this exact Vanllia composition. New Host, RV64 and QEMU results, exact source
 revisions and artifact identities are recorded separately in the
 [provider acceptance PR #38](https://github.com/shuyra-arche/vanllia/pull/38).

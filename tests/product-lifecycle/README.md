@@ -6,7 +6,7 @@ still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Local CLI/build
 library dependencies require a coordinated product-owner lock refresh and
 System/service compatibility validation before these scenarios can produce
 current-product evidence. It is excluded from root Host CI and
-[Native memory acceptance](../memory/README.md); an ignored or historical run
+[Native memory acceptance](../../product/tests/memory/README.md); an ignored or historical run
 is not a passing current-product verdict.
 
 This Rust host test boots an existing product artifact unchanged: it adds no

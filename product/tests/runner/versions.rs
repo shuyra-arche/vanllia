@@ -18,7 +18,7 @@ pub fn run(root: &Path) -> Result<()> {
         "crates/build/Cargo.toml",
         "platform/riscv/Cargo.toml",
         "tests/platform/qemu/Cargo.toml",
-        "tests/memory/Cargo.toml",
+        "product/tests/memory/Cargo.toml",
     ] {
         let value: toml::Value = toml::from_str(&fs::read_to_string(root.join(path))?)?;
         let mut deps = vec![];
@@ -54,7 +54,7 @@ pub fn run(root: &Path) -> Result<()> {
         "platform/riscv/Cargo.lock",
         "tests/platform/qemu/Cargo.lock",
         "tests/platform/hardware/Cargo.lock",
-        "tests/memory/Cargo.lock",
+        "product/tests/memory/Cargo.lock",
     ] {
         let value: toml::Value = toml::from_str(&fs::read_to_string(root.join(path))?)?;
         let packages = value["package"].as_array().ok_or("invalid Cargo lock")?;

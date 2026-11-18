@@ -10,7 +10,7 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     archive(kernel, &source, &root.join("provider"))?;
     archive(fixture, &pin, &root.join("fixture"))?;
     let provider = root.join("provider");
-    let composition = root.join("fixture/tests/memory");
+    let composition = root.join("fixture/product/tests/memory");
     let qemu = std::env::var("QEMU_RISCV64").unwrap_or("qemu-system-riscv64".into());
     let firmware = Path::new(&std::env::var("QEMU_OPENSBI")?).canonicalize()?;
     let mut inputs = serde_json::json!({"source":source,"fixture":pin,"profile":profile,
