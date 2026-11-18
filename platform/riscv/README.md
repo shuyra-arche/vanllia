@@ -19,9 +19,10 @@ contains the MMIO ownership facts; CPU/Sv/Sstc/SBI and PLIC facts stay in RV64.
 
 This platform requires the matching Kernel source pin in both this package and
 `tests/platform/qemu`, including their lockfiles. Merge the Kernel provider PR
-first, then the linked Vanllia consumer PR. The syscall ABI remains v5; device
-dispatch uses Ledger v7 pairs as described below. No second-ISA boot support
-is introduced.
+first, then the linked Vanllia consumer PR. This trusted Platform interface
+does not select the user syscall ABI; the selected Kernel/product revision
+defines that contract. Device dispatch uses
+the Ledger pairs described below. No second-ISA boot support is introduced.
 
 `src/memory`, `harts` and `tree` decode bounded firmware facts; `resources`,
 `topology` and `interrupt` resolve protected ownership and wiring. `boot` freezes
@@ -39,12 +40,15 @@ cargo +nightly build --locked --manifest-path platform/riscv/Cargo.toml --target
 cargo +nightly build --locked --manifest-path platform/riscv/Cargo.toml --release --target riscv64gc-unknown-none-elf
 ```
 
-Run Kernel's hardware suite with `KERNEL_BOOT_MANIFEST` pointing here and
-`KERNEL_PLATFORM_MANIFEST` pointing to the EDU fixture. Tests cover sparse harts,
-multiple RAM banks, reserved/no-map holes and ROOT stack admission, in addition to
-CPU and external translation behavior. Use the pinned provider or temporarily
-patch **both** Kernel and API to a candidate checkout and refresh the image lock.
-Host parsing tests do not prove QEMU execution or physical-hardware ordering.
+The Host parsing suites cover sparse Hart IDs, multiple RAM banks,
+reserved/no-map holes, ROOT stack admission, and CPU/translation input policy.
+They do not prove QEMU execution or physical-hardware ordering. The former
+`KERNEL_BOOT_MANIFEST` / `KERNEL_PLATFORM_MANIFEST` route to Kernel's retired
+`--test hardware` suite is not a current verification entry. Kernel's separate
+[IOMMU target QEMU workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
+executes Kernel-owned MMIO/DMA scenarios against its current target fixture.
+For a different Kernel candidate, coordinate the Kernel/API source revisions
+and this Platform's Cargo locks before claiming target compatibility.
 
 ## Firmware admission
 
