@@ -79,52 +79,49 @@ pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path, harts: u8) 
         inputs["sha256"][name] = digest(&root.join(name))?.into();
     }
     json(&root.join("inputs.json"), &inputs)?;
-    let mut passed = true;
-    for harts in [harts] {
-        let destination = root.join(format!("harts-{harts}"));
-        let mut command = Command::new(&qemu);
-        command
-            .args([
-                "-accel",
-                "tcg,thread=multi",
-                "-machine",
-                "virt",
-                "-cpu",
-                "rv64",
-                "-smp",
-            ])
-            .arg(harts.to_string())
-            .args([
-                "-m",
-                "128M",
-                "-nographic",
-                "-monitor",
-                "none",
-                "-nic",
-                "none",
-                "-bios",
-            ])
-            .arg(&firmware)
-            .arg("-kernel")
-            .arg(root.join("platform.elf"))
-            .arg("-initrd")
-            .arg(root.join("initrd.bin"));
-        let mut result = process::run(&mut command, &destination, Duration::from_secs(120))?;
-        let log = fs::read_to_string(destination.join("serial.log"))?;
-        passed &= process::accept(
-            &mut result,
-            &log,
-            &[
-                "PASS system-runtime",
-                "PASS supply-native",
-                "PASS system-rpc",
-                "PASS supply-window",
-                "task: all tasks exited",
-            ]
-            .map(String::from),
-        );
-        json(&destination.join("result.json"), &result)?;
-    }
+    let destination = root.join(format!("harts-{harts}"));
+    let mut command = Command::new(&qemu);
+    command
+        .args([
+            "-accel",
+            "tcg,thread=multi",
+            "-machine",
+            "virt",
+            "-cpu",
+            "rv64",
+            "-smp",
+        ])
+        .arg(harts.to_string())
+        .args([
+            "-m",
+            "128M",
+            "-nographic",
+            "-monitor",
+            "none",
+            "-nic",
+            "none",
+            "-bios",
+        ])
+        .arg(&firmware)
+        .arg("-kernel")
+        .arg(root.join("platform.elf"))
+        .arg("-initrd")
+        .arg(root.join("initrd.bin"));
+    let mut result = process::run(&mut command, &destination, Duration::from_secs(120))?;
+    let log = fs::read_to_string(destination.join("serial.log"))?;
+    let passed = process::accept(
+        &mut result,
+        &log,
+        &[
+            "PASS system-runtime",
+            "PASS supply-native",
+            "PASS system-rpc",
+            "PASS supply-window",
+            "task: all tasks exited",
+        ]
+        .map(String::from),
+    );
+    json(&destination.join("result.json"), &result)?;
     require(
         passed,
         format!("System acceptance failed: {}", root.display()),
