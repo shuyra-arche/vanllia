@@ -1,4 +1,4 @@
-use kernel_verification::*;
+use crate::support::*;
 use std::{collections::BTreeSet, fs, path::Path};
 const PROVIDERS: [&str; 3] = ["kernel", "kernel-api", "kernel-client"];
 fn providers<'a>(value: &'a toml::Value, found: &mut Vec<&'a toml::Value>) {
