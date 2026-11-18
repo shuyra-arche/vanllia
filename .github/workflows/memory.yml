@@ -73,7 +73,9 @@ jobs:
       - name: Select reviewed Kernel provider
         id: provider
         run: |
-          pin=$(cat tests/runner/kernel)
+          # The product gitlink is the single Kernel revision authority.
+          read -r mode pin stage path <<< "$(git -c safe.directory="$GITHUB_WORKSPACE" ls-files --stage -- components/kernel)"
+          [[ "$mode" == 160000 && "$stage" == 0 && "$path" == components/kernel ]]
           [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
           echo "sha=$pin" >> "$GITHUB_OUTPUT"
       - name: Fetch selected provider
@@ -213,7 +215,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: provider
         run: |
-          pin=$(cat tests/runner/kernel)
+          # The product gitlink is the single Kernel revision authority.
+          read -r mode pin stage path <<< "$(git -c safe.directory="$GITHUB_WORKSPACE" ls-files --stage -- components/kernel)"
+          [[ "$mode" == 160000 && "$stage" == 0 && "$path" == components/kernel ]]
           [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
           echo "sha=$pin" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
