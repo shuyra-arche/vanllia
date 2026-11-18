@@ -1,0 +1,51 @@
+name: Vanllia host tooling
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/cli/**"
+      - "crates/build/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".cargo/**"
+      - ".github/workflows/host.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/cli/**"
+      - "crates/build/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".cargo/**"
+      - ".github/workflows/host.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vanllia-host-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  RUSTUP_TOOLCHAIN: nightly
+
+jobs:
+  host:
+    name: CLI, build and test runner contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install declared host and guest build tools
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy,rust-src,llvm-tools --target riscv64gc-unknown-none-elf
+          echo "$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Test Vanllia tools and externally owned test discovery
+        run: cargo test --workspace --locked --target x86_64-unknown-linux-gnu
+      - name: Check host code and all test targets
+        run: cargo clippy --workspace --all-targets --locked --target x86_64-unknown-linux-gnu -- -D warnings
