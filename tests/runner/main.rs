@@ -2,7 +2,6 @@ use clap::{Parser, Subcommand};
 use kernel_verification::Result;
 use std::path::PathBuf;
 mod native;
-mod system;
 mod versions;
 #[derive(Parser)]
 #[command(about = "Bounded native composition verification (host only)")]
@@ -28,18 +27,6 @@ enum Scenario {
         #[arg(long, default_value_t=13, value_parser=clap::value_parser!(u8).range(10..=13))]
         capsule_version: u8,
     },
-    System {
-        #[arg(long)]
-        kernel: PathBuf,
-        #[arg(long)]
-        fixture: PathBuf,
-        #[arg(long)]
-        twine: PathBuf,
-        #[arg(long)]
-        output: PathBuf,
-        #[arg(long, default_value_t = 4, value_parser = clap::value_parser!(u8).range(1..=4))]
-        harts: u8,
-    },
 }
 fn main() {
     let result: Result<()> = match Cli::parse().scenario {
@@ -51,13 +38,6 @@ fn main() {
             profile,
             capsule_version,
         } => native::run(&kernel, &fixture, &output, &profile, capsule_version),
-        Scenario::System {
-            kernel,
-            fixture,
-            twine,
-            output,
-            harts,
-        } => system::run(&kernel, &fixture, &twine, &output, harts),
     };
     if let Err(error) = result {
         eprintln!("{error}");
