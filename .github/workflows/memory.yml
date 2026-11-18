@@ -1,10 +1,32 @@
 name: Kernel integration
 on:
   pull_request:
-    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", "vanllia.toml", ".github/workflows/memory.yml"]
+    paths:
+      - "tests/memory/**"
+      - "tests/runner/**"
+      - "platform/riscv/**"
+      - "crates/build/**"
+      - "components/kernel"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".gitmodules"
+      - "vanllia.toml"
+      - "vanllia.lock"
+      - ".github/workflows/memory.yml"
   push:
     branches: [main]
-    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", "vanllia.toml", ".github/workflows/memory.yml"]
+    paths:
+      - "tests/memory/**"
+      - "tests/runner/**"
+      - "platform/riscv/**"
+      - "crates/build/**"
+      - "components/kernel"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".gitmodules"
+      - "vanllia.toml"
+      - "vanllia.lock"
+      - ".github/workflows/memory.yml"
   workflow_dispatch:
 permissions:
   contents: read
