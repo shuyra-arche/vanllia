@@ -194,96 +194,11 @@ jobs:
           if-no-files-found: warn
 
   comparison:
-    name: Opt-in ${{ matrix.mode }} / ${{ matrix.latency }}
+    name: Kernel-owned opt-in Room/IRQ benchmark
     if: >-
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.body, 'Room comparison: requested')
     needs: host
-    runs-on: ubuntu-latest
-    container: debian:trixie
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        include:
-          - { mode: room, latency: enabled }
-          - { mode: room, latency: disabled }
-          - { mode: irq, latency: enabled }
-          - { mode: irq, latency: disabled }
-          - { mode: warmup, latency: enabled }
-    env:
-      QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
-    steps:
-      - name: Install native image tools
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
-          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" --target riscv64gc-unknown-none-elf
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - id: provider
-        run: |
-          # The product gitlink is the single Kernel revision authority.
-          read -r mode pin stage path <<< "$(git -c safe.directory="$GITHUB_WORKSPACE" ls-files --stage -- components/kernel)"
-          [[ "$mode" == 160000 && "$stage" == 0 && "$path" == components/kernel ]]
-          [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
-          echo "sha=$pin" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: shuyra-arche/kernel
-          ref: ${{ steps.provider.outputs.sha }}
-          path: .integration/kernel
-          persist-credentials: false
-      - name: Select comparison control
-        id: control
-        if: matrix.mode != 'warmup'
-        run: |
-          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify baseline --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: matrix.mode != 'warmup'
-        with:
-          repository: shuyra-arche/kernel
-          ref: ${{ steps.control.outputs.sha }}
-          path: .integration/control
-          persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
-          path: .integration/fixture
-          persist-credentials: false
-      - name: Compare paired boots
-        env:
-          MODE: ${{ matrix.mode }}
-          LATENCY: ${{ matrix.latency }}
-        run: |
-          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          args=()
-          if [[ "$LATENCY" == disabled ]]; then args+=(--no-latency); fi
-          if [[ "$MODE" == warmup ]]; then
-            args+=(--compare-room-warmup)
-            MODE=room
-          else
-            args+=(--baseline .integration/control)
-          fi
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --harts 4 --rounds 5 "${args[@]}"
-      - name: Preserve paired evidence
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: comparison-${{ matrix.mode }}-${{ matrix.latency }}
-          include-hidden-files: true
-          path: |
-            .integration/comparison/order.json
-            .integration/comparison/*/inputs.json
-            .integration/comparison/*/*.elf
-            .integration/comparison/*/*.bin
-            .integration/comparison/*/*.lock
-            .integration/comparison/*/patches/*
-            .integration/comparison/*/resolve/*
-            .integration/comparison/*/locked/*
-            .integration/comparison/*/harts-*/*.log
-            .integration/comparison/*/harts-*/result.json
-          if-no-files-found: warn
+    uses: shuyra-arche/kernel/.github/workflows/room-comparison.yml@122abecf863fdcec421ae960a641030f8bfe5f1d
+    with:
+      kernel_sha: ${{ needs.host.outputs.kernel_sha }}
