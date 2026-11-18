@@ -56,10 +56,14 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
         fs::copy(from, root.join(to))?;
     }
     let image = root.join("initrd.bin");
-    fs::write(
-        &image,
-        capsule::initrd(&fs::read(root.join("guest.elf"))?, version)?,
-    )?;
+    // Before removing the old Kernel test helper, prove the production
+    // Vanllia encoder preserves the exact boot bytes for this real guest,
+    // including the ABI 10/12 rejection cases.
+    let guest = fs::read(root.join("guest.elf"))?;
+    let previous = kernel_verification::capsule::initrd(&guest, version)?;
+    let current = crate::capsule::initrd(&guest, version)?;
+    require(previous == current, "native Capsule byte-for-byte parity failed")?;
+    fs::write(&image, current)?;
     let disk = root.join("disk.raw");
     fs::write(&disk, vec![0; 1024 * 1024])?;
     let mut hashes = serde_json::Map::new();
