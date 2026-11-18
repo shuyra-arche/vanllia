@@ -3,7 +3,7 @@ use kernel_verification::{process, *};
 use std::{fs, path::Path, process::Command, time::Duration};
 const SYSTEM: &str = "470e97f38aa904c3702b665c0d225809b9f0d16e";
 const TWINE: &str = "932454c07bd2673ac7d6d9612d36182aae71e8b2";
-pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<()> {
+pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path, harts: u8) -> Result<()> {
     require(revision(fixture)? == SYSTEM, "unreviewed System fixture")?;
     require(revision(twine)? == TWINE, "unreviewed Twine fixture")?;
     fresh(root)?;
@@ -80,7 +80,7 @@ pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<(
     }
     json(&root.join("inputs.json"), &inputs)?;
     let mut passed = true;
-    for harts in [1, 4] {
+    for harts in [harts] {
         let destination = root.join(format!("harts-{harts}"));
         let mut command = Command::new(&qemu);
         command
