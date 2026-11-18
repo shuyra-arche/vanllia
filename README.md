@@ -56,8 +56,9 @@ vanllia test -- pipe.roundtrip
 ```
 
 Artifacts and native receipts live under `.vanllia/`. A successful build alone
-is not a runtime verdict. [Product lifecycle tests](tests/product-lifecycle/README.md)
-document the additional explicit QEMU gates and their limits.
+is not a runtime verdict. [Historical product lifecycle probes](tests/product-lifecycle/README.md)
+are ignored and have not been qualified against the current product lock;
+they are **not** passing release acceptance.
 
 ## Development and checks
 
