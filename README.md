@@ -95,7 +95,7 @@ image under `tests/platform/qemu` reuses the production boot path.
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
 
-The ABI 14 migration candidate selects Kernel `7c8fd2b7e529e60660b510a64a529e041cb0be7b` for the root build
+The ABI 14 migration candidate selects Kernel `e860396af2830d229d73134c00fba7346833dafe` for the root build
 library, RV64 platform, QEMU fixture, Native memory guest, verification runner
 and `components/kernel` gitlink. The root, RV64, QEMU, hardware, Native memory
 and verification runner Cargo lockfiles resolve that exact provider revision.
