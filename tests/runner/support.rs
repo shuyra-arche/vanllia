@@ -48,7 +48,9 @@ pub fn output(command: &mut Command) -> Result<String> {
 
 pub fn git(repo: &Path) -> Command {
     let mut command = Command::new("git");
-    command.arg("-c").arg(format!("safe.directory={}", repo.display()));
+    command
+        .arg("-c")
+        .arg(format!("safe.directory={}", repo.display()));
     command.arg("-C").arg(repo);
     command
 }
