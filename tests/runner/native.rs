@@ -62,7 +62,10 @@ pub fn run(kernel: &Path, fixture: &Path, root: &Path, profile: &str, version: u
     let guest = fs::read(root.join("guest.elf"))?;
     let previous = kernel_verification::capsule::initrd(&guest, version)?;
     let current = crate::capsule::initrd(&guest, version)?;
-    require(previous == current, "native Capsule byte-for-byte parity failed")?;
+    require(
+        previous == current,
+        "native Capsule byte-for-byte parity failed",
+    )?;
     fs::write(&image, current)?;
     let disk = root.join("disk.raw");
     fs::write(&disk, vec![0; 1024 * 1024])?;
