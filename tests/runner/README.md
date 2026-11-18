@@ -20,9 +20,12 @@ Neither command claims complete System or physical hardware acceptance.
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) selects 13
+[integration workflow](../../.github/workflows/memory.yml) selects 12
 single-Hart contract/ABI/QEMU jobs, up to eight in parallel, with `fail-fast: false`
-and a separate evidence artifact per job. The Kernel-owned SMP, Flat and realtime
+and separate evidence per job. Kernel's standalone
+[IOMMU target QEMU workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
+owns its MMIO/DMA assertions and target evidence; Vanllia no longer duplicates
+that Kernel-private QEMU invocation. The Kernel-owned SMP, Flat and realtime
 multi-Hart campaign is not a routine CI gate; affected tests remain explicitly
 runnable by their owners. Opt-in paired Room/IRQ performance comparisons run with
 four Harts and retain reproducible baseline evidence.

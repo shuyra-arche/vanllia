@@ -60,7 +60,6 @@ jobs:
           - { scenario: irq, profile: release, harts: "1" }
           - { scenario: system, profile: release, harts: "1" }
           - { scenario: std, profile: release, harts: "1" }
-          - { scenario: iommu, profile: release, harts: "1" }
     env:
       QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
     steps:
@@ -86,7 +85,7 @@ jobs:
           path: .integration/kernel
           persist-credentials: false
       - name: Fetch this repository's published probe fixture
-        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std' && matrix.scenario != 'iommu'
+        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
@@ -147,9 +146,6 @@ jobs:
                 "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
               fi
               ;;
-            iommu)
-              cargo test --locked --manifest-path "$kernel/Cargo.toml" -p kernel-memory-tests --test iommu-target --target x86_64-unknown-linux-gnu -- --ignored --nocapture
-              ;;
             *)
               cargo build --locked --manifest-path "$kernel/server/tests/runner/Cargo.toml" --target x86_64-unknown-linux-gnu
               runner="$kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
@@ -196,7 +192,6 @@ jobs:
             .integration/evidence/candidate/locked/*
             .integration/evidence/candidate/harts-*/*.log
             .integration/evidence/candidate/harts-*/result.json
-            .integration/kernel/server/tests/target/metal/riscv/iommu/target/evidence/*
           if-no-files-found: warn
 
   comparison:
