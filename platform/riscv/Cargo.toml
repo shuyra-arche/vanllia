@@ -12,13 +12,13 @@ default = ["image"]
 image = ["dep:kernel", "dep:spin"]
 
 [dependencies]
-kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "901604cbc34a9a0937f6afe8fe09b1eca6d651ea" }
+kernel-api = { git = "https://github.com/shuyra-arche/kernel.git", rev = "41418b2e9d1be420181251c57d1edf3638acc1a0" }
 fdt = { version = "0.1.5", default-features = false }
 fack = { version = "0.2.0", default-features = false }
 spin = { version = "0.10", default-features = false, features = ["once"], optional = true }
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
-kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "901604cbc34a9a0937f6afe8fe09b1eca6d651ea", optional = true }
+kernel = { git = "https://github.com/shuyra-arche/kernel.git", rev = "41418b2e9d1be420181251c57d1edf3638acc1a0", optional = true }
 
 [[bin]]
 name = "shuyra"
