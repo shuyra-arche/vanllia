@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use kernel_verification::Result;
 use std::path::PathBuf;
+mod capsule;
 mod native;
 mod versions;
 #[derive(Parser)]
