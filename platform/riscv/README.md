@@ -19,8 +19,9 @@ contains the MMIO ownership facts; CPU/Sv/Sstc/SBI and PLIC facts stay in RV64.
 
 This platform requires the matching Kernel source pin in both this package and
 `tests/platform/qemu`, including their lockfiles. Merge the Kernel provider PR
-first, then the linked Vanllia consumer PR. This trusted Platform interface does not select the user syscall ABI; the
-selected Kernel/product revision defines that contract. Device dispatch uses
+first, then the linked Vanllia consumer PR. This trusted Platform interface
+does not select the user syscall ABI; the selected Kernel/product revision
+defines that contract. Device dispatch uses
 the Ledger pairs described below. No second-ISA boot support is introduced.
 
 `src/memory`, `harts` and `tree` decode bounded firmware facts; `resources`,
