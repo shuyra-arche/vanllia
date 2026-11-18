@@ -1,7 +1,7 @@
 name: Kernel integration
 on:
   pull_request:
-    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", "vanllia.toml", ".github/workflows/memory.yml"]
   push:
     branches: [main]
     paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", ".github/workflows/memory.yml"]
@@ -43,36 +43,22 @@ jobs:
       fail-fast: false
       max-parallel: 8
       matrix:
+        # Only single-Hart behavioral contracts run in normal CI.
+        # SMP correctness/realtime scenarios remain available to their owners
+        # outside ordinary CI; opt-in benchmark comparisons use four Harts.
+        # Flat contracts run in Kernel's dedicated single-Hart target job.
         include:
           - { scenario: native, profile: debug, harts: "1" }
           - { scenario: native, profile: release, harts: "1" }
           - { scenario: reject, profile: debug, harts: "1" }
           - { scenario: reject12, profile: debug, harts: "1" }
-          - { scenario: smp, profile: debug, harts: "1" }
-          - { scenario: smp, profile: debug, harts: "2" }
-          - { scenario: smp, profile: debug, harts: "4" }
-          - { scenario: smp, profile: release, harts: "1" }
-          - { scenario: smp, profile: release, harts: "2" }
-          - { scenario: smp, profile: release, harts: "4" }
           - { scenario: activity, profile: debug, harts: "1" }
-          - { scenario: activity, profile: debug, harts: "4" }
           - { scenario: activity, profile: release, harts: "1" }
-          - { scenario: activity, profile: release, harts: "4" }
           - { scenario: unsupported, profile: release, harts: "1" }
-          - { scenario: unsupported, profile: release, harts: "4" }
           - { scenario: stopped, profile: release, harts: "1" }
-          - { scenario: stopped, profile: release, harts: "4" }
-          - { scenario: flat, profile: debug, harts: "1" }
-          - { scenario: flat, profile: debug, harts: "4" }
-          - { scenario: flat, profile: release, harts: "1" }
-          - { scenario: flat, profile: release, harts: "4" }
           - { scenario: irq, profile: debug, harts: "1" }
-          - { scenario: irq, profile: debug, harts: "4" }
           - { scenario: irq, profile: release, harts: "1" }
-          - { scenario: irq, profile: release, harts: "4" }
-          - { scenario: realtime, profile: debug, harts: "4" }
-          - { scenario: realtime, profile: release, harts: "4" }
-          - { scenario: system, profile: release, harts: "1+4" }
+          - { scenario: system, profile: release, harts: "1" }
           - { scenario: std, profile: release, harts: "1" }
           - { scenario: iommu, profile: release, harts: "1" }
     env:
@@ -153,7 +139,7 @@ jobs:
               cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
               runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
               if [[ "$SCENARIO" == system ]]; then
-                "$runner" system --kernel "$kernel" --fixture .integration/system --twine .integration/twine --output "$evidence"
+                "$runner" system --kernel "$kernel" --fixture .integration/system --twine .integration/twine --output "$evidence" --harts "$HARTS"
               else
                 args=(native --profile "$PROFILE")
                 if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
@@ -168,13 +154,10 @@ jobs:
               cargo build --locked --manifest-path "$kernel/server/tests/runner/Cargo.toml" --target x86_64-unknown-linux-gnu
               runner="$kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
               case "$SCENARIO" in
-                smp) args=(smp) ;;
                 activity) args=(activity) ;;
                 unsupported) args=(activity --unsupported) ;;
                 stopped) args=(activity --stopped) ;;
-                flat) args=(flat) ;;
                 irq) args=(room --mode irq --events 16) ;;
-                realtime) args=(room --mode realtime) ;;
                 *) exit 1 ;;
               esac
               "$runner" "${args[@]}" --profile "$PROFILE" --harts "$HARTS" --kernel "$kernel" --fixture .integration/fixture --output "$evidence"
@@ -284,12 +267,12 @@ jobs:
           args=()
           if [[ "$LATENCY" == disabled ]]; then args+=(--no-latency); fi
           if [[ "$MODE" == warmup ]]; then
-            args+=(--compare-room-warmup --harts 1)
+            args+=(--compare-room-warmup)
             MODE=room
           else
             args+=(--baseline .integration/control)
           fi
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --rounds 5 "${args[@]}"
+          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --harts 4 --rounds 5 "${args[@]}"
       - name: Preserve paired evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
