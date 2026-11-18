@@ -20,10 +20,15 @@ Neither command claims complete System or physical hardware acceptance.
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) has 31 independent
+[integration workflow](../../.github/workflows/memory.yml) has 27 independent
 scenario/profile/Hart jobs, up to eight at once, with `fail-fast: false` and a
-separate evidence artifact per job. Native memory, CPU completion, A/D, Flat,
-IRQ, RT, System/Twine and the standalone IOMMU backend retain their scenarios.
+separate evidence artifact per job. Native memory, CPU completion, A/D, IRQ,
+RT, System/Twine and the standalone IOMMU backend retain their scenarios.
+The four Flat contract configurations (debug/release on 1/4 Harts) are now
+defined by [Kernel's target CI](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/flat-target.yml),
+which runs the Kernel candidate directly. This handoff is valid only after
+Kernel #303 is merged and the new check is protected; the existing Vanllia
+Flat jobs must remain required until that transition is verified.
 The Kernel candidate is the full SHA in `tests/runner/kernel`; it is an explicit
 test override, not a change to the product's default Kernel pin. Private Kernel
 probes use the published Vanllia fixture `f2dfa14f5b1f7bd47ee84841ba5c7112e8475950`.
