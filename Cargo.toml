@@ -37,6 +37,10 @@ name = "cases"
 path = "tests/cli/cases.rs"
 
 [[test]]
+name = "runner"
+path = "tests/cli/runner.rs"
+
+[[test]]
 name = "overlay"
 path = "tests/cli/overlay.rs"
 
