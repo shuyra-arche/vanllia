@@ -16,7 +16,8 @@ build work; Units describe runtime policy.
 - `components/`: pinned Kernel, System and service repositories.
 - `product/tests/lifecycle/`: historical Login/Driver/product acceptance probes;
   their old independent lock has **not** been qualified for the current product.
-- `tests/platform/qemu/`: [retained QEMU platform fixture](tests/platform/qemu/README.md) with PCI Host checks and RV64 image builds, not a current Kernel IOMMU acceptance gate.
+- `tests/platform/qemu/`: [retained QEMU platform fixture](tests/platform/qemu/README.md)
+  with PCI Host checks and RV64 image builds, not a current Kernel IOMMU acceptance gate.
 
 ## Build and run
 
