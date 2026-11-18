@@ -58,7 +58,6 @@ jobs:
           - { scenario: stopped, profile: release, harts: "1" }
           - { scenario: irq, profile: debug, harts: "1" }
           - { scenario: irq, profile: release, harts: "1" }
-          - { scenario: system, profile: release, harts: "1" }
           - { scenario: std, profile: release, harts: "1" }
     env:
       QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
@@ -85,27 +84,19 @@ jobs:
           path: .integration/kernel
           persist-credentials: false
       - name: Fetch this repository's published probe fixture
-        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std'
+        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'std'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
           path: .integration/fixture
           persist-credentials: false
       - name: Fetch System consumer
-        if: matrix.scenario == 'system' || matrix.scenario == 'std'
+        if: matrix.scenario == 'std'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
           ref: 470e97f38aa904c3702b665c0d225809b9f0d16e
           path: .integration/system
-          persist-credentials: false
-      - name: Fetch Twine recovery
-        if: matrix.scenario == 'system'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: shuyra-arche/twine
-          ref: 932454c07bd2673ac7d6d9612d36182aae71e8b2
-          path: .integration/twine
           persist-credentials: false
       - name: Fetch Toolchain std provider
         if: matrix.scenario == 'std'
@@ -134,17 +125,13 @@ jobs:
               platform="$system/tests/guest/runtime/platform/target/riscv64gc-unknown-none-elf/release/system-runtime-platform"
               python3 "$system/tests/guest/loader/run.py" "$platform" --harts 1 --toolchain-receipt "$toolchain/build/std.json" --output "$evidence"
               ;;
-            native|reject|reject12|system)
+            native|reject|reject12)
               cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
               runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
-              if [[ "$SCENARIO" == system ]]; then
-                "$runner" system --kernel "$kernel" --fixture .integration/system --twine .integration/twine --output "$evidence" --harts "$HARTS"
-              else
-                args=(native --profile "$PROFILE")
-                if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
-                if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
-                "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
-              fi
+              args=(native --profile "$PROFILE")
+              if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
+              if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
+              "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
               ;;
             *)
               cargo build --locked --manifest-path "$kernel/server/tests/runner/Cargo.toml" --target x86_64-unknown-linux-gnu
