@@ -8,12 +8,7 @@ fn preserves_a_nonzero_native_exit_without_approving_it() {
     process::initialize().unwrap();
     let dir = std::env::temp_dir().join(format!("vanllia-test-exit-{}", std::process::id()));
     let _ = fs::remove_dir_all(&dir);
-    let status = process::observe(
-        Command::new("sh").args(["-c", "exit 17"]),
-        &dir,
-        5,
-    )
-    .unwrap();
+    let status = process::observe(Command::new("sh").args(["-c", "exit 17"]), &dir, 5).unwrap();
     assert_eq!(status.code(), Some(17));
     assert!(!status.success());
     let evidence: serde_json::Value =
@@ -28,12 +23,7 @@ fn rejects_timeout_and_preserves_failure_evidence() {
     process::initialize().unwrap();
     let dir = std::env::temp_dir().join(format!("vanllia-test-timeout-{}", std::process::id()));
     let _ = fs::remove_dir_all(&dir);
-    let error = process::observe(
-        Command::new("sh").args(["-c", "sleep 30"]),
-        &dir,
-        1,
-    )
-    .unwrap_err();
+    let error = process::observe(Command::new("sh").args(["-c", "sleep 30"]), &dir, 1).unwrap_err();
     assert!(error.contains("timed out"), "{error}");
     let evidence: serde_json::Value =
         serde_json::from_slice(&fs::read(dir.join("result.json")).unwrap()).unwrap();
