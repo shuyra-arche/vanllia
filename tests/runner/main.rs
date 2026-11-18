@@ -2,6 +2,8 @@ use crate::support::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 mod capsule;
+#[cfg(test)]
+mod execution;
 mod native;
 mod support;
 mod versions;
