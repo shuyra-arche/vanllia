@@ -1,9 +1,10 @@
-# Kernel IOMMU platform fixture
+# QEMU IOMMU platform fixture
 
-This standalone boot image supplies the trusted QEMU virt / EDU preparation and
-platform ordering proof for Kernel's Cell I/O acceptance tests. PCI configuration
-belongs here; the production `platform/riscv` package supplies firmware parsing and
-ordinary boot assembly. The Kernel dependency provides translation, invalidation, queue
+This standalone boot image retains QEMU virt / EDU preparation and platform
+wiring from the historical Kernel Cell I/O acceptance suite. Its PCI Host tests
+and image builds remain Platform checks; this image is not selected by Kernel's
+current IOMMU target workflow. PCI configuration belongs here; the production
+`platform/riscv` package supplies firmware parsing and ordinary boot assembly. The Kernel dependency provides translation, invalidation, queue
 shutdown and Page retention. It is separate from Vanllia's product selection.
 
 `Cargo.toml` pins both Kernel and its API to the same provider commit. The Kernel
@@ -53,23 +54,17 @@ cargo +nightly build --locked --manifest-path tests/platform/qemu/Cargo.toml \
 ```
 
 The host PCI cases check endpoint preparation and failure boundaries; they do
-not establish hardware completion. To run the real Kernel scenarios, check out
-Kernel at the pinned revision, then run from that checkout:
+not establish hardware completion. Kernel's current [IOMMU target workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
+runs its own MMIO/DMA scenarios under `server/tests/target/metal/riscv/iommu/`;
+it does **not** boot this historical EDU image. The former
+`--test hardware cell_io` command, its multi-Hart test matrix and its
+`server/tests/guest/cell/target/evidence/` output path are retired. Do not
+treat this fixture's Host PCI tests or RV64 compilation as a current Kernel
+IOMMU QEMU execution verdict.
 
-```sh
-export QEMU_RISCV64=/absolute/path/to/qemu-system-riscv64
-export QEMU_OPENSBI=/absolute/path/to/fw_dynamic.bin
-export KERNEL_PLATFORM_MANIFEST=/absolute/path/to/vanllia/tests/platform/qemu/Cargo.toml
-cargo +nightly test --locked -p kernel-memory-tests --test hardware \
-  --target x86_64-unknown-linux-gnu cell_io -- --ignored --nocapture
-```
-
-QEMU 10.0.13 was used for acceptance. Both ordinary withdrawal and creator exit
-run in Debug with 1/4 Harts and Release with 4 Harts; ordinary withdrawal also
-checks sparse Hart IDs. The runner records serial output, binary hashes and
-commands under Kernel's ignored `server/tests/guest/cell/target/evidence/`.
-The separate Kernel `iommu_on_real_qemu_registers` suite covers delayed old
-accesses and physical Page reuse directly.
+The original QEMU 10.0.13 acceptance results are historical evidence for their
+specific source and fixture revisions. Current Kernel QEMU evidence comes from
+the Kernel-owned workflow and its uploaded artifacts.
 
 The PCI access/endpoint implementation and its three regression cases were
 moved from Kernel revision `00f221f7c89b7af1cca4267dc0b0855ba2ff695b` while removing
