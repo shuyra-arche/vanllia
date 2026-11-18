@@ -10,23 +10,25 @@ ABI rejection; see [the memory guide](../memory/README.md). `verify versions`
 checks the selected product's coordinated Kernel manifests, locks and gitlink.
 Other Vanllia tooling has not been migrated by this change.
 
-`verify system --kernel PATH --fixture SYSTEM --twine TWINE --output NEW` owns
-the native System/Twine runtime regression. System is pinned to
-`470e97f38aa904c3702b665c0d225809b9f0d16e` and Twine to
-`932454c07bd2673ac7d6d9612d36182aae71e8b2`; it defaults to 4 Harts when invoked explicitly; ordinary CI selects 1 Hart.
-Neither command claims complete System or physical hardware acceptance.
+The System runtime, Supply and RPC guest and its assertions are owned and run
+by [System's native verification](https://github.com/shuyra-arche/system/blob/main/.github/workflows/native.yml).
+This runner no longer contains a second, fixed System/Twine version pair or
+a System-private scenario. The remaining native ABI composition does not claim
+complete System or physical hardware acceptance.
 
 ## CI ownership and parallelism
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) selects 12
+[integration workflow](../../.github/workflows/memory.yml) selects 11
 single-Hart contract/ABI/QEMU jobs, up to eight in parallel, with `fail-fast: false`
 and separate evidence per job. Kernel's standalone
 [IOMMU target QEMU workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
 owns its MMIO/DMA assertions and target evidence; Vanllia no longer duplicates
-that Kernel-private QEMU invocation. The Kernel-owned SMP, Flat and realtime
-multi-Hart campaign is not a routine CI gate; affected tests remain explicitly
+that Kernel-private QEMU invocation. System separately runs its own runtime,
+Supply, RPC and handoff contracts; Vanllia no longer duplicates their runtime
+scenario. The Kernel-owned SMP, Flat and realtime multi-Hart campaign is not
+a routine CI gate; affected tests remain explicitly
 runnable by their owners. Opt-in paired Room/IRQ performance comparisons run with
 four Harts and retain reproducible baseline evidence.
 The Kernel candidate is the full SHA in `tests/runner/kernel`; it is an explicit
@@ -51,10 +53,11 @@ verification first, then pin this composition consumer and run the assembled
 matrix here. There is no reverse Kernel-to-Vanllia tooling dependency and no
 claim that unrelated Vanllia or System scripting has been removed.
 
-The ABI 13 composition pins Kernel 789ffd19b5359f3de172fb9aad8a61f6a7113a64,
-System 470e97f38aa904c3702b665c0d225809b9f0d16e and Twine
-932454c07bd2673ac7d6d9612d36182aae71e8b2. Kernel #207–#211 land first;
-Toolchain #19/Twine #12/System #24 follow before this composition consumer.
+The ABI 13 native composition pins Kernel
+`789ffd19b5359f3de172fb9aad8a61f6a7113a64`. The separate optional std
+consumer still selects an immutable System revision for its real Loader; this
+does not grant the Vanllia test runner ownership of System's native business
+assertions. There is no ABI upgrade or provider pin change in this cleanup.
 Native Debug has a bounded 240-second deadline (Release 120); the migrated
 fixture retains actual stack owners and retires them after observed Task
 reclamation. An earlier Debug run completed its contracts but timed out during
