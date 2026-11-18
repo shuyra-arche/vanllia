@@ -36,14 +36,14 @@ fn main() {
     let result: Result<()> = (|| {
         vanllia_build::workflow::process::initialize()?;
         match Cli::parse().scenario {
-        Scenario::Versions { fixture } => versions::run(&fixture),
-        Scenario::Native {
-            kernel,
-            fixture,
-            output,
-            profile,
-            capsule_version,
-        } => native::run(&kernel, &fixture, &output, &profile, capsule_version),
+            Scenario::Versions { fixture } => versions::run(&fixture),
+            Scenario::Native {
+                kernel,
+                fixture,
+                output,
+                profile,
+                capsule_version,
+            } => native::run(&kernel, &fixture, &output, &profile, capsule_version),
         }
     })();
     if let Err(error) = result {
