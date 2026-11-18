@@ -1,11 +1,18 @@
-name: Native ABI 14 candidate
+name: Native ABI 14 migration
 
-# Candidate-only: existing product gitlink and lockfiles stay untouched.
+# Product-level pinning and reproducible lockfile migration, before merge.
 on:
   pull_request:
     paths:
       - '.github/workflows/native-abi14.yml'
       - 'tests/memory/**'
+      - 'tests/runner/**'
+      - 'platform/**'
+      - 'tests/platform/**'
+      - 'crates/build/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'components/kernel'
   workflow_dispatch:
 
 permissions:
@@ -16,6 +23,52 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lockfiles:
+    name: ABI 14 coordinated lockfile resolution
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 25
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+    steps:
+      - name: Install host resolver
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN"
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Resolve every coordinated ABI 14 application graph
+        run: |
+          set -euo pipefail
+          for manifest in \
+            Cargo.toml \
+            platform/riscv/Cargo.toml \
+            tests/platform/qemu/Cargo.toml \
+            tests/platform/hardware/Cargo.toml \
+            tests/memory/Cargo.toml \
+            tests/runner/Cargo.toml; do
+            cargo +nightly generate-lockfile --manifest-path "$manifest"
+          done
+      - name: Preserve reproducible Cargo resolutions
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: abi14-coordinated-lockfiles
+          if-no-files-found: error
+          path: |
+            Cargo.lock
+            platform/riscv/Cargo.lock
+            tests/platform/qemu/Cargo.lock
+            tests/platform/hardware/Cargo.lock
+            tests/memory/Cargo.lock
+            tests/runner/Cargo.lock
+
   candidate:
     name: ABI 14 Native guest and platform compilation
     runs-on: ubuntu-latest
@@ -48,11 +101,16 @@ jobs:
           for name, count in [
               ("tests/memory/Cargo.toml", 3),
               ("platform/riscv/Cargo.toml", 2),
+              ("tests/platform/qemu/Cargo.toml", 2),
+              ("crates/build/Cargo.toml", 1),
+              ("tests/runner/Cargo.toml", 1),
           ]:
               source = Path(name).read_text()
               assert source.count(pin) == count, (name, pin)
               print(f"Candidate {name} = {pin}")
+          assert Path("tests/runner/kernel").read_text().strip() == pin
           PY
+          test "$(git ls-files --stage components/kernel | awk '{print $2}')" = "$PROVIDER_SHA"
       - name: Check Native guest against ABI 14
         run: |
           set -euo pipefail
