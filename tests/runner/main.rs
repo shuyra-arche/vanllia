@@ -1,8 +1,9 @@
 use clap::{Parser, Subcommand};
-use kernel_verification::Result;
+use crate::support::Result;
 use std::path::PathBuf;
 mod capsule;
 mod native;
+mod support;
 mod versions;
 #[derive(Parser)]
 #[command(about = "Bounded native composition verification (host only)")]
@@ -30,7 +31,9 @@ enum Scenario {
     },
 }
 fn main() {
-    let result: Result<()> = match Cli::parse().scenario {
+    let result: Result<()> = (|| {
+        vanllia_build::workflow::process::initialize()?;
+        match Cli::parse().scenario {
         Scenario::Versions { fixture } => versions::run(&fixture),
         Scenario::Native {
             kernel,
@@ -39,7 +42,8 @@ fn main() {
             profile,
             capsule_version,
         } => native::run(&kernel, &fixture, &output, &profile, capsule_version),
-    };
+        }
+    })();
     if let Err(error) = result {
         eprintln!("{error}");
         std::process::exit(1);
