@@ -50,12 +50,18 @@ Mode/instrumentation combinations run on independent workers. Within one paired
 comparison, build order and alternating A/B boots remain controlled; those
 samples cannot be run concurrently without changing the experiment.
 
-Outputs must be new directories. Tools preserve process output before checking
-acceptance; success requires a normal exit plus complete scenario evidence.
-The whole process group is killed and reaped at a deadline. Input checkouts are
-read through committed Git archives. Working-tree edits are not silently included.
-Builds preserve original/resolved locks, commands, compiler/emulator/firmware
-identity and image hashes.
+Outputs must be new directories. The Vanllia Host executor preserves
+`execution.json`, `stdout.log`, `stderr.log`, `exit.json` and a transport
+`result.json`; the Native scenario additionally retains `boot/serial.log`
+and its own accepted/rejected verdict in `boot/result.json`. An expected
+nonzero ABI10/12 rejection is a valid **scenario** only when every negative
+assertion is observed: the transport's nonzero exit is not itself a pass.
+Timeout, cancellation, unsettled descendants and evidence-write failures
+remain errors, not accepted guest exits. The Host executor kills and reaps its
+process group on failure and checks for residual children after normal exit.
+Input checkouts are read through committed Git archives; uncommitted edits
+are not silently included. Builds preserve original/resolved locks, commands,
+compiler/emulator/firmware identity and image hashes.
 
 Integration order for Kernel #199: publish/land Kernel's host library and local
 verification first, then pin this composition consumer and run the assembled
