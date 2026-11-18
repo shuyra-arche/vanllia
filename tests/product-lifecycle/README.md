@@ -1,11 +1,13 @@
-# Exact product artifact acceptance
+# Historical product artifact acceptance (not current CI)
 
-This independent workspace has not been refreshed for Kernel Gamma: its
-lockfile still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Its
-path dependencies on the root CLI/build library now require a coordinated
-lockfile refresh and System/service compatibility validation before these
-commands can provide current-product evidence. It is excluded from the root
-workspace and from [Gamma's native memory acceptance](../memory/README.md).
+This independent, opt-in workspace is **not an active product release
+gate** and has not been refreshed for current Kernel ABI 13: its lockfile
+still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Local CLI/build
+library dependencies require a coordinated product-owner lock refresh and
+System/service compatibility validation before these scenarios can produce
+current-product evidence. It is excluded from root Host CI and
+[Native memory acceptance](../memory/README.md); an ignored or historical run
+is not a passing current-product verdict.
 
 This Rust host test boots an existing product artifact unchanged: it adds no
 test Unit and does not rebuild initrd. It derives required startup identities
