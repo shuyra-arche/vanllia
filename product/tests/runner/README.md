@@ -26,8 +26,10 @@ complete System or physical hardware acceptance.
 
 ## CI ownership and parallelism
 
-Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
-Vanllia owns cross-provider composition testing. The
+Kernel's ordinary Check CI runs its Host and RV64 build checks. Separate Flat
+and IOMMU workflows execute Kernel-owned QEMU contracts when relevant; Vanllia
+does not duplicate those matrices. Vanllia owns the selected product's
+cross-provider composition checks. The
 [integration workflow](../../../.github/workflows/memory.yml) directly selects
 five single-Hart Native/ABI/std composition QEMU cases, each with separate
 evidence. A pinned
