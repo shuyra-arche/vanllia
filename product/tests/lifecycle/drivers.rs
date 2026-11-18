@@ -17,6 +17,8 @@ fn run() -> Result<(), String> {
         .parent()
         .unwrap()
         .parent()
+        .unwrap()
+        .parent()
         .unwrap();
     let artifact =
         PathBuf::from(std::env::var_os("VANLLIA_TEST_ARTIFACT").ok_or("artifact input")?);

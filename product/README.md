@@ -11,7 +11,7 @@ not a requirement for other products using Vanllia's existing `--root`.
 - [Native Host verification](tests/runner/README.md) owns the positive Native
   and ABI10/12 negative boot verdicts, QEMU evidence and cleanup. Its Guest
   assertions and exact provider revisions are unchanged.
-- [Historical product lifecycle probes](../tests/product-lifecycle/README.md)
+- [Historical product lifecycle probes](tests/lifecycle/README.md)
   remain separately ignored and **have not been validated against the current
   product lock**.
 

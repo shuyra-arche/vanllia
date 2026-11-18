@@ -14,7 +14,8 @@ build work; Units describe runtime policy.
 - `product/tests/`: selected Shuyra **product-owned** ABI13 Native/negative-boot
   composition fixtures and their Host runner (not generic CLI tests).
 - `components/`: pinned Kernel, System and service repositories.
-- `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
+- `product/tests/lifecycle/`: historical Login/Driver/product acceptance probes;
+  their old independent lock has **not** been qualified for the current product.
 - `tests/platform/qemu/`: [trusted QEMU boot image](tests/platform/qemu/README.md) for Kernel IOMMU acceptance.
 
 ## Build and run
@@ -58,7 +59,7 @@ vanllia test -- pipe.roundtrip
 ```
 
 Artifacts and native receipts live under `.vanllia/`. A successful build alone
-is not a runtime verdict. [Historical product lifecycle probes](tests/product-lifecycle/README.md)
+is not a runtime verdict. [Historical product lifecycle probes](product/tests/lifecycle/README.md)
 are ignored and have not been qualified against the current product lock;
 they are **not** passing release acceptance.
 
@@ -127,7 +128,7 @@ The old `tests/device` guest and experimental `tests/syscall-cost`
 benchmark were retired because their historical provider graphs cannot
 qualify the current ABI 13 product; their complete sources and coverage gaps
 are preserved in the [migration record](docs/migration.md). The independent
-`tests/product-lifecycle` lockfile still records Kernel
+`product/tests/lifecycle` lockfile still records Kernel
 `a9986c82127cf25183bf5c30e7d42e4a9376b734` and requires a coordinated
 product-owner refresh and validation. Its ignored scenarios are not selected
 by ordinary Host, Platform or Native CI and are **not current-product acceptance**.
