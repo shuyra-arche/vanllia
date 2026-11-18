@@ -8,6 +8,8 @@ fn login_creates_shell_runs_command_and_reclaims_instances() {
         .parent()
         .unwrap()
         .parent()
+        .unwrap()
+        .parent()
         .unwrap();
     let artifact =
         PathBuf::from(std::env::var_os("VANLLIA_TEST_ARTIFACT").expect("VANLLIA_TEST_ARTIFACT"));

@@ -1,4 +1,8 @@
-# Historical product artifact acceptance (not current CI)
+# Historical Shuyra product acceptance (not current CI)
+
+This is product-owned test code, not a generic Vanllia CLI test suite.
+Its historical Cargo lock and assertions are retained; changing its directory
+**does not** qualify it against the current ABI13 product.
 
 This independent, opt-in workspace is **not an active product release
 gate** and has not been refreshed for current Kernel ABI 13: its lockfile
@@ -6,7 +10,7 @@ still records `a9986c82127cf25183bf5c30e7d42e4a9376b734`. Local CLI/build
 library dependencies require a coordinated product-owner lock refresh and
 System/service compatibility validation before these scenarios can produce
 current-product evidence. It is excluded from root Host CI and
-[Native memory acceptance](../../product/tests/memory/README.md); an ignored or historical run
+[Native memory acceptance](../memory/README.md); an ignored or historical run
 is not a passing current-product verdict.
 
 This Rust host test boots an existing product artifact unchanged: it adds no
@@ -25,7 +29,7 @@ export VANLLIA_TEST_FIRMWARE=/absolute/path/to/fw_dynamic.bin
 export VANLLIA_TEST_FIRMWARE_SHA256=verified-sha256
 export VANLLIA_TEST_FIRMWARE_BYTES=verified-length
 export VANLLIA_TEST_CPUS=4 # optional; defaults to 4, accepts 1 through 4
-cargo test --manifest-path tests/product-lifecycle/Cargo.toml \
+cargo test --manifest-path product/tests/lifecycle/Cargo.toml \
   --test product --target x86_64-unknown-linux-gnu --locked -- --ignored --nocapture
 ```
 
@@ -37,7 +41,7 @@ using it to force shutdown cannot satisfy the verdict.
 This covers startup and terminal EOF cleanup. It does not exercise authenticated
 Shell creation or old scenarios. The historical syscall-cost guest and its
 pairwise comparison target were retired as an unqualified legacy experiment;
-see [retirement details](../../docs/migration.md#retired-syscall-cost-experiment-2026-11-18).
+see [retirement details](../../../docs/migration.md#retired-syscall-cost-experiment-2026-11-18).
 
 ## Login and requested Shell smoke
 
@@ -55,7 +59,7 @@ directory, and use the same hashed firmware variables above:
 
 ```sh
 vanllia build --offline --unit login
-cargo test --manifest-path tests/product-lifecycle/Cargo.toml \
+cargo test --manifest-path product/tests/lifecycle/Cargo.toml \
   --test login --target x86_64-unknown-linux-gnu --locked --offline \
   -- --ignored --nocapture
 ```
@@ -82,7 +86,7 @@ uses the selected CLI's typed native verifier; prose cannot replace receipts.
 vanllia build --offline --unit test.virtio-blk-discovery
 # Set VANLLIA_TEST_ARTIFACT to the printed directory and the same exact
 # VANLLIA_TEST_FIRMWARE, _SHA256 and _BYTES inputs described above.
-cargo test --manifest-path tests/product-lifecycle/Cargo.toml \
+cargo test --manifest-path product/tests/lifecycle/Cargo.toml \
   --test drivers --target x86_64-unknown-linux-gnu --locked --offline \
   -- --ignored --nocapture
 ```

@@ -8,6 +8,8 @@ fn product_eof_reclaims_all_native_instances() {
         .parent()
         .unwrap()
         .parent()
+        .unwrap()
+        .parent()
         .unwrap();
     let artifact =
         PathBuf::from(std::env::var_os("VANLLIA_TEST_ARTIFACT").expect("VANLLIA_TEST_ARTIFACT"));
