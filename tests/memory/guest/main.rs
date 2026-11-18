@@ -38,7 +38,10 @@ extern "C" fn run(at: usize, count: usize) -> ! {
     });
     let (memo, address) = reserve(space());
     // An unassociated Memo must remain inspectable through its live range.
-    assert_eq!(memo_status(memo).phase, kernel_api::model::nest::MemoPhase::Empty);
+    assert_eq!(
+        memo_status(memo).phase,
+        kernel_api::model::nest::MemoPhase::Empty
+    );
     insert(memo, slot);
     publish(memo);
     unsafe {
