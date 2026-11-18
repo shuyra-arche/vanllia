@@ -1,5 +1,5 @@
-use clap::{Parser, Subcommand};
 use crate::support::Result;
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 mod capsule;
 mod native;
