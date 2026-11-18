@@ -94,30 +94,33 @@ image under `tests/platform/qemu` reuses the production boot path.
 
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
-The build library, platform images and native memory API/Client/Server
-composition pin Kernel `789ffd19b5359f3de172fb9aad8a61f6a7113a64`, the
-coordinated User startup candidate for Kernel #160/#206/#188.
-It retains the native Nest creation repair from [Kernel #175](https://github.com/shuyra-arche/kernel/pull/175)
-and managed DTB/initrd sources from #180, adding bounded all-Hart CPU completion.
-Executable SMP requires explicit all-Hart qualification; this pin does not qualify a platform or
-claim complete System acceptance.
-ABI/Ledger are 13/13 and Capsule format 2. Merge the Kernel provider before
-this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
-the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
-Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
-fixture and native memory workspaces. `cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .`
-checks their coordinated source identity. No Cargo feature selects the ABI.
-The original [26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
-tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`. Its native debug
-acceptance exposed a Unit commit-lock assertion during Nest creation. The
-product deliberately selects the later exact repair commit; it does not
-relabel or modify Gamma, and no new release tag is claimed for this pin.
-The build library writes capsule v2 with ABI 13;
-the Kernel parser validates generated
-capsules and retained artifacts before execution. Older ABI capsules require a
-rebuild even when receipt hashes match. The historical build-library declaration
-workflow still carries legacy dependencies and is not evidence of a clean
-assembled System dependency graph.
+
+The ABI 14 migration candidate selects Kernel `7c8fd2b7e529e60660b510a64a529e041cb0be7b` for the root build
+library, RV64 platform, QEMU fixture, Native memory guest, verification runner
+and `components/kernel` gitlink. The root, RV64, QEMU, hardware, Native memory
+and verification runner Cargo lockfiles resolve that exact provider revision.
+ABI and boot Ledger are 14/14; Capsule format remains 2. There is no Cargo
+feature selecting an older ABI. To check source identity, run:
+
+```sh
+cargo run --locked --manifest-path tests/runner/Cargo.toml \
+  --target x86_64-unknown-linux-gnu -- versions --fixture .
+```
+
+This exact Kernel source is an unreleased provider candidate in
+[Kernel PR #302](https://github.com/shuyra-arche/kernel/pull/302). The provider
+must merge before this Vanllia consumer PR. Native guest and platform compile,
+and the Native QEMU Debug and Release acceptance paths, passed in
+[the ABI 14 candidate run](https://github.com/shuyra-arche/vanllia/actions/runs/44235989240).
+These results do **not** qualify SMP, physical hardware, the full assembled
+System or downstream System/Hub consumer compatibility. The candidate is not a
+new release and does not change any earlier release tag.
+
+The original [Kernel 26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
+tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`.
+The earlier ABI 13 composition used an exact post-Gamma repair, but it is no
+longer the selected Native provider. Capsules and stored artifacts generated
+for ABI 13 must be rebuilt; the Kernel rejects older ABI formats.
 
 The separate `tests/device/guest` workspace retains Kernel
 `5e6ea8ff5f48f5ce17c88d98cbedcc7a0ffe3a9e`; its ignored device runner
@@ -139,7 +142,7 @@ revisions and artifact identities are recorded separately in the
 [provider acceptance PR #38](https://github.com/shuyra-arche/vanllia/pull/38).
 Hardware, SMP and the complete assembled System are separate acceptance gates.
 
-The ABI 13 migration selects System's published candidate
+The earlier ABI 13 migration selected System's published candidate
 `470e97f38aa904c3702b665c0d225809b9f0d16e` in the product gitlink and native
 System/Twine composition. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
 production Loader -> real std-waits execution/reclamation/retirement is covered
