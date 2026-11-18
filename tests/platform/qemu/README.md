@@ -4,8 +4,9 @@ This standalone boot image retains QEMU virt / EDU preparation and platform
 wiring from the historical Kernel Cell I/O acceptance suite. Its PCI Host tests
 and image builds remain Platform checks; this image is not selected by Kernel's
 current IOMMU target workflow. PCI configuration belongs here; the production
-`platform/riscv` package supplies firmware parsing and ordinary boot assembly. The Kernel dependency provides translation, invalidation, queue
-shutdown and Page retention. It is separate from Vanllia's product selection.
+`platform/riscv` package supplies firmware parsing and ordinary boot assembly.
+The Kernel dependency provides translation, invalidation, queue shutdown and
+Page retention. It is separate from Vanllia's product selection.
 
 `Cargo.toml` pins both Kernel and its API to the same provider commit. The Kernel
 library supplies the RV64 entry and exports its linker script through Cargo
@@ -53,8 +54,9 @@ cargo +nightly build --locked --manifest-path tests/platform/qemu/Cargo.toml \
   --target riscv64gc-unknown-none-elf
 ```
 
-The host PCI cases check endpoint preparation and failure boundaries; they do
-not establish hardware completion. Kernel's current [IOMMU target workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
+The Host PCI cases check endpoint preparation and failure boundaries; they do
+not establish hardware completion. Kernel's current
+[IOMMU target workflow](https://github.com/shuyra-arche/kernel/blob/main/.github/workflows/iommu-target.yml)
 runs its own MMIO/DMA scenarios under `server/tests/target/metal/riscv/iommu/`;
 it does **not** boot this historical EDU image. The former
 `--test hardware cell_io` command, its multi-Hart test matrix and its
