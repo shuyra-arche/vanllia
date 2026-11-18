@@ -50,6 +50,9 @@ business-specific verdicts and release acceptance. Installing the Vanllia CLI
 does not require copying those scenarios into the CLI's own `tests/` tree;
 `--root` selects the actual product directory. The current in-repository
 Shuyra composition is a selected product, not a requirement of the tool.
+Its ABI13 Native/negative-boot verification sources live under
+[`product/tests/`](../product/README.md); these tests belong to the product
+configuration, while the generic CLI/Host tests remain in `tests/cli/`.
 
 The runner defaults to four Harts. Ordinary non-benchmark CI may explicitly
 select one Hart without making SMP qualification a tool responsibility.

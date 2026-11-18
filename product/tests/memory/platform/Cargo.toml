@@ -11,5 +11,5 @@ bench = false
 [dependencies]
 kernel-api.workspace = true
 kernel.workspace = true
-platform-riscv = { path = "../../../platform/riscv" }
+platform-riscv = { path = "../../../../platform/riscv" }
 fdt = { version = "0.1.5", default-features = false }

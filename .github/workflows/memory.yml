@@ -2,8 +2,8 @@ name: Kernel integration
 on:
   pull_request:
     paths:
-      - "tests/memory/**"
-      - "tests/runner/**"
+      - "product/tests/memory/**"
+      - "product/tests/runner/**"
       - "platform/riscv/**"
       - "crates/build/**"
       - "components/kernel"
@@ -16,8 +16,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "tests/memory/**"
-      - "tests/runner/**"
+      - "product/tests/memory/**"
+      - "product/tests/runner/**"
       - "platform/riscv/**"
       - "crates/build/**"
       - "components/kernel"
@@ -60,11 +60,11 @@ jobs:
         run: rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy
       - name: Check composition tools
         run: |
-          cargo fmt --manifest-path tests/memory/Cargo.toml --all -- --check
-          cargo fmt --manifest-path tests/runner/Cargo.toml -- --check
-          cargo clippy --locked --manifest-path tests/runner/Cargo.toml --all-targets --target x86_64-unknown-linux-gnu -- -Dwarnings
-          cargo test --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
+          cargo fmt --manifest-path product/tests/memory/Cargo.toml --all -- --check
+          cargo fmt --manifest-path product/tests/runner/Cargo.toml -- --check
+          cargo clippy --locked --manifest-path product/tests/runner/Cargo.toml --all-targets --target x86_64-unknown-linux-gnu -- -Dwarnings
+          cargo test --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
 
   kernel-targets:
     name: Kernel-owned target contracts
@@ -146,8 +146,8 @@ jobs:
               python3 "$system/tests/guest/loader/run.py" "$platform" --harts 1 --toolchain-receipt "$toolchain/build/std.json" --output "$evidence"
               ;;
             native|reject|reject12)
-              cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-              runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
+              cargo build --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+              runner="$GITHUB_WORKSPACE/product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
               args=(native --profile "$PROFILE")
               if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
               if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
@@ -240,8 +240,8 @@ jobs:
         id: control
         if: matrix.mode != 'warmup'
         run: |
-          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify baseline --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
+          cargo build --locked --manifest-path .integration/kernel/server/product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          .integration/kernel/server/product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify baseline --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: matrix.mode != 'warmup'
         with:
@@ -259,7 +259,7 @@ jobs:
           MODE: ${{ matrix.mode }}
           LATENCY: ${{ matrix.latency }}
         run: |
-          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          cargo build --locked --manifest-path .integration/kernel/server/product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
           args=()
           if [[ "$LATENCY" == disabled ]]; then args+=(--no-latency); fi
           if [[ "$MODE" == warmup ]]; then
@@ -268,7 +268,7 @@ jobs:
           else
             args+=(--baseline .integration/control)
           fi
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --harts 4 --rounds 5 "${args[@]}"
+          .integration/kernel/server/product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --harts 4 --rounds 5 "${args[@]}"
       - name: Preserve paired evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
