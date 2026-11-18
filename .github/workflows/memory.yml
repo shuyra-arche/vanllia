@@ -43,6 +43,8 @@ jobs:
       fail-fast: false
       max-parallel: 8
       matrix:
+        # Kernel Flat contract QEMU runs in kernel/.github/workflows/flat-target.yml.
+        # Keep the old gate until Kernel #303 is merged and protected.
         include:
           - { scenario: native, profile: debug, harts: "1" }
           - { scenario: native, profile: release, harts: "1" }
@@ -62,10 +64,6 @@ jobs:
           - { scenario: unsupported, profile: release, harts: "4" }
           - { scenario: stopped, profile: release, harts: "1" }
           - { scenario: stopped, profile: release, harts: "4" }
-          - { scenario: flat, profile: debug, harts: "1" }
-          - { scenario: flat, profile: debug, harts: "4" }
-          - { scenario: flat, profile: release, harts: "1" }
-          - { scenario: flat, profile: release, harts: "4" }
           - { scenario: irq, profile: debug, harts: "1" }
           - { scenario: irq, profile: debug, harts: "4" }
           - { scenario: irq, profile: release, harts: "1" }
@@ -172,7 +170,6 @@ jobs:
                 activity) args=(activity) ;;
                 unsupported) args=(activity --unsupported) ;;
                 stopped) args=(activity --stopped) ;;
-                flat) args=(flat) ;;
                 irq) args=(room --mode irq --events 16) ;;
                 realtime) args=(room --mode realtime) ;;
                 *) exit 1 ;;
