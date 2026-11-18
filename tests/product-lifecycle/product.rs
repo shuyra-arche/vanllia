@@ -19,7 +19,7 @@ fn product_eof_reclaims_all_native_instances() {
         .parse()
         .expect("firmware length");
     let cpus = std::env::var("VANLLIA_TEST_CPUS")
-        .unwrap_or_else(|_| "1".into())
+        .unwrap_or_else(|_| "4".into())
         .parse()
         .expect("CPU count");
     probe::run(root, &artifact, &firmware, &hash, bytes, cpus).unwrap();

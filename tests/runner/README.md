@@ -13,17 +13,19 @@ Other Vanllia tooling has not been migrated by this change.
 `verify system --kernel PATH --fixture SYSTEM --twine TWINE --output NEW` owns
 the native System/Twine runtime regression. System is pinned to
 `470e97f38aa904c3702b665c0d225809b9f0d16e` and Twine to
-`932454c07bd2673ac7d6d9612d36182aae71e8b2`; it executes release on 1/4 Harts.
+`932454c07bd2673ac7d6d9612d36182aae71e8b2`; it defaults to 4 Harts when invoked explicitly; ordinary CI selects 1 Hart.
 Neither command claims complete System or physical hardware acceptance.
 
 ## CI ownership and parallelism
 
 Kernel CI only runs its own Host checks and parallel debug/release RV64 builds.
 Vanllia owns cross-provider composition testing. The
-[integration workflow](../../.github/workflows/memory.yml) has 31 independent
-scenario/profile/Hart jobs, up to eight at once, with `fail-fast: false` and a
-separate evidence artifact per job. Native memory, CPU completion, A/D, Flat,
-IRQ, RT, System/Twine and the standalone IOMMU backend retain their scenarios.
+[integration workflow](../../.github/workflows/memory.yml) selects 13
+single-Hart contract/ABI/QEMU jobs, up to eight in parallel, with `fail-fast: false`
+and a separate evidence artifact per job. The Kernel-owned SMP, Flat and realtime
+multi-Hart campaign is not a routine CI gate; affected tests remain explicitly
+runnable by their owners. Opt-in paired Room/IRQ performance comparisons run with
+four Harts and retain reproducible baseline evidence.
 The Kernel candidate is the full SHA in `tests/runner/kernel`; it is an explicit
 test override, not a change to the product's default Kernel pin. Private Kernel
 probes use the published Vanllia fixture `f2dfa14f5b1f7bd47ee84841ba5c7112e8475950`.

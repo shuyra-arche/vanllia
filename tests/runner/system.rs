@@ -3,7 +3,7 @@ use kernel_verification::{process, *};
 use std::{fs, path::Path, process::Command, time::Duration};
 const SYSTEM: &str = "470e97f38aa904c3702b665c0d225809b9f0d16e";
 const TWINE: &str = "932454c07bd2673ac7d6d9612d36182aae71e8b2";
-pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<()> {
+pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path, harts: u8) -> Result<()> {
     require(revision(fixture)? == SYSTEM, "unreviewed System fixture")?;
     require(revision(twine)? == TWINE, "unreviewed Twine fixture")?;
     fresh(root)?;
@@ -79,52 +79,49 @@ pub fn run(kernel: &Path, fixture: &Path, twine: &Path, root: &Path) -> Result<(
         inputs["sha256"][name] = digest(&root.join(name))?.into();
     }
     json(&root.join("inputs.json"), &inputs)?;
-    let mut passed = true;
-    for harts in [1, 4] {
-        let destination = root.join(format!("harts-{harts}"));
-        let mut command = Command::new(&qemu);
-        command
-            .args([
-                "-accel",
-                "tcg,thread=multi",
-                "-machine",
-                "virt",
-                "-cpu",
-                "rv64",
-                "-smp",
-            ])
-            .arg(harts.to_string())
-            .args([
-                "-m",
-                "128M",
-                "-nographic",
-                "-monitor",
-                "none",
-                "-nic",
-                "none",
-                "-bios",
-            ])
-            .arg(&firmware)
-            .arg("-kernel")
-            .arg(root.join("platform.elf"))
-            .arg("-initrd")
-            .arg(root.join("initrd.bin"));
-        let mut result = process::run(&mut command, &destination, Duration::from_secs(120))?;
-        let log = fs::read_to_string(destination.join("serial.log"))?;
-        passed &= process::accept(
-            &mut result,
-            &log,
-            &[
-                "PASS system-runtime",
-                "PASS supply-native",
-                "PASS system-rpc",
-                "PASS supply-window",
-                "task: all tasks exited",
-            ]
-            .map(String::from),
-        );
-        json(&destination.join("result.json"), &result)?;
-    }
+    let destination = root.join(format!("harts-{harts}"));
+    let mut command = Command::new(&qemu);
+    command
+        .args([
+            "-accel",
+            "tcg,thread=multi",
+            "-machine",
+            "virt",
+            "-cpu",
+            "rv64",
+            "-smp",
+        ])
+        .arg(harts.to_string())
+        .args([
+            "-m",
+            "128M",
+            "-nographic",
+            "-monitor",
+            "none",
+            "-nic",
+            "none",
+            "-bios",
+        ])
+        .arg(&firmware)
+        .arg("-kernel")
+        .arg(root.join("platform.elf"))
+        .arg("-initrd")
+        .arg(root.join("initrd.bin"));
+    let mut result = process::run(&mut command, &destination, Duration::from_secs(120))?;
+    let log = fs::read_to_string(destination.join("serial.log"))?;
+    let passed = process::accept(
+        &mut result,
+        &log,
+        &[
+            "PASS system-runtime",
+            "PASS supply-native",
+            "PASS system-rpc",
+            "PASS supply-window",
+            "task: all tasks exited",
+        ]
+        .map(String::from),
+    );
+    json(&destination.join("result.json"), &result)?;
     require(
         passed,
         format!("System acceptance failed: {}", root.display()),

@@ -37,6 +37,8 @@ enum Scenario {
         twine: PathBuf,
         #[arg(long)]
         output: PathBuf,
+        #[arg(long, default_value_t = 4, value_parser = clap::value_parser!(u8).range(1..=4))]
+        harts: u8,
     },
 }
 fn main() {
@@ -54,7 +56,8 @@ fn main() {
             fixture,
             twine,
             output,
-        } => system::run(&kernel, &fixture, &twine, &output),
+            harts,
+        } => system::run(&kernel, &fixture, &twine, &output, harts),
     };
     if let Err(error) = result {
         eprintln!("{error}");

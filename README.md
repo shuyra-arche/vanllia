@@ -36,6 +36,8 @@ vanllia plan
 vanllia build
 ```
 
+The runner uses four Harts by default (explicitly configurable via `[runner].cpus`); non-benchmark CI executes its selected contracts on one Hart and does not exercise SMP qualification. Benchmark Hart counts are selected by the benchmark owner.
+
 The default selection is Login and Daemon. System is always included. Selected
 Units and their resources are packaged; requested Units such as Shell need not
 start at boot. Repeated `--unit` options select a smaller dependency closure:
