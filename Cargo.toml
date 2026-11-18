@@ -33,6 +33,10 @@ name = "discovery"
 path = "tests/cli/discovery.rs"
 
 [[test]]
+name = "cases"
+path = "tests/cli/cases.rs"
+
+[[test]]
 name = "overlay"
 path = "tests/cli/overlay.rs"
 
