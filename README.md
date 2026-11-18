@@ -142,8 +142,9 @@ revisions and artifact identities are recorded separately in the
 Hardware, SMP and the complete assembled System are separate acceptance gates.
 
 The ABI 13 migration selects System's published candidate
-`470e97f38aa904c3702b665c0d225809b9f0d16e` in the product gitlink and native
-System/Twine composition. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
+`470e97f38aa904c3702b665c0d225809b9f0d16e` in the product gitlink.
+System now owns its own native Runtime/Supply/RPC contracts; Vanllia does not
+keep a second System/Twine test runner. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
 production Loader -> real std-waits execution/reclamation/retirement is covered
 by the independent composition job. Full product artifact distribution remains
 a separate #19/#39 acceptance gate. Existing historical Driver/product/device fixtures retain their explicitly
