@@ -11,7 +11,7 @@ build work; Units describe runtime policy.
 - `src/`: Vanllia CLI; [CLI guide](docs/cli.md).
 - `crates/build/`: `vanllia-build` library, its tests and workflow examples.
 - `tests/cli/`: CLI integration tests.
-- `product/tests/`: selected Shuyra **product-owned** ABI13 Native/negative-boot
+- `product/tests/`: selected Shuyra **product-owned** Native/negative-boot
   composition fixtures and their Host runner (not generic CLI tests).
 - `components/`: pinned Kernel, System and service repositories.
 - `product/tests/lifecycle/`: historical Login/Driver/product acceptance probes;
@@ -100,30 +100,25 @@ image under `tests/platform/qemu` reuses the production boot path.
 
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
-The build library, platform images and native memory API/Client/Server
-composition pin Kernel `789ffd19b5359f3de172fb9aad8a61f6a7113a64`, the
-coordinated User startup candidate for Kernel #160/#206/#188.
-It retains the native Nest creation repair from [Kernel #175](https://github.com/shuyra-arche/kernel/pull/175)
-and managed DTB/initrd sources from #180, adding bounded all-Hart CPU completion.
-Executable SMP requires explicit all-Hart qualification; this pin does not qualify a platform or
-claim complete System acceptance.
-ABI/Ledger are 13/13 and Capsule format 2. Merge the Kernel provider before
-this consumer change; this pin is not a new release. All Kernel Git dependencies use that full `rev`, including
-the `components/kernel` gitlink; `[sources.kernel].path` remains unchanged.
-Five Cargo lockfiles cover the root, RV64 platform, QEMU platform, hardware
-fixture and native memory workspaces. `cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .`
-checks their coordinated source identity. No Cargo feature selects the ABI.
-The original [26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
-tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`. Its native debug
-acceptance exposed a Unit commit-lock assertion during Nest creation. The
-product deliberately selects the later exact repair commit; it does not
-relabel or modify Gamma, and no new release tag is claimed for this pin.
-The build library writes capsule v2 with ABI 13;
-the Kernel parser validates generated
-capsules and retained artifacts before execution. Older ABI capsules require a
-rebuild even when receipt hashes match. The historical build-library declaration
-workflow still carries legacy dependencies and is not evidence of a clean
-assembled System dependency graph.
+The draft ABI 14 qualification candidate pins Kernel `44d9593d89c4823a7599eb3ee3683bd7a5cee9b5` across
+the build library, RV64 platform, QEMU fixture, Native memory product Guest,
+Cargo locks, and `components/kernel` gitlink. This immutable Kernel revision contains the merged #301 Journal fix, #302
+Nest/CPU-retirement correction, and #321 Kernel-owned ABI 14 CPU target.
+Kernel main has accepted these fixes; Vanllia main still selects the published
+ABI 13 product until the separate consumer migration is accepted.
+
+The candidate Native ABI/Ledger contract is 14/14; Capsule format remains 2.
+Run `cargo run --locked --manifest-path product/tests/runner/Cargo.toml
+--target x86_64-unknown-linux-gnu -- versions --fixture .` to check exact
+source identity. Older ABI capsules must be rebuilt, not accepted through a
+compatibility wrapper. The coordinated Native candidate is tested separately in the draft
+[Vanllia ABI 14 migration PR](https://github.com/shuyra-arche/vanllia/pull/50);
+its candidate checks do not establish System/Twine, multi-Hart native,
+hardware IOMMU, or full product acceptance.
+
+The original
+[26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
+tag remains unchanged. Its historical results cannot certify this candidate.
 
 The old `tests/device` guest and experimental `tests/syscall-cost`
 benchmark were retired because their historical provider graphs cannot

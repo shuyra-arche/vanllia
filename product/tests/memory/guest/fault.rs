@@ -29,25 +29,19 @@ extern "C" fn reader() -> ! {
     unit::exit(42, 0, VirtAddr::new(0), 0, ExitScope::Task)
 }
 pub fn configure(memo: MemoPosition, route: Option<FaultRoute>) -> FaultEpoch {
-    let Snapshot::Reservation(status) = inspect(Query::Reservation {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
+    let Snapshot::Span(status) = inspect(Query::Span {
+        range: memo.range(),
     }) else {
         panic!("Reservation")
     };
     let Snapshot::FaultRoute(fault) = inspect(Query::FaultRoute {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
+        range: memo.range(),
     }) else {
         panic!("FaultRoute")
     };
     let Value::FaultRoute { epoch, .. } = mutate(Action::FaultRoute {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
-        expected: status.version,
+        range: memo.range(),
+        expected: RangeVersion::new(status.version.get()).unwrap(),
         epoch: fault.epoch,
         route,
     }) else {
@@ -57,9 +51,7 @@ pub fn configure(memo: MemoPosition, route: Option<FaultRoute>) -> FaultEpoch {
 }
 pub fn event(memo: MemoPosition, epoch: FaultEpoch, wait: Wait) -> FaultEvent {
     let Snapshot::FaultEvent(event) = inspect(Query::FaultEvent {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
+        range: memo.range(),
         epoch,
         after: 0,
         wait,

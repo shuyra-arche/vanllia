@@ -85,6 +85,12 @@ pub fn find(test: impl Fn(PendInfo) -> bool) -> PendInfo {
         after = i.token;
     }
 }
+pub fn nest_id(memo: MemoPosition) -> NestId {
+    let Target::Nest(nest) = pend_info(memo.range()).target else {
+        panic!("Nest")
+    };
+    nest
+}
 pub fn license() -> PendId {
     find(|p| p.target == Target::None).token
 }
@@ -109,7 +115,7 @@ pub fn space() -> PendId {
 pub fn boot(at: usize, count: usize) {
     use kernel_api::boot::{args, ledger::Entries};
     assert_eq!(count, args::LEN);
-    assert_eq!(kernel_api::abi::VERSION, 13);
+    assert_eq!(kernel_api::abi::VERSION, 14);
     crate::stack::init_owner();
     let a = unsafe { core::slice::from_raw_parts(at as *const usize, count) };
     IMAGE.store(a[args::VIEW], Ordering::Relaxed);
@@ -164,17 +170,15 @@ pub fn reserve_pages(
     let Snapshot::Nest(s) = inspect(Query::Nest { token, nest }) else {
         panic!("Nest")
     };
-    let Value::Reservation {
-        token,
-        nest,
-        reservation,
+    let Value::Span {
+        range: token,
         address,
         ..
-    } = mutate(Action::Reserve {
+    } = mutate(Action::CreateSpan {
         token,
         nest,
         expected: s.version,
-        reservation: ReserveRequest {
+        request: CreateSpanRequest {
             placement,
             count: PageCount::new(count).unwrap(),
             level: CellLevel::new(0).unwrap(),
@@ -184,10 +188,7 @@ pub fn reserve_pages(
     else {
         panic!("Reservation")
     };
-    (
-        MemoPosition::new(token, nest, reservation, 0).unwrap(),
-        address,
-    )
+    (MemoPosition::new(token, 0).unwrap(), address)
 }
 pub fn insert(target: MemoPosition, slot: SlotPosition) {
     mutate(Action::Insert {

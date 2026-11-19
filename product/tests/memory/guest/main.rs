@@ -37,6 +37,11 @@ extern "C" fn run(at: usize, count: usize) -> ! {
         expected: slot_status(slot).version,
     });
     let (memo, address) = reserve(space());
+    // An unassociated Memo must remain inspectable through its live range.
+    assert_eq!(
+        memo_status(memo).phase,
+        kernel_api::model::nest::MemoPhase::Empty
+    );
     insert(memo, slot);
     publish(memo);
     unsafe {
@@ -57,7 +62,7 @@ extern "C" fn run(at: usize, count: usize) -> ! {
     mutate(Action::Allow { maintenance });
     let _ = writeln!(
         Console,
-        "PASS native-memory abi=13 ledger=13 occupy=1 publish=1 retract=1 vacate=1"
+        "PASS native-memory abi=14 ledger=14 occupy=1 publish=1 retract=1 vacate=1"
     );
     fault::run();
     acceptance::run();

@@ -46,6 +46,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       kernel_sha: ${{ steps.product.outputs.sha }}
+      abi: ${{ steps.product.outputs.abi }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select product Kernel revision
@@ -56,6 +57,11 @@ jobs:
           [[ "$mode" == 160000 && "$stage" == 0 && "$path" == components/kernel ]]
           [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
           echo "sha=$pin" >> "$GITHUB_OUTPUT"
+          case "$pin" in
+            789ffd19b5359f3de172fb9aad8a61f6a7113a64) echo "abi=13" >> "$GITHUB_OUTPUT" ;;
+            44d9593d89c4823a7599eb3ee3683bd7a5cee9b5) echo "abi=14" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unqualified product Kernel ABI pin: $pin" >&2; exit 1 ;;
+          esac
       - name: Install host toolchain
         run: rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy
       - name: Check composition tools
@@ -67,11 +73,21 @@ jobs:
           cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
 
   kernel-targets:
-    name: Kernel-owned target contracts
+    name: Kernel-owned published ABI13 target contracts
+    if: needs.host.outputs.abi == '13'
     needs: host
     uses: shuyra-arche/kernel/.github/workflows/pinned-target.yml@ec7adcde3d3c97b59630f52b000db3ded4f9e582
     with:
       kernel_sha: ${{ needs.host.outputs.kernel_sha }}
+
+  kernel-abi14-targets:
+    name: Kernel-owned ABI14 Nest completion
+    if: needs.host.outputs.abi == '14'
+    needs: host
+    uses: shuyra-arche/kernel/.github/workflows/nest-target.yml@eceddad499a23b4521d3b36106516670ca68279d
+    with:
+      kernel_sha: ${{ needs.host.outputs.kernel_sha }}
+      owner_sha: eceddad499a23b4521d3b36106516670ca68279d
 
   qemu:
     name: ${{ matrix.scenario }} / ${{ matrix.profile }} / h${{ matrix.harts }}

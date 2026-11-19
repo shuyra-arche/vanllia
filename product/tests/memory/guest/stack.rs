@@ -1,10 +1,15 @@
 //! Runtime-owned test stacks. The initial User Task retains the actual Flat and
-//! Reservation grants; Task stop/exit does not release either resource.
+//! Span grants; Task stop/exit does not release either resource.
 use crate::support::*;
 use kernel_api::{
     abi::memory::*,
     address::*,
-    model::{cell::Placement, flat::SlotPosition, nest::MemoPosition, unit::TaskStart},
+    model::{
+        cell::Placement,
+        flat::SlotPosition,
+        nest::{MemoPosition, RangeVersion},
+        unit::TaskStart,
+    },
 };
 use kernel_client::{call::room, memory::Response};
 
@@ -18,7 +23,8 @@ pub struct Stack {
 fn change(action: impl Fn() -> Action) -> Value {
     let deadline = room::clock() + 5_000_000_000;
     loop {
-        let Response::Reply(mut reply) = call(action()) else {
+        let attempted = action();
+        let Response::Reply(mut reply) = call(attempted) else {
             panic!("memory reply")
         };
         while matches!(reply.outcome(), Outcome::Pending(_)) {
@@ -35,7 +41,11 @@ fn change(action: impl Fn() -> Action) -> Value {
         match reply.outcome() {
             Outcome::Committed(value) => return value,
             Outcome::Rejected(Failure::Busy | Failure::Stale) => {
-                assert!(room::clock() < deadline);
+                assert!(
+                    room::clock() < deadline,
+                    "stack retry expired: {attempted:?}, outcome={:?}",
+                    reply.outcome(),
+                );
                 room::yield_();
             }
             other => panic!("memory mutation: {other:?}"),
@@ -65,8 +75,7 @@ impl Stack {
             .then(|| reserve_pages(space(), Placement::lowest(PAGE_SIZE).unwrap(), 6, pages));
         for page in 0..pages {
             let slot = SlotPosition::new(flat.token(), flat.flat(), page).unwrap();
-            let target =
-                MemoPosition::new(memo.token(), memo.nest(), memo.reservation(), page + 1).unwrap();
+            let target = MemoPosition::new(memo.range(), page + 1).unwrap();
             change(|| Action::Occupy {
                 slot,
                 expected: slot_status(slot).version,
@@ -85,9 +94,7 @@ impl Stack {
                 maintenance: None,
             });
             if let Some((first, _)) = local {
-                let target =
-                    MemoPosition::new(first.token(), first.nest(), first.reservation(), page)
-                        .unwrap();
+                let target = MemoPosition::new(first.range(), page).unwrap();
                 change(|| Action::Insert {
                     target,
                     expected: memo_status(target).generation,
@@ -129,23 +136,19 @@ impl Stack {
     pub fn retire(self) {
         for memo in [Some(self.memo), self.local].into_iter().flatten() {
             change(|| {
-                let Snapshot::Reservation(status) = inspect(Query::Reservation {
-                    token: memo.token(),
-                    nest: memo.nest(),
-                    reservation: memo.reservation(),
+                let Snapshot::Span(status) = inspect(Query::Span {
+                    range: memo.range(),
                 }) else {
                     panic!("reservation")
                 };
-                Action::Release {
-                    token: memo.token(),
-                    nest: memo.nest(),
-                    reservation: memo.reservation(),
-                    expected: status.version,
+                Action::DeleteSpan {
+                    range: memo.range(),
+                    expected: RangeVersion::new(status.version.get()).unwrap(),
                 }
             });
         }
         for memo in [Some(self.memo), self.local].into_iter().flatten() {
-            kernel_client::call::pend::return_(memo.token()).unwrap();
+            kernel_client::call::pend::return_(memo.range()).unwrap();
         }
         change(|| {
             let Snapshot::Flat(status) = inspect(Query::Flat {

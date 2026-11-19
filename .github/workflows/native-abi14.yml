@@ -1,0 +1,223 @@
+name: Native ABI 14 migration
+
+# Product-level pinning and reproducible lockfile migration, before merge.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/native-abi14.yml'
+      - 'product/tests/memory/**'
+      - 'product/tests/runner/**'
+      - 'platform/**'
+      - 'tests/platform/**'
+      - 'crates/build/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'components/kernel'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vanllia-native-abi14-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lockfiles:
+    name: ABI 14 coordinated lockfile resolution
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 25
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+    steps:
+      - name: Install host resolver
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN"
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Resolve every coordinated ABI 14 application graph
+        run: |
+          set -euo pipefail
+          for manifest in \
+            Cargo.toml \
+            platform/riscv/Cargo.toml \
+            tests/platform/qemu/Cargo.toml \
+            tests/platform/hardware/Cargo.toml \
+            product/tests/memory/Cargo.toml \
+            product/tests/runner/Cargo.toml; do
+            cargo +nightly generate-lockfile --manifest-path "$manifest"
+          done
+      - name: Preserve reproducible Cargo resolutions
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: abi14-coordinated-lockfiles
+          if-no-files-found: error
+          path: |
+            Cargo.lock
+            platform/riscv/Cargo.lock
+            tests/platform/qemu/Cargo.lock
+            tests/platform/hardware/Cargo.lock
+            product/tests/memory/Cargo.lock
+            product/tests/runner/Cargo.lock
+
+  candidate:
+    name: ABI 14 Native guest and platform compilation
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 20
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+      PROVIDER_SHA: 44d9593d89c4823a7599eb3ee3683bd7a5cee9b5
+    steps:
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential python3
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" \
+            --target riscv64gc-unknown-none-elf
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Verify exact ABI 14 candidate source pins
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          pin = os.environ["PROVIDER_SHA"]
+          for name, count in [
+              ("product/tests/memory/Cargo.toml", 3),
+              ("platform/riscv/Cargo.toml", 2),
+              ("tests/platform/qemu/Cargo.toml", 2),
+              ("crates/build/Cargo.toml", 1),
+          ]:
+              source = Path(name).read_text()
+              assert source.count(pin) == count, (name, pin)
+              print(f"Candidate {name} = {pin}")
+          PY
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          test "$(git ls-files --stage components/kernel | awk '{print $2}')" = "$PROVIDER_SHA"
+      - name: Check Native guest against ABI 14
+        run: |
+          set -euo pipefail
+          mkdir -p .integration/abi14
+          cargo +nightly generate-lockfile --manifest-path product/tests/memory/Cargo.toml \
+            2>&1 | tee .integration/abi14/resolve.log
+          cargo +nightly check --manifest-path product/tests/memory/Cargo.toml \
+            --target riscv64gc-unknown-none-elf --package memory-guest \
+            2>&1 | tee .integration/abi14/guest.log
+      - name: Check Native platform against ABI 14
+        run: |
+          set -euo pipefail
+          cargo +nightly check --manifest-path product/tests/memory/Cargo.toml \
+            --target riscv64gc-unknown-none-elf --package memory-platform \
+            2>&1 | tee .integration/abi14/platform.log
+      - name: Preserve exact source diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: abi14-guest-compile
+          if-no-files-found: warn
+          path: |
+            .integration/abi14/
+            product/tests/memory/Cargo.lock
+
+  native:
+    name: ABI 14 Native QEMU (${{ matrix.profile }})
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 30
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+      QEMU_RISCV64: qemu-system-riscv64
+      PROVIDER_SHA: 44d9593d89c4823a7599eb3ee3683bd7a5cee9b5
+    steps:
+      - name: Install QEMU, OpenSBI, compiler and runner tools
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates curl git build-essential opensbi qemu-system-riscv
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" \
+            --target riscv64gc-unknown-none-elf
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          firmware="$(dpkg -L opensbi | grep '/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin$' | head -n 1)"
+          test -n "$firmware" && test -f "$firmware"
+          echo "QEMU_OPENSBI=$firmware" >> "$GITHUB_ENV"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: shuyra-arche/kernel
+          ref: 44d9593d89c4823a7599eb3ee3683bd7a5cee9b5
+          path: .integration/provider
+          persist-credentials: false
+          submodules: false
+      - name: Identify exact candidate and build verification runner
+        run: |
+          set -euo pipefail
+          test "$(git -C .integration/provider rev-parse HEAD)" = "44d9593d89c4823a7599eb3ee3683bd7a5cee9b5"
+          qemu-system-riscv64 --version
+          cargo +nightly generate-lockfile --manifest-path product/tests/runner/Cargo.toml
+          cargo +nightly build --locked --manifest-path product/tests/runner/Cargo.toml \
+            --target x86_64-unknown-linux-gnu
+      - name: Execute native ABI 14 product boundary
+        run: |
+          set -euo pipefail
+          mkdir -p .integration/evidence
+          product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify native \
+            --kernel "$GITHUB_WORKSPACE/.integration/provider" \
+            --fixture "$GITHUB_WORKSPACE" \
+            --output "$GITHUB_WORKSPACE/.integration/evidence/native-${{ matrix.profile }}" \
+            --profile "${{ matrix.profile }}" \
+            --capsule-version 14 \
+            2>&1 | tee .integration/evidence/runner.log
+      - name: Report failed Native QEMU result
+        if: failure()
+        run: |
+          set -eu
+          directory=.integration/evidence/native-${{ matrix.profile }}/boot
+          if test -f "$directory/result.json"; then cat "$directory/result.json"; fi
+          if test -f "$directory/serial.log"; then tail -n 140 "$directory/serial.log"; fi
+          if test -f "$directory/stderr.log"; then tail -n 70 "$directory/stderr.log"; fi
+          # Keep the exact debug ELF next to its faulting PC evidence. This
+          # diagnoses stack pressure without weakening runtime acceptance.
+          image=".integration/evidence/native-debug/platform.elf"
+          if test "${{ matrix.profile }}" = debug &&
+              test -f "$image" &&
+              test -f "$directory/serial.log" &&
+              grep -q 'frame source=' "$directory/serial.log"; then
+            echo "Debug fatal frames (exact image):"
+            grep -oE 'frame source=[^ ]+ pc=0x[0-9a-f]+' "$directory/serial.log" |
+              sed 's/.*pc=//' | sort -u |
+              while read -r pc; do
+                addr2line -C -f -p -i -e "$image" "$pc" || true
+              done
+          fi
+      - name: Preserve exact QEMU and build evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: abi14-native-qemu-${{ matrix.profile }}
+          if-no-files-found: warn
+          path: .integration/evidence/

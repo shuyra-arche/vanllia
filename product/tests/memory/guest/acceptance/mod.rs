@@ -42,25 +42,27 @@ fn narrow(token: PendId, limits: Limits) {
         kernel_client::call::room::yield_();
     }
 }
-fn at(memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
-    MemoPosition::new(token, memo.nest(), memo.reservation(), page).unwrap()
+fn at(_memo: MemoPosition, token: PendId, page: usize) -> MemoPosition {
+    MemoPosition::new(token, page).unwrap()
 }
-fn reservation(memo: MemoPosition) -> ReservationStatus {
-    let Snapshot::Reservation(s) = inspect(Query::Reservation {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
+fn span_status(memo: MemoPosition) -> SpanStatus {
+    let Snapshot::Span(s) = inspect(Query::Span {
+        range: memo.range(),
     }) else {
-        panic!("Reservation")
+        panic!("Span")
     };
     s
 }
+fn span_id(memo: MemoPosition) -> SpanId {
+    let PendScope::Nest(NestScope::Span { id, .. }) = pend_info(memo.range()).limits.scope else {
+        panic!("Span authority")
+    };
+    id
+}
 fn release(memo: MemoPosition) -> Action {
-    Action::Release {
-        token: memo.token(),
-        nest: memo.nest(),
-        reservation: memo.reservation(),
-        expected: reservation(memo).version,
+    Action::DeleteSpan {
+        range: memo.range(),
+        expected: RangeVersion::new(span_status(memo).version.get()).unwrap(),
     }
 }
 #[track_caller]
