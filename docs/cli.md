@@ -40,9 +40,23 @@ path = "components/pipe"
 [runner]
 machine = "virt"
 memory = "256M"
-cpus = 1
+cpus = 4
 timeout = 60
 ```
+
+A product's own repository or directory is the owner of its
+`vanllia.toml`, `vanllia.lock`, provider revision choices, test Units,
+business-specific verdicts and release acceptance. Installing the Vanllia CLI
+does not require copying those scenarios into the CLI's own `tests/` tree;
+`--root` selects the actual product directory. The current in-repository
+Shuyra composition is a selected product, not a requirement of the tool.
+Its ABI13 Native/negative-boot verification sources live under
+[`product/tests/`](../product/README.md); these tests belong to the product
+configuration, while the generic CLI/Host tests remain in `tests/cli/`.
+
+The runner defaults to four Harts. Ordinary non-benchmark CI may explicitly
+select one Hart without making SMP qualification a tool responsibility.
+Provider-owned tests are discovered through existing `test.toml` declarations.
 
 Repeated `--unit ID` replaces the default selection. System is always included.
 `check` and `plan` are read only, including locks and source preparation.

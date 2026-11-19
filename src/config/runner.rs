@@ -17,7 +17,7 @@ fn memory() -> String {
     "256M".into()
 }
 fn cpus() -> u32 {
-    1
+    4
 }
 fn timeout() -> u64 {
     60

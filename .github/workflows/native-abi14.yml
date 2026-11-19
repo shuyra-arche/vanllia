@@ -5,8 +5,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/native-abi14.yml'
-      - 'tests/memory/**'
-      - 'tests/runner/**'
+      - 'product/tests/memory/**'
+      - 'product/tests/runner/**'
       - 'platform/**'
       - 'tests/platform/**'
       - 'crates/build/**'
@@ -51,8 +51,8 @@ jobs:
             platform/riscv/Cargo.toml \
             tests/platform/qemu/Cargo.toml \
             tests/platform/hardware/Cargo.toml \
-            tests/memory/Cargo.toml \
-            tests/runner/Cargo.toml; do
+            product/tests/memory/Cargo.toml \
+            product/tests/runner/Cargo.toml; do
             cargo +nightly generate-lockfile --manifest-path "$manifest"
           done
       - name: Preserve reproducible Cargo resolutions
@@ -66,8 +66,8 @@ jobs:
             platform/riscv/Cargo.lock
             tests/platform/qemu/Cargo.lock
             tests/platform/hardware/Cargo.lock
-            tests/memory/Cargo.lock
-            tests/runner/Cargo.lock
+            product/tests/memory/Cargo.lock
+            product/tests/runner/Cargo.lock
 
   candidate:
     name: ABI 14 Native guest and platform compilation
@@ -76,7 +76,7 @@ jobs:
     timeout-minutes: 20
     env:
       RUSTUP_TOOLCHAIN: nightly
-      PROVIDER_SHA: e860396af2830d229d73134c00fba7346833dafe
+      PROVIDER_SHA: 657f2a36aa4043ae2a5b419774577b6498bfc9e7
     steps:
       - name: Install tools
         run: |
@@ -99,16 +99,14 @@ jobs:
           from pathlib import Path
           pin = os.environ["PROVIDER_SHA"]
           for name, count in [
-              ("tests/memory/Cargo.toml", 3),
+              ("product/tests/memory/Cargo.toml", 3),
               ("platform/riscv/Cargo.toml", 2),
               ("tests/platform/qemu/Cargo.toml", 2),
               ("crates/build/Cargo.toml", 1),
-              ("tests/runner/Cargo.toml", 1),
           ]:
               source = Path(name).read_text()
               assert source.count(pin) == count, (name, pin)
               print(f"Candidate {name} = {pin}")
-          assert Path("tests/runner/kernel").read_text().strip() == pin
           PY
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           test "$(git ls-files --stage components/kernel | awk '{print $2}')" = "$PROVIDER_SHA"
@@ -116,15 +114,15 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .integration/abi14
-          cargo +nightly generate-lockfile --manifest-path tests/memory/Cargo.toml \
+          cargo +nightly generate-lockfile --manifest-path product/tests/memory/Cargo.toml \
             2>&1 | tee .integration/abi14/resolve.log
-          cargo +nightly check --manifest-path tests/memory/Cargo.toml \
+          cargo +nightly check --manifest-path product/tests/memory/Cargo.toml \
             --target riscv64gc-unknown-none-elf --package memory-guest \
             2>&1 | tee .integration/abi14/guest.log
       - name: Check Native platform against ABI 14
         run: |
           set -euo pipefail
-          cargo +nightly check --manifest-path tests/memory/Cargo.toml \
+          cargo +nightly check --manifest-path product/tests/memory/Cargo.toml \
             --target riscv64gc-unknown-none-elf --package memory-platform \
             2>&1 | tee .integration/abi14/platform.log
       - name: Preserve exact source diagnostics
@@ -135,7 +133,7 @@ jobs:
           if-no-files-found: warn
           path: |
             .integration/abi14/
-            tests/memory/Cargo.lock
+            product/tests/memory/Cargo.lock
 
   native:
     name: ABI 14 Native QEMU (${{ matrix.profile }})
@@ -149,7 +147,7 @@ jobs:
     env:
       RUSTUP_TOOLCHAIN: nightly
       QEMU_RISCV64: qemu-system-riscv64
-      PROVIDER_SHA: e860396af2830d229d73134c00fba7346833dafe
+      PROVIDER_SHA: 657f2a36aa4043ae2a5b419774577b6498bfc9e7
     steps:
       - name: Install QEMU, OpenSBI, compiler and runner tools
         run: |
@@ -171,23 +169,23 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/kernel
-          ref: e860396af2830d229d73134c00fba7346833dafe
+          ref: 657f2a36aa4043ae2a5b419774577b6498bfc9e7
           path: .integration/provider
           persist-credentials: false
           submodules: false
       - name: Identify exact candidate and build verification runner
         run: |
           set -euo pipefail
-          test "$(git -C .integration/provider rev-parse HEAD)" = "e860396af2830d229d73134c00fba7346833dafe"
+          test "$(git -C .integration/provider rev-parse HEAD)" = "657f2a36aa4043ae2a5b419774577b6498bfc9e7"
           qemu-system-riscv64 --version
-          cargo +nightly generate-lockfile --manifest-path tests/runner/Cargo.toml
-          cargo +nightly build --locked --manifest-path tests/runner/Cargo.toml \
+          cargo +nightly generate-lockfile --manifest-path product/tests/runner/Cargo.toml
+          cargo +nightly build --locked --manifest-path product/tests/runner/Cargo.toml \
             --target x86_64-unknown-linux-gnu
       - name: Execute native ABI 14 product boundary
         run: |
           set -euo pipefail
           mkdir -p .integration/evidence
-          tests/runner/target/x86_64-unknown-linux-gnu/debug/verify native \
+          product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify native \
             --kernel "$GITHUB_WORKSPACE/.integration/provider" \
             --fixture "$GITHUB_WORKSPACE" \
             --output "$GITHUB_WORKSPACE/.integration/evidence/native-${{ matrix.profile }}" \

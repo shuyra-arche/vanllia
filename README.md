@@ -11,10 +11,13 @@ build work; Units describe runtime policy.
 - `src/`: Vanllia CLI; [CLI guide](docs/cli.md).
 - `crates/build/`: `vanllia-build` library, its tests and workflow examples.
 - `tests/cli/`: CLI integration tests.
+- `product/tests/`: selected Shuyra **product-owned** Native/negative-boot
+  composition fixtures and their Host runner (not generic CLI tests).
 - `components/`: pinned Kernel, System and service repositories.
-- `tests/product-lifecycle/`: explicit product, Login and driver QEMU acceptance.
-- `tests/platform/qemu/`: [trusted QEMU boot image](tests/platform/qemu/README.md) for Kernel IOMMU acceptance.
-- `tests/syscall-cost/`: optional paired syscall benchmark.
+- `product/tests/lifecycle/`: historical Login/Driver/product acceptance probes;
+  their old independent lock has **not** been qualified for the current product.
+- `tests/platform/qemu/`: [retained QEMU platform fixture](tests/platform/qemu/README.md)
+  with PCI Host checks and RV64 image builds, not a current Kernel IOMMU acceptance gate.
 
 ## Build and run
 
@@ -36,6 +39,8 @@ vanllia plan
 vanllia build
 ```
 
+The runner uses four Harts by default (explicitly configurable via `[runner].cpus`); non-benchmark CI executes its selected contracts on one Hart and does not exercise SMP qualification. Benchmark Hart counts are selected by the benchmark owner.
+
 The default selection is Login and Daemon. System is always included. Selected
 Units and their resources are packaged; requested Units such as Shell need not
 start at boot. Repeated `--unit` options select a smaller dependency closure:
@@ -55,8 +60,9 @@ vanllia test -- pipe.roundtrip
 ```
 
 Artifacts and native receipts live under `.vanllia/`. A successful build alone
-is not a runtime verdict. [Product lifecycle tests](tests/product-lifecycle/README.md)
-document the additional explicit QEMU gates and their limits.
+is not a runtime verdict. [Historical product lifecycle probes](product/tests/lifecycle/README.md)
+are ignored and have not been qualified against the current product lock;
+they are **not** passing release acceptance.
 
 ## Development and checks
 
@@ -94,57 +100,50 @@ image under `tests/platform/qemu` reuses the production boot path.
 
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
+The draft ABI 14 qualification candidate pins Kernel `657f2a36aa4043ae2a5b419774577b6498bfc9e7` across
+the build library, RV64 platform, QEMU fixture, Native memory product Guest,
+Cargo locks, and `components/kernel` gitlink. This revision combines the
+independently reviewed but still unmerged Kernel PRs #301 and #302 on a
+verification-only branch; it is **not** an accepted Kernel provider release.
+Main continues to use the published ABI 13 source until all consumers pass.
 
-The ABI 14 migration candidate selects Kernel `e860396af2830d229d73134c00fba7346833dafe` for the root build
-library, RV64 platform, QEMU fixture, Native memory guest, verification runner
-and `components/kernel` gitlink. The root, RV64, QEMU, hardware, Native memory
-and verification runner Cargo lockfiles resolve that exact provider revision.
-ABI and boot Ledger are 14/14; Capsule format remains 2. There is no Cargo
-feature selecting an older ABI. To check source identity, run:
+The candidate Native ABI/Ledger contract is 14/14; Capsule format remains 2.
+Run `cargo run --locked --manifest-path product/tests/runner/Cargo.toml
+--target x86_64-unknown-linux-gnu -- versions --fixture .` to check exact
+source identity. Older ABI capsules must be rebuilt, not accepted through a
+compatibility wrapper. The source is tested separately in the draft
+[Vanllia ABI 14 migration PR](https://github.com/shuyra-arche/vanllia/pull/50);
+its candidate checks do not establish System/Twine, multi-Hart native,
+hardware IOMMU, or full product acceptance.
 
-```sh
-cargo run --locked --manifest-path tests/runner/Cargo.toml \
-  --target x86_64-unknown-linux-gnu -- versions --fixture .
-```
+The original
+[26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
+tag remains unchanged. Its historical results cannot certify this candidate.
 
-This exact Kernel source is an unreleased provider candidate in
-[Kernel PR #302](https://github.com/shuyra-arche/kernel/pull/302). The provider
-must merge before this Vanllia consumer PR. Native guest and platform compile,
-and the Native QEMU Debug and Release acceptance paths, passed in
-[the ABI 14 candidate run](https://github.com/shuyra-arche/vanllia/actions/runs/44235989240).
-These results do **not** qualify SMP, physical hardware, the full assembled
-System or downstream System/Hub consumer compatibility. The candidate is not a
-new release and does not change any earlier release tag.
-
-The original [Kernel 26.11.14-preview-Gamma](https://github.com/shuyra-arche/kernel/releases/tag/26.11.14-preview-Gamma)
-tag remains at `9a35dd5420474ebe75a6b5f3e4589a398745e32c`.
-The earlier ABI 13 composition used an exact post-Gamma repair, but it is no
-longer the selected Native provider. Capsules and stored artifacts generated
-for ABI 13 must be rebuilt; the Kernel rejects older ABI formats.
-
-The separate `tests/device/guest` workspace retains Kernel
-`5e6ea8ff5f48f5ce17c88d98cbedcc7a0ffe3a9e`; its ignored device runner
-requires migration before use with the current packager. The independent
-`tests/product-lifecycle` lockfile still records Kernel
-`a9986c82127cf25183bf5c30e7d42e4a9376b734`; it also needs a coordinated
-refresh and validation. The optional `tests/syscall-cost` guest and legacy
-System/Driver providers remain outside this Gamma acceptance. These paths
-are not selected by the platform or native memory workspaces, and root host
-tests do not execute their guests. Full System/service migration belongs to
+The old `tests/device` guest and experimental `tests/syscall-cost`
+benchmark were retired because their historical provider graphs cannot
+qualify the current ABI 13 product; their complete sources and coverage gaps
+are preserved in the [migration record](docs/migration.md). The independent
+`product/tests/lifecycle` lockfile still records Kernel
+`a9986c82127cf25183bf5c30e7d42e4a9376b734` and requires a coordinated
+product-owner refresh and validation. Its ignored scenarios are not selected
+by ordinary Host, Platform or Native CI and are **not current-product acceptance**.
+Legacy System/Driver providers also remain outside this product gate. Full System/service migration belongs to
 [System #10](https://github.com/shuyra-arche/system/issues/10),
 [System #13](https://github.com/shuyra-arche/system/issues/13) and
 [Hub #3](https://github.com/shuyra-arche/driver-hub/issues/3).
 
 Gamma's release notes and the historical timings in the
-[native memory guide](tests/memory/README.md) are not execution evidence for
+[native memory guide](product/tests/memory/README.md) are not execution evidence for
 this exact Vanllia composition. New Host, RV64 and QEMU results, exact source
 revisions and artifact identities are recorded separately in the
 [provider acceptance PR #38](https://github.com/shuyra-arche/vanllia/pull/38).
 Hardware, SMP and the complete assembled System are separate acceptance gates.
 
-The earlier ABI 13 migration selected System's published candidate
-`470e97f38aa904c3702b665c0d225809b9f0d16e` in the product gitlink and native
-System/Twine composition. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
+The ABI 13 migration selects System's published candidate
+`470e97f38aa904c3702b665c0d225809b9f0d16e` in the product gitlink.
+System now owns its own native Runtime/Supply/RPC contracts; Vanllia does not
+keep a second System/Twine test runner. Toolchain's coordinated consumer is [Toolchain #19](https://github.com/shuyra-arche/toolchain/pull/19); the
 production Loader -> real std-waits execution/reclamation/retirement is covered
 by the independent composition job. Full product artifact distribution remains
 a separate #19/#39 acceptance gate. Existing historical Driver/product/device fixtures retain their explicitly

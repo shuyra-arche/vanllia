@@ -14,7 +14,7 @@ profile = "release"
 [runner]
 machine = "virt"
 memory = "256M"
-cpus = 1
+cpus = 4
 timeout = 60
 
 [sources.system]

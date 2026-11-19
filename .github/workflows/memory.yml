@@ -1,10 +1,32 @@
 name: Kernel integration
 on:
   pull_request:
-    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+    paths:
+      - "product/tests/memory/**"
+      - "product/tests/runner/**"
+      - "platform/riscv/**"
+      - "crates/build/**"
+      - "components/kernel"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".gitmodules"
+      - "vanllia.toml"
+      - "vanllia.lock"
+      - ".github/workflows/memory.yml"
   push:
     branches: [main]
-    paths: ["tests/memory/**", "tests/runner/**", "platform/riscv/**", ".github/workflows/memory.yml"]
+    paths:
+      - "product/tests/memory/**"
+      - "product/tests/runner/**"
+      - "platform/riscv/**"
+      - "crates/build/**"
+      - "components/kernel"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".gitmodules"
+      - "vanllia.toml"
+      - "vanllia.lock"
+      - ".github/workflows/memory.yml"
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,16 +44,34 @@ jobs:
     name: Composition host checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      kernel_sha: ${{ steps.product.outputs.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Select product Kernel revision
+        id: product
+        run: |
+          set -euo pipefail
+          read -r mode pin stage path <<< "$(git -c safe.directory="$GITHUB_WORKSPACE" ls-files --stage -- components/kernel)"
+          [[ "$mode" == 160000 && "$stage" == 0 && "$path" == components/kernel ]]
+          [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$pin" >> "$GITHUB_OUTPUT"
       - name: Install host toolchain
         run: rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt,clippy
       - name: Check composition tools
         run: |
-          cargo fmt --manifest-path tests/memory/Cargo.toml --all -- --check
-          cargo fmt --manifest-path tests/runner/Cargo.toml -- --check
-          cargo clippy --locked --manifest-path tests/runner/Cargo.toml --all-targets --target x86_64-unknown-linux-gnu -- -Dwarnings
-          cargo run --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
+          cargo fmt --manifest-path product/tests/memory/Cargo.toml --all -- --check
+          cargo fmt --manifest-path product/tests/runner/Cargo.toml -- --check
+          cargo clippy --locked --manifest-path product/tests/runner/Cargo.toml --all-targets --target x86_64-unknown-linux-gnu -- -Dwarnings
+          cargo test --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+          cargo run --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu -- versions --fixture .
+
+  kernel-targets:
+    name: Kernel-owned target contracts
+    needs: host
+    uses: shuyra-arche/kernel/.github/workflows/pinned-target.yml@ec7adcde3d3c97b59630f52b000db3ded4f9e582
+    with:
+      kernel_sha: ${{ needs.host.outputs.kernel_sha }}
 
   qemu:
     name: ${{ matrix.scenario }} / ${{ matrix.profile }} / h${{ matrix.harts }}
@@ -43,38 +83,15 @@ jobs:
       fail-fast: false
       max-parallel: 8
       matrix:
+        # Only Vanllia-owned composition/ABI contracts run here on one Hart.
+        # Kernel's six private Activity/IRQ contracts are delegated to the
+        # pinned Kernel-owned workflow; optional benchmarks remain separate.
         include:
           - { scenario: native, profile: debug, harts: "1" }
           - { scenario: native, profile: release, harts: "1" }
           - { scenario: reject, profile: debug, harts: "1" }
           - { scenario: reject12, profile: debug, harts: "1" }
-          - { scenario: smp, profile: debug, harts: "1" }
-          - { scenario: smp, profile: debug, harts: "2" }
-          - { scenario: smp, profile: debug, harts: "4" }
-          - { scenario: smp, profile: release, harts: "1" }
-          - { scenario: smp, profile: release, harts: "2" }
-          - { scenario: smp, profile: release, harts: "4" }
-          - { scenario: activity, profile: debug, harts: "1" }
-          - { scenario: activity, profile: debug, harts: "4" }
-          - { scenario: activity, profile: release, harts: "1" }
-          - { scenario: activity, profile: release, harts: "4" }
-          - { scenario: unsupported, profile: release, harts: "1" }
-          - { scenario: unsupported, profile: release, harts: "4" }
-          - { scenario: stopped, profile: release, harts: "1" }
-          - { scenario: stopped, profile: release, harts: "4" }
-          - { scenario: flat, profile: debug, harts: "1" }
-          - { scenario: flat, profile: debug, harts: "4" }
-          - { scenario: flat, profile: release, harts: "1" }
-          - { scenario: flat, profile: release, harts: "4" }
-          - { scenario: irq, profile: debug, harts: "1" }
-          - { scenario: irq, profile: debug, harts: "4" }
-          - { scenario: irq, profile: release, harts: "1" }
-          - { scenario: irq, profile: release, harts: "4" }
-          - { scenario: realtime, profile: debug, harts: "4" }
-          - { scenario: realtime, profile: release, harts: "4" }
-          - { scenario: system, profile: release, harts: "1+4" }
           - { scenario: std, profile: release, harts: "1" }
-          - { scenario: iommu, profile: release, harts: "1" }
     env:
       QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
     steps:
@@ -86,41 +103,20 @@ jobs:
           sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" --target riscv64gc-unknown-none-elf
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Select reviewed Kernel provider
-        id: provider
-        run: |
-          pin=$(cat tests/runner/kernel)
-          [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
-          echo "sha=$pin" >> "$GITHUB_OUTPUT"
       - name: Fetch selected provider
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/kernel
-          ref: ${{ steps.provider.outputs.sha }}
+          ref: ${{ needs.host.outputs.kernel_sha }}
           path: .integration/kernel
           persist-credentials: false
-      - name: Fetch this repository's published probe fixture
-        if: matrix.scenario != 'native' && matrix.scenario != 'reject' && matrix.scenario != 'reject12' && matrix.scenario != 'system' && matrix.scenario != 'std' && matrix.scenario != 'iommu'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
-          path: .integration/fixture
-          persist-credentials: false
       - name: Fetch System consumer
-        if: matrix.scenario == 'system' || matrix.scenario == 'std'
+        if: matrix.scenario == 'std'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/system
           ref: 470e97f38aa904c3702b665c0d225809b9f0d16e
           path: .integration/system
-          persist-credentials: false
-      - name: Fetch Twine recovery
-        if: matrix.scenario == 'system'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: shuyra-arche/twine
-          ref: 932454c07bd2673ac7d6d9612d36182aae71e8b2
-          path: .integration/twine
           persist-credentials: false
       - name: Fetch Toolchain std provider
         if: matrix.scenario == 'std'
@@ -149,35 +145,17 @@ jobs:
               platform="$system/tests/guest/runtime/platform/target/riscv64gc-unknown-none-elf/release/system-runtime-platform"
               python3 "$system/tests/guest/loader/run.py" "$platform" --harts 1 --toolchain-receipt "$toolchain/build/std.json" --output "$evidence"
               ;;
-            native|reject|reject12|system)
-              cargo build --locked --manifest-path tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-              runner="$GITHUB_WORKSPACE/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
-              if [[ "$SCENARIO" == system ]]; then
-                "$runner" system --kernel "$kernel" --fixture .integration/system --twine .integration/twine --output "$evidence"
-              else
-                args=(native --profile "$PROFILE")
-                if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
-                if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
-                "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
-              fi
-              ;;
-            iommu)
-              cargo test --locked --manifest-path "$kernel/Cargo.toml" -p kernel-memory-tests --test iommu-target --target x86_64-unknown-linux-gnu -- --ignored --nocapture
+            native|reject|reject12)
+              cargo build --locked --manifest-path product/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
+              runner="$GITHUB_WORKSPACE/product/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
+              args=(native --profile "$PROFILE")
+              if [[ "$SCENARIO" == reject ]]; then args+=(--capsule-version 10); fi
+              if [[ "$SCENARIO" == reject12 ]]; then args+=(--capsule-version 12); fi
+              "$runner" "${args[@]}" --kernel "$kernel" --fixture "$GITHUB_WORKSPACE" --output "$evidence"
               ;;
             *)
-              cargo build --locked --manifest-path "$kernel/server/tests/runner/Cargo.toml" --target x86_64-unknown-linux-gnu
-              runner="$kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify"
-              case "$SCENARIO" in
-                smp) args=(smp) ;;
-                activity) args=(activity) ;;
-                unsupported) args=(activity --unsupported) ;;
-                stopped) args=(activity --stopped) ;;
-                flat) args=(flat) ;;
-                irq) args=(room --mode irq --events 16) ;;
-                realtime) args=(room --mode realtime) ;;
-                *) exit 1 ;;
-              esac
-              "$runner" "${args[@]}" --profile "$PROFILE" --harts "$HARTS" --kernel "$kernel" --fixture .integration/fixture --output "$evidence"
+              echo "unknown composition scenario: $SCENARIO" >&2
+              exit 1
               ;;
           esac
       - name: Preserve build and execution evidence
@@ -213,98 +191,14 @@ jobs:
             .integration/evidence/candidate/locked/*
             .integration/evidence/candidate/harts-*/*.log
             .integration/evidence/candidate/harts-*/result.json
-            .integration/kernel/server/tests/target/metal/riscv/iommu/target/evidence/*
           if-no-files-found: warn
 
   comparison:
-    name: Opt-in ${{ matrix.mode }} / ${{ matrix.latency }}
+    name: Kernel-owned opt-in Room/IRQ benchmark
     if: >-
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.body, 'Room comparison: requested')
     needs: host
-    runs-on: ubuntu-latest
-    container: debian:trixie
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        include:
-          - { mode: room, latency: enabled }
-          - { mode: room, latency: disabled }
-          - { mode: irq, latency: enabled }
-          - { mode: irq, latency: disabled }
-          - { mode: warmup, latency: enabled }
-    env:
-      QEMU_OPENSBI: /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_dynamic.bin
-    steps:
-      - name: Install native image tools
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git build-essential qemu-system-riscv opensbi
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh
-          sh /tmp/rustup.sh -y --profile minimal --default-toolchain "$RUSTUP_TOOLCHAIN" --target riscv64gc-unknown-none-elf
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - id: provider
-        run: |
-          pin=$(cat tests/runner/kernel)
-          [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
-          echo "sha=$pin" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: shuyra-arche/kernel
-          ref: ${{ steps.provider.outputs.sha }}
-          path: .integration/kernel
-          persist-credentials: false
-      - name: Select comparison control
-        id: control
-        if: matrix.mode != 'warmup'
-        run: |
-          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify baseline --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: matrix.mode != 'warmup'
-        with:
-          repository: shuyra-arche/kernel
-          ref: ${{ steps.control.outputs.sha }}
-          path: .integration/control
-          persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: f2dfa14f5b1f7bd47ee84841ba5c7112e8475950
-          path: .integration/fixture
-          persist-credentials: false
-      - name: Compare paired boots
-        env:
-          MODE: ${{ matrix.mode }}
-          LATENCY: ${{ matrix.latency }}
-        run: |
-          cargo build --locked --manifest-path .integration/kernel/server/tests/runner/Cargo.toml --target x86_64-unknown-linux-gnu
-          args=()
-          if [[ "$LATENCY" == disabled ]]; then args+=(--no-latency); fi
-          if [[ "$MODE" == warmup ]]; then
-            args+=(--compare-room-warmup --harts 1)
-            MODE=room
-          else
-            args+=(--baseline .integration/control)
-          fi
-          .integration/kernel/server/tests/runner/target/x86_64-unknown-linux-gnu/debug/verify room --kernel .integration/kernel --fixture .integration/fixture --output .integration/comparison --mode "$MODE" --profile release --rounds 5 "${args[@]}"
-      - name: Preserve paired evidence
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: comparison-${{ matrix.mode }}-${{ matrix.latency }}
-          include-hidden-files: true
-          path: |
-            .integration/comparison/order.json
-            .integration/comparison/*/inputs.json
-            .integration/comparison/*/*.elf
-            .integration/comparison/*/*.bin
-            .integration/comparison/*/*.lock
-            .integration/comparison/*/patches/*
-            .integration/comparison/*/resolve/*
-            .integration/comparison/*/locked/*
-            .integration/comparison/*/harts-*/*.log
-            .integration/comparison/*/harts-*/result.json
-          if-no-files-found: warn
+    uses: shuyra-arche/kernel/.github/workflows/room-comparison.yml@ec7adcde3d3c97b59630f52b000db3ded4f9e582
+    with:
+      kernel_sha: ${{ needs.host.outputs.kernel_sha }}
