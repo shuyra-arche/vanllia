@@ -69,7 +69,7 @@ jobs:
   kernel-targets:
     name: Kernel-owned target contracts
     needs: host
-    uses: shuyra-arche/kernel/.github/workflows/pinned-target.yml@43361528f78823a374a2a32ea70b4876c3c45f11
+    uses: shuyra-arche/kernel/.github/workflows/pinned-target.yml@45f75f606bc27f1e2c88f4bcabe7c6d38d2f60a3
     with:
       kernel_sha: ${{ needs.host.outputs.kernel_sha }}
 
@@ -199,6 +199,6 @@ jobs:
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.body, 'Room comparison: requested')
     needs: host
-    uses: shuyra-arche/kernel/.github/workflows/room-comparison.yml@995b11585d897cddf0cd40eedcb0d76060b099c5
+    uses: shuyra-arche/kernel/.github/workflows/room-comparison.yml@45f75f606bc27f1e2c88f4bcabe7c6d38d2f60a3
     with:
       kernel_sha: ${{ needs.host.outputs.kernel_sha }}
