@@ -100,18 +100,18 @@ image under `tests/platform/qemu` reuses the production boot path.
 
 The CLI consumes the kernel-independent VNI1 bundle from Unit at
 `a0e8138275dc277f7d202fedb74cf9fa88aee368` with default features disabled.
-The draft ABI 14 qualification candidate pins Kernel `657f2a36aa4043ae2a5b419774577b6498bfc9e7` across
+The draft ABI 14 qualification candidate pins Kernel `44d9593d89c4823a7599eb3ee3683bd7a5cee9b5` across
 the build library, RV64 platform, QEMU fixture, Native memory product Guest,
-Cargo locks, and `components/kernel` gitlink. This revision combines the
-independently reviewed but still unmerged Kernel PRs #301 and #302 on a
-verification-only branch; it is **not** an accepted Kernel provider release.
-Main continues to use the published ABI 13 source until all consumers pass.
+Cargo locks, and `components/kernel` gitlink. This immutable Kernel revision contains the merged #301 Journal fix, #302
+Nest/CPU-retirement correction, and #321 Kernel-owned ABI 14 CPU target.
+Kernel main has accepted these fixes; Vanllia main still selects the published
+ABI 13 product until the separate consumer migration is accepted.
 
 The candidate Native ABI/Ledger contract is 14/14; Capsule format remains 2.
 Run `cargo run --locked --manifest-path product/tests/runner/Cargo.toml
 --target x86_64-unknown-linux-gnu -- versions --fixture .` to check exact
 source identity. Older ABI capsules must be rebuilt, not accepted through a
-compatibility wrapper. The source is tested separately in the draft
+compatibility wrapper. The coordinated Native candidate is tested separately in the draft
 [Vanllia ABI 14 migration PR](https://github.com/shuyra-arche/vanllia/pull/50);
 its candidate checks do not establish System/Twine, multi-Hart native,
 hardware IOMMU, or full product acceptance.

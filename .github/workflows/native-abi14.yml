@@ -76,7 +76,7 @@ jobs:
     timeout-minutes: 20
     env:
       RUSTUP_TOOLCHAIN: nightly
-      PROVIDER_SHA: 657f2a36aa4043ae2a5b419774577b6498bfc9e7
+      PROVIDER_SHA: 44d9593d89c4823a7599eb3ee3683bd7a5cee9b5
     steps:
       - name: Install tools
         run: |
@@ -147,7 +147,7 @@ jobs:
     env:
       RUSTUP_TOOLCHAIN: nightly
       QEMU_RISCV64: qemu-system-riscv64
-      PROVIDER_SHA: 657f2a36aa4043ae2a5b419774577b6498bfc9e7
+      PROVIDER_SHA: 44d9593d89c4823a7599eb3ee3683bd7a5cee9b5
     steps:
       - name: Install QEMU, OpenSBI, compiler and runner tools
         run: |
@@ -169,14 +169,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: shuyra-arche/kernel
-          ref: 657f2a36aa4043ae2a5b419774577b6498bfc9e7
+          ref: 44d9593d89c4823a7599eb3ee3683bd7a5cee9b5
           path: .integration/provider
           persist-credentials: false
           submodules: false
       - name: Identify exact candidate and build verification runner
         run: |
           set -euo pipefail
-          test "$(git -C .integration/provider rev-parse HEAD)" = "657f2a36aa4043ae2a5b419774577b6498bfc9e7"
+          test "$(git -C .integration/provider rev-parse HEAD)" = "44d9593d89c4823a7599eb3ee3683bd7a5cee9b5"
           qemu-system-riscv64 --version
           cargo +nightly generate-lockfile --manifest-path product/tests/runner/Cargo.toml
           cargo +nightly build --locked --manifest-path product/tests/runner/Cargo.toml \
