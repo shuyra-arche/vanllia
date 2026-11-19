@@ -84,9 +84,10 @@ jobs:
     name: Kernel-owned ABI14 Nest completion
     if: needs.host.outputs.abi == '14'
     needs: host
-    uses: shuyra-arche/kernel/.github/workflows/nest-target.yml@54230db049b17ccd67ba62325083cc4971578fa6
+    uses: shuyra-arche/kernel/.github/workflows/nest-target.yml@eceddad499a23b4521d3b36106516670ca68279d
     with:
       kernel_sha: ${{ needs.host.outputs.kernel_sha }}
+      owner_sha: eceddad499a23b4521d3b36106516670ca68279d
 
   qemu:
     name: ${{ matrix.scenario }} / ${{ matrix.profile }} / h${{ matrix.harts }}
