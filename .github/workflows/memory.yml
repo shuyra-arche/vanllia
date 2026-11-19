@@ -69,7 +69,7 @@ jobs:
   kernel-targets:
     name: Kernel-owned target contracts
     needs: host
-    uses: shuyra-arche/kernel/.github/workflows/pinned-target.yml@c9617bd8ed3c723f5b055bd1fcd85bc785a77dfe
+    uses: shuyra-arche/kernel/.github/workflows/pinned-target.yml@43361528f78823a374a2a32ea70b4876c3c45f11
     with:
       kernel_sha: ${{ needs.host.outputs.kernel_sha }}
 
