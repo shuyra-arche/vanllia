@@ -199,6 +199,6 @@ jobs:
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.body, 'Room comparison: requested')
     needs: host
-    uses: shuyra-arche/kernel/.github/workflows/room-comparison.yml@8cdb184ef4115f9632bea5c2708c0213250e56cb
+    uses: shuyra-arche/kernel/.github/workflows/room-comparison.yml@995b11585d897cddf0cd40eedcb0d76060b099c5
     with:
       kernel_sha: ${{ needs.host.outputs.kernel_sha }}
